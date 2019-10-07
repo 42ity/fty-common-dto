@@ -33,7 +33,11 @@ namespace dto
     namespace srr 
     {
 
-        // SrrQueryDto
+        /**
+         * SRR request object
+         * @param data
+         * @param object
+         */
         void operator<<(messagebus::UserData &data, const SrrQueryDto &object)
         {
             data.push_back(object.action);
@@ -49,7 +53,11 @@ namespace dto
             object = SrrQueryDto(action, data);
         }
 
-        // SrrFeaturesListDto
+        /**
+         * All features list object threat by SRR
+         * @param data
+         * @param object
+         */
         void operator<<(messagebus::UserData &data, const SrrFeaturesListDto &object)
         {
             for (const auto &dto : object.featuresList)
@@ -67,7 +75,11 @@ namespace dto
             inputData.clear();
         }
 
-        // SrrResponseDto
+        /**
+         * SRR response object
+         * @param data
+         * @param object
+         */
         void operator<<(messagebus::UserData &data, const SrrResponseDto &object)
         {
             data.push_back(object.name);
@@ -86,6 +98,11 @@ namespace dto
             object = SrrResponseDto(name, status, error);
         }
 
+        /**
+         * List of SrrResponseDto object with a global status
+         * @param data
+         * @param object
+         */
         void operator<< (messagebus::UserData &data, const SrrResponseDtoList &object) 
         {
             data.push_back(object.status);
@@ -104,45 +121,6 @@ namespace dto
                 inputData >> currentDto;
                 object.responseList.push_back(currentDto);
             }
-        }
-
-        // ConfigQueryDto
-
-        void operator<<(messagebus::UserData &data, const ConfigQueryDto &object)
-        {
-            data.push_back(object.action);
-            data.push_back(object.featureName);
-            data.push_back(object.data);
-        }
-
-        void operator>>(messagebus::UserData &inputData, ConfigQueryDto &object)
-        {
-            auto action = inputData.front();
-            inputData.pop_front();
-            auto featureName = inputData.front();
-            inputData.pop_front();
-            auto data = inputData.front();
-            inputData.pop_front();
-            object = ConfigQueryDto(action, featureName, data);
-        }
-
-        // ConfigResponseDto
-        void operator<< (messagebus::UserData &data, const ConfigResponseDto &object)
-        {
-            data.push_back(object.status);
-            data.push_back(object.data);
-            data.push_back(object.error);
-        }
-
-        void operator>> (messagebus::UserData &inputData, ConfigResponseDto &object)
-        {
-            auto status = inputData.front();
-            inputData.pop_front();
-            auto data = inputData.front();
-            inputData.pop_front();
-            auto error = inputData.front();
-            inputData.pop_front();
-            object = ConfigResponseDto(status, data, error);
         }
     }
 }

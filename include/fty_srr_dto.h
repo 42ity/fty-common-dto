@@ -32,118 +32,67 @@ namespace dto
     namespace srr 
     {
 
-        // ========================= SRR ============================
-        //
-        // ==========================================================
-
+        /**
+         * SRR request object
+         */
         struct SrrQueryDto {
             std::string action;
             std::string data;
 
             SrrQueryDto() = default;
-
-            SrrQueryDto(const std::string action) : action(action) {
-            }
-
-            SrrQueryDto(const std::string action, const std::string data) : action(action), data(data) {
-            }
+            SrrQueryDto(const std::string action) : action(action) {}
+            SrrQueryDto(const std::string action, const std::string data) : action(action), data(data) {}
         };
 
         void operator<<(messagebus::UserData &data, const SrrQueryDto &object);
         void operator>>(messagebus::UserData &inputData, SrrQueryDto &object);
 
+        /**
+         * All features list object threat by SRR
+         */
         struct SrrFeaturesListDto {
             std::list<std::string> featuresList;
 
             SrrFeaturesListDto() = default;
-
-            SrrFeaturesListDto(std::list<std::string> featuresList) : featuresList(featuresList) {
-            }
+            SrrFeaturesListDto(std::list<std::string> featuresList) : featuresList(featuresList) {}
         };
 
         void operator<<(messagebus::UserData &data, const SrrFeaturesListDto &object);
         void operator>>(messagebus::UserData &inputData, SrrFeaturesListDto &object);
 
+        /**
+         * SRR response object
+         */
         struct SrrResponseDto {
             std::string name;
             std::string status;
             std::string error;
 
             SrrResponseDto() = default;
-
-            SrrResponseDto(const std::string name) : name(name) {
-            }
-
-            SrrResponseDto(const std::string name, const std::string status) : name(name), status(status) {
-            }
-
-            SrrResponseDto(const std::string name, const std::string status, const std::string error) : name(name), status(status), error(error) {
-            }
+            SrrResponseDto(const std::string name) : name(name) {}
+            SrrResponseDto(const std::string name, const std::string status) : name(name), status(status) {}
+            SrrResponseDto(const std::string name, const std::string status, const std::string error) : name(name), status(status), error(error) {}
         };
 
         void operator<<(messagebus::UserData &data, const SrrResponseDto &object);
         void operator>>(messagebus::UserData &inputData, SrrResponseDto &object);
 
+        /**
+         * List of SrrResponseDto object with a global status
+         */
         struct SrrResponseDtoList {
             std::string status;
             std::list<SrrResponseDto> responseList;
 
             SrrResponseDtoList() = default;
-
-            SrrResponseDtoList(const std::string status, const std::list<SrrResponseDto> responseList) : status(status), responseList(responseList) {
-            }
+            SrrResponseDtoList(const std::string status, const std::list<SrrResponseDto> responseList) : status(status), responseList(responseList) {}
         };
 
         void operator<<(messagebus::UserData &data, const SrrResponseDtoList &object);
         void operator>>(messagebus::UserData &inputData, SrrResponseDtoList &object);
-
-        // ========================= Configuration ==================
-        //
-        // ==========================================================
-
-        struct ConfigQueryDto {
-            std::string action;
-            std::string featureName;
-            std::string data;
-
-            ConfigQueryDto() = default;
-
-            ConfigQueryDto(const std::string action) : action(action) {
-            }
-
-            ConfigQueryDto(const std::string action, const std::string featureName) : action(action), featureName(featureName) {
-            }
-
-            ConfigQueryDto(const std::string action, const std::string featureName, const std::string data) :
-            action(action),
-            featureName(featureName),
-            data(data) {
-            }
-        };
-
-        void operator<<(messagebus::UserData &data, const ConfigQueryDto &object);
-        void operator>>(messagebus::UserData &inputData, ConfigQueryDto &object);
-
-        struct ConfigResponseDto {
-            std::string status;
-            std::string data;
-            std::string error;
-
-            ConfigResponseDto() = default;
-
-            ConfigResponseDto(const std::string status) : status(status) {
-            }
-
-            ConfigResponseDto(const std::string status, const std::string data) : status(status), data(data) {
-            }
-
-            ConfigResponseDto(const std::string status, const std::string data, const std::string error) : status(status), data(data), error(error) {
-            }
-        };
-
-        void operator<<(messagebus::UserData &data, const ConfigResponseDto &object);
-        void operator>>(messagebus::UserData &inputData, ConfigResponseDto &object);
-    }
-}
+        
+    } // srr namespace
+    
+} // dto namespace
 
 #endif
