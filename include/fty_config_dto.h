@@ -19,8 +19,8 @@
     =========================================================================
  */
 
-#ifndef FTY_SRR_DTO_H_INCLUDED
-#define FTY_SRR_DTO_H_INCLUDED
+#ifndef FTY_CONFIG_DTO_H_INCLUDED
+#define FTY_CONFIG_DTO_H_INCLUDED
 
 #include <string>
 #include <list>
