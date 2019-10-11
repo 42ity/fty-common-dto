@@ -59,37 +59,53 @@ namespace dto
 
         void operator<<(messagebus::UserData &data, const SrrFeaturesListDto &object);
         void operator>>(messagebus::UserData &inputData, SrrFeaturesListDto &object);
+        
+        /**
+         * List of SrrSaveDto object with a global status
+         */
+        struct SrrSaveDto {
+            std::string status;
+            std::string config;
+
+            SrrSaveDto() = default;
+            SrrSaveDto(const std::string status) : status(status) {}
+            SrrSaveDto(const std::string status, const std::string config) : status(status), config(config) {}
+        };
+
+        void operator<<(messagebus::UserData &data, const SrrSaveDto &object);
+        void operator>>(messagebus::UserData &inputData, SrrSaveDto &object);
 
         /**
-         * SRR response object
+         * SRR restore object
          */
-        struct SrrResponseDto {
+        struct SrrRestoreDto {
             std::string name;
             std::string status;
             std::string error;
 
-            SrrResponseDto() = default;
-            SrrResponseDto(const std::string name) : name(name) {}
-            SrrResponseDto(const std::string name, const std::string status) : name(name), status(status) {}
-            SrrResponseDto(const std::string name, const std::string status, const std::string error) : name(name), status(status), error(error) {}
+            SrrRestoreDto() = default;
+            SrrRestoreDto(const std::string name) : name(name) {}
+            SrrRestoreDto(const std::string name, const std::string status) : name(name), status(status) {}
+            SrrRestoreDto(const std::string name, const std::string status, const std::string error) : name(name), status(status), error(error) {}
         };
 
-        void operator<<(messagebus::UserData &data, const SrrResponseDto &object);
-        void operator>>(messagebus::UserData &inputData, SrrResponseDto &object);
+        void operator<<(messagebus::UserData &data, const SrrRestoreDto &object);
+        void operator>>(messagebus::UserData &inputData, SrrRestoreDto &object);
 
         /**
-         * List of SrrResponseDto object with a global status
+         * List of SrrRestoreDto object with a global status
          */
-        struct SrrResponseDtoList {
+        struct SrrRestoreDtoList {
             std::string status;
-            std::list<SrrResponseDto> responseList;
+            std::list<SrrRestoreDto> responseList;
 
-            SrrResponseDtoList() = default;
-            SrrResponseDtoList(const std::string status, const std::list<SrrResponseDto> responseList) : status(status), responseList(responseList) {}
+            SrrRestoreDtoList() = default;
+            SrrRestoreDtoList(const std::string status) : status(status) {}
+            SrrRestoreDtoList(const std::string status, const std::list<SrrRestoreDto> responseList) : status(status), responseList(responseList) {}
         };
 
-        void operator<<(messagebus::UserData &data, const SrrResponseDtoList &object);
-        void operator>>(messagebus::UserData &inputData, SrrResponseDtoList &object);
+        void operator<<(messagebus::UserData &data, const SrrRestoreDtoList &object);
+        void operator>>(messagebus::UserData &inputData, SrrRestoreDtoList &object);
         
     } // srr namespace
     
