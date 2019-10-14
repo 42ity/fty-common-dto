@@ -38,12 +38,6 @@
     <version major = "1" minor = "0" patch = "0" />
     <abi current = "0" revision = "0" age = "0" />
     
-    <use project = "libsodium" prefix = "sodium"
-                repository = "https://github.com/42ity/libsodium.git"
-                release = "1.0.5-FTY-master"
-                test = "sodium_init"
-                />
-    
     <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
             repository = "https://github.com/42ity/cxxtools.git"
             release = "2.2-FTY-master"
@@ -52,10 +46,28 @@
     <use project = "fty-common-messagebus" libname = "libfty_common_messagebus" header = "fty_common_messagebus.h"
         repository = "https://github.com/42ity/fty-common-messagebus.git"
         release = "master"
-        test = "fty_common_messagebus_selftest" />
+        test = "fty_common_messagebus_selftest">
+    
+        <use project = "czmq"
+            repository = "https://github.com/42ity/czmq.git"
+            release = "v3.0.2-FTY-master"
+            min_major = "3" min_minor = "0" min_patch = "2" >
+
+            <use project = "libzmq"
+                repository = "https://github.com/42ity/libzmq.git"
+                release = "4.2.0-FTY-master" >
+
+                <use project = "libsodium" prefix = "sodium"
+                    repository = "https://github.com/42ity/libsodium.git"
+                    release = "1.0.5-FTY-master"
+                    test = "sodium_init"
+                    />
+            </use>
+        </use>
+        
+    </use>
     
     <class name = "fty-srr-dto" selftest = "0">Fty srr dto</class>
     <class name = "fty-config-dto" selftest = "0">Fty config dto</class>
     
-
 </project>
