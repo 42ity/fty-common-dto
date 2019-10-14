@@ -93,6 +93,23 @@ set(OPTIONAL_LIBRARIES)
 set(OPTIONAL_LIBRARIES_STATIC)
 
 ########################################################################
+# LIBSODIUM dependency
+########################################################################
+find_package(libsodium REQUIRED)
+IF (LIBSODIUM_FOUND)
+    include_directories(${LIBSODIUM_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${LIBSODIUM_LIBRARIES})
+  IF (PC_LIBSODIUM_FOUND)
+      set(pkg_config_names_private "${pkg_config_names_private} libsodium")
+      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_LIBSODIUM_STATIC_LDFLAGS})
+  ELSE (PC_LIBSODIUM_FOUND)
+      set(pkg_config_libs_private "${pkg_config_libs_private} -lsodium")
+  ENDIF (PC_LIBSODIUM_FOUND)
+ELSE (LIBSODIUM_FOUND)
+    message( FATAL_ERROR "libsodium not found." )
+ENDIF (LIBSODIUM_FOUND)
+
+########################################################################
 # CXXTOOLS dependency
 ########################################################################
 find_package(cxxtools REQUIRED)
@@ -108,6 +125,40 @@ IF (CXXTOOLS_FOUND)
 ELSE (CXXTOOLS_FOUND)
     message( FATAL_ERROR "cxxtools not found." )
 ENDIF (CXXTOOLS_FOUND)
+
+########################################################################
+# LIBZMQ dependency
+########################################################################
+find_package(libzmq REQUIRED)
+IF (LIBZMQ_FOUND)
+    include_directories(${LIBZMQ_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${LIBZMQ_LIBRARIES})
+  IF (PC_LIBZMQ_FOUND)
+      set(pkg_config_names_private "${pkg_config_names_private} libzmq")
+      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_LIBZMQ_STATIC_LDFLAGS})
+  ELSE (PC_LIBZMQ_FOUND)
+      set(pkg_config_libs_private "${pkg_config_libs_private} -lzmq")
+  ENDIF (PC_LIBZMQ_FOUND)
+ELSE (LIBZMQ_FOUND)
+    message( FATAL_ERROR "libzmq not found." )
+ENDIF (LIBZMQ_FOUND)
+
+########################################################################
+# CZMQ dependency
+########################################################################
+find_package(czmq REQUIRED)
+IF (CZMQ_FOUND)
+    include_directories(${CZMQ_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${CZMQ_LIBRARIES})
+  IF (PC_CZMQ_FOUND)
+      set(pkg_config_names_private "${pkg_config_names_private} libczmq >= 3.0.2")
+      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_CZMQ_STATIC_LDFLAGS})
+  ELSE (PC_CZMQ_FOUND)
+      set(pkg_config_libs_private "${pkg_config_libs_private} -lczmq")
+  ENDIF (PC_CZMQ_FOUND)
+ELSE (CZMQ_FOUND)
+    message( FATAL_ERROR "czmq not found." )
+ENDIF (CZMQ_FOUND)
 
 ########################################################################
 # FTY-COMMON-MESSAGEBUS dependency
@@ -330,7 +381,10 @@ if (TARGET fty_common_dto)
 target_link_libraries(
     fty_common_dto_selftest
     fty_common_dto
+    ${LIBSODIUM_LIBRARIES}
     ${CXXTOOLS_LIBRARIES}
+    ${LIBZMQ_LIBRARIES}
+    ${CZMQ_LIBRARIES}
     ${FTY-COMMON-MESSAGEBUS_LIBRARIES}
     ${OPTIONAL_LIBRARIES}
 )
@@ -339,7 +393,10 @@ if (NOT TARGET fty_common_dto AND TARGET fty_common_dto-static)
 target_link_libraries(
     fty_common_dto_selftest
     fty_common_dto-static
+    ${LIBSODIUM_LIBRARIES}
     ${CXXTOOLS_LIBRARIES}
+    ${LIBZMQ_LIBRARIES}
+    ${CZMQ_LIBRARIES}
     ${FTY-COMMON-MESSAGEBUS_LIBRARIES}
     ${OPTIONAL_LIBRARIES}
     ${OPTIONAL_LIBRARIES_STATIC}

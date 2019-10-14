@@ -51,7 +51,10 @@ BuildRequires:  xmlto
 # "4.9 or newer".
 BuildRequires:  devtoolset-3-gcc devtoolset-3-gcc-c++
 BuildRequires:  gcc-c++ >= 4.9.0
+BuildRequires:  libsodium-devel
 BuildRequires:  cxxtools-devel
+BuildRequires:  zeromq-devel
+BuildRequires:  czmq-devel >= 3.0.2
 BuildRequires:  fty-common-messagebus-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
@@ -76,7 +79,10 @@ This package contains shared library for fty-common-dto: common  data transfert 
 Summary:        common  data transfert object for 42ity ecosystem
 Group:          System/Libraries
 Requires:       libfty_common_dto0 = %{version}
+Requires:       libsodium-devel
 Requires:       cxxtools-devel
+Requires:       zeromq-devel
+Requires:       czmq-devel >= 3.0.2
 Requires:       fty-common-messagebus-devel
 
 %description devel
