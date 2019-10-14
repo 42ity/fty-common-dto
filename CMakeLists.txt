@@ -93,125 +93,6 @@ set(OPTIONAL_LIBRARIES)
 set(OPTIONAL_LIBRARIES_STATIC)
 
 ########################################################################
-# LIBSODIUM dependency
-########################################################################
-find_package(libsodium REQUIRED)
-IF (LIBSODIUM_FOUND)
-    include_directories(${LIBSODIUM_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${LIBSODIUM_LIBRARIES})
-  IF (PC_LIBSODIUM_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} libsodium")
-      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_LIBSODIUM_STATIC_LDFLAGS})
-  ELSE (PC_LIBSODIUM_FOUND)
-      set(pkg_config_libs_private "${pkg_config_libs_private} -lsodium")
-  ENDIF (PC_LIBSODIUM_FOUND)
-ELSE (LIBSODIUM_FOUND)
-    message( FATAL_ERROR "libsodium not found." )
-ENDIF (LIBSODIUM_FOUND)
-
-########################################################################
-# LIBZMQ dependency
-########################################################################
-find_package(libzmq REQUIRED)
-IF (LIBZMQ_FOUND)
-    include_directories(${LIBZMQ_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${LIBZMQ_LIBRARIES})
-  IF (PC_LIBZMQ_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} libzmq")
-      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_LIBZMQ_STATIC_LDFLAGS})
-  ELSE (PC_LIBZMQ_FOUND)
-      set(pkg_config_libs_private "${pkg_config_libs_private} -lzmq")
-  ENDIF (PC_LIBZMQ_FOUND)
-ELSE (LIBZMQ_FOUND)
-    message( FATAL_ERROR "libzmq not found." )
-ENDIF (LIBZMQ_FOUND)
-
-########################################################################
-# CZMQ dependency
-########################################################################
-find_package(czmq REQUIRED)
-IF (CZMQ_FOUND)
-    include_directories(${CZMQ_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${CZMQ_LIBRARIES})
-  IF (PC_CZMQ_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} libczmq >= 3.0.2")
-      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_CZMQ_STATIC_LDFLAGS})
-  ELSE (PC_CZMQ_FOUND)
-      set(pkg_config_libs_private "${pkg_config_libs_private} -lczmq")
-  ENDIF (PC_CZMQ_FOUND)
-ELSE (CZMQ_FOUND)
-    message( FATAL_ERROR "czmq not found." )
-ENDIF (CZMQ_FOUND)
-
-########################################################################
-# MALAMUTE dependency
-########################################################################
-find_package(malamute REQUIRED)
-IF (MALAMUTE_FOUND)
-    include_directories(${MALAMUTE_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${MALAMUTE_LIBRARIES})
-  IF (PC_MALAMUTE_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} libmlm >= 1.0.0")
-      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_MALAMUTE_STATIC_LDFLAGS})
-  ELSE (PC_MALAMUTE_FOUND)
-      set(pkg_config_libs_private "${pkg_config_libs_private} -lmlm")
-  ENDIF (PC_MALAMUTE_FOUND)
-ELSE (MALAMUTE_FOUND)
-    message( FATAL_ERROR "malamute not found." )
-ENDIF (MALAMUTE_FOUND)
-
-########################################################################
-# LOG4CPLUS dependency
-########################################################################
-find_package(log4cplus REQUIRED)
-IF (LOG4CPLUS_FOUND)
-    include_directories(${LOG4CPLUS_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${LOG4CPLUS_LIBRARIES})
-  IF (PC_LOG4CPLUS_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} log4cplus")
-      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_LOG4CPLUS_STATIC_LDFLAGS})
-  ELSE (PC_LOG4CPLUS_FOUND)
-      set(pkg_config_libs_private "${pkg_config_libs_private} -llog4cplus")
-  ENDIF (PC_LOG4CPLUS_FOUND)
-ELSE (LOG4CPLUS_FOUND)
-    message( FATAL_ERROR "log4cplus not found." )
-ENDIF (LOG4CPLUS_FOUND)
-
-########################################################################
-# FTY-COMMON-LOGGING dependency
-########################################################################
-find_package(fty-common-logging REQUIRED)
-IF (FTY-COMMON-LOGGING_FOUND)
-    include_directories(${FTY-COMMON-LOGGING_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${FTY-COMMON-LOGGING_LIBRARIES})
-  IF (PC_FTY-COMMON-LOGGING_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} libfty_common_logging")
-      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_FTY-COMMON-LOGGING_STATIC_LDFLAGS})
-  ELSE (PC_FTY-COMMON-LOGGING_FOUND)
-      set(pkg_config_libs_private "${pkg_config_libs_private} -lfty-common-logging")
-  ENDIF (PC_FTY-COMMON-LOGGING_FOUND)
-ELSE (FTY-COMMON-LOGGING_FOUND)
-    message( FATAL_ERROR "fty-common-logging not found." )
-ENDIF (FTY-COMMON-LOGGING_FOUND)
-
-########################################################################
-# FTY-COMMON dependency
-########################################################################
-find_package(fty-common REQUIRED)
-IF (FTY-COMMON_FOUND)
-    include_directories(${FTY-COMMON_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${FTY-COMMON_LIBRARIES})
-  IF (PC_FTY-COMMON_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} libfty_common")
-      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_FTY-COMMON_STATIC_LDFLAGS})
-  ELSE (PC_FTY-COMMON_FOUND)
-      set(pkg_config_libs_private "${pkg_config_libs_private} -lfty-common")
-  ENDIF (PC_FTY-COMMON_FOUND)
-ELSE (FTY-COMMON_FOUND)
-    message( FATAL_ERROR "fty-common not found." )
-ENDIF (FTY-COMMON_FOUND)
-
-########################################################################
 # CXXTOOLS dependency
 ########################################################################
 find_package(cxxtools REQUIRED)
@@ -266,6 +147,7 @@ set (fty_common_dto_headers
 IF (ENABLE_DRAFTS)
     list(APPEND fty_common_dto_headers
         include/fty_srr_dto.h
+        include/fty_config_dto.h
     )
 ENDIF (ENABLE_DRAFTS)
 
@@ -284,6 +166,7 @@ set (fty_common_dto_sources
 IF (ENABLE_DRAFTS)
     list (APPEND fty_common_dto_sources
         src/fty_srr_dto.cc
+        src/fty_config_dto.cc
     )
 ENDIF (ENABLE_DRAFTS)
 
@@ -447,13 +330,6 @@ if (TARGET fty_common_dto)
 target_link_libraries(
     fty_common_dto_selftest
     fty_common_dto
-    ${LIBSODIUM_LIBRARIES}
-    ${LIBZMQ_LIBRARIES}
-    ${CZMQ_LIBRARIES}
-    ${MALAMUTE_LIBRARIES}
-    ${LOG4CPLUS_LIBRARIES}
-    ${FTY-COMMON-LOGGING_LIBRARIES}
-    ${FTY-COMMON_LIBRARIES}
     ${CXXTOOLS_LIBRARIES}
     ${FTY-COMMON-MESSAGEBUS_LIBRARIES}
     ${OPTIONAL_LIBRARIES}
@@ -463,13 +339,6 @@ if (NOT TARGET fty_common_dto AND TARGET fty_common_dto-static)
 target_link_libraries(
     fty_common_dto_selftest
     fty_common_dto-static
-    ${LIBSODIUM_LIBRARIES}
-    ${LIBZMQ_LIBRARIES}
-    ${CZMQ_LIBRARIES}
-    ${MALAMUTE_LIBRARIES}
-    ${LOG4CPLUS_LIBRARIES}
-    ${FTY-COMMON-LOGGING_LIBRARIES}
-    ${FTY-COMMON_LIBRARIES}
     ${CXXTOOLS_LIBRARIES}
     ${FTY-COMMON-MESSAGEBUS_LIBRARIES}
     ${OPTIONAL_LIBRARIES}
@@ -496,6 +365,7 @@ set(TEST_CLASSES
 IF (ENABLE_DRAFTS)
     list (APPEND TEST_CLASSES
     fty_srr_dto
+    fty_config_dto
     )
 ENDIF (ENABLE_DRAFTS)
 

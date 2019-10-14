@@ -30,9 +30,6 @@
 //  Set up environment for the application
 
 //  External dependencies
-#include <czmq.h>
-#include <malamute.h>
-#include <fty_common.h>
 #include <cxxtools/allocator.h>
 #include <fty_common_messagebus.h>
 
@@ -45,6 +42,26 @@
     ((major) * 10000 + (minor) * 100 + (patch))
 #define FTY_COMMON_DTO_VERSION \
     FTY_COMMON_DTO_MAKE_VERSION(FTY_COMMON_DTO_VERSION_MAJOR, FTY_COMMON_DTO_VERSION_MINOR, FTY_COMMON_DTO_VERSION_PATCH)
+
+// czmq_prelude.h bits
+#if !defined (__WINDOWS__)
+#   if (defined WIN32 || defined _WIN32 || defined WINDOWS || defined _WINDOWS)
+#       undef __WINDOWS__
+#       define __WINDOWS__
+#   endif
+#endif
+
+// Windows MSVS doesn't have stdbool
+#if (defined (_MSC_VER) && !defined (true))
+#   if (!defined (__cplusplus) && (!defined (true)))
+#       define true 1
+#       define false 0
+        typedef char bool;
+#   endif
+#else
+#   include <stdbool.h>
+#endif
+// czmq_prelude.h bits
 
 #if defined (__WINDOWS__)
 #   if defined FTY_COMMON_DTO_STATIC
@@ -84,12 +101,15 @@
 #ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
 typedef struct _fty_srr_dto_t fty_srr_dto_t;
 #define FTY_SRR_DTO_T_DEFINED
+typedef struct _fty_config_dto_t fty_config_dto_t;
+#define FTY_CONFIG_DTO_T_DEFINED
 #endif // FTY_COMMON_DTO_BUILD_DRAFT_API
 
 
 //  Public classes, each with its own header file
 #ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
 #include "fty_srr_dto.h"
+#include "fty_config_dto.h"
 #endif // FTY_COMMON_DTO_BUILD_DRAFT_API
 
 #ifdef FTY_COMMON_DTO_BUILD_DRAFT_API

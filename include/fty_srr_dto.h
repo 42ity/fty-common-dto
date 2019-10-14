@@ -40,8 +40,8 @@ namespace dto
             std::string data;
 
             SrrQueryDto() = default;
-            SrrQueryDto(const std::string action) : action(action) {}
-            SrrQueryDto(const std::string action, const std::string data) : action(action), data(data) {}
+            SrrQueryDto(const std::string& action) : action(action) {}
+            SrrQueryDto(const std::string& action, const std::string& data) : action(action), data(data) {}
         };
 
         void operator<<(messagebus::UserData &data, const SrrQueryDto &object);
@@ -68,8 +68,8 @@ namespace dto
             std::string config;
 
             SrrSaveDto() = default;
-            SrrSaveDto(const std::string status) : status(status) {}
-            SrrSaveDto(const std::string status, const std::string config) : status(status), config(config) {}
+            SrrSaveDto(const std::string& status) : status(status) {}
+            SrrSaveDto(const std::string& status, const std::string& config) : status(status), config(config) {}
         };
 
         void operator<<(messagebus::UserData &data, const SrrSaveDto &object);
@@ -84,9 +84,9 @@ namespace dto
             std::string error;
 
             SrrRestoreDto() = default;
-            SrrRestoreDto(const std::string name) : name(name) {}
-            SrrRestoreDto(const std::string name, const std::string status) : name(name), status(status) {}
-            SrrRestoreDto(const std::string name, const std::string status, const std::string error) : name(name), status(status), error(error) {}
+            SrrRestoreDto(const std::string& name) : name(name) {}
+            SrrRestoreDto(const std::string& name, const std::string& status) : name(name), status(status) {}
+            SrrRestoreDto(const std::string& name, const std::string& status, const std::string& error) : name(name), status(status), error(error) {}
         };
 
         void operator<<(messagebus::UserData &data, const SrrRestoreDto &object);
@@ -100,8 +100,8 @@ namespace dto
             std::list<SrrRestoreDto> responseList;
 
             SrrRestoreDtoList() = default;
-            SrrRestoreDtoList(const std::string status) : status(status) {}
-            SrrRestoreDtoList(const std::string status, const std::list<SrrRestoreDto> responseList) : status(status), responseList(responseList) {}
+            SrrRestoreDtoList(const std::string& status) : status(status) {}
+            SrrRestoreDtoList(const std::string& status, const std::list<SrrRestoreDto> responseList) : status(status), responseList(responseList) {}
         };
 
         void operator<<(messagebus::UserData &data, const SrrRestoreDtoList &object);
