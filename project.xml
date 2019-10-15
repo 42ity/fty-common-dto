@@ -1,11 +1,11 @@
 <project
     name = "fty-common-dto"
-    description = "Common  Data Transfert Object for 42ITy ecosystem"
+    description = "Common Data Transfer Object for 42ITy ecosystem"
     script = "zproject.gsl"
     email = "EatonIPCOpenSource@eaton.com"
     url = "https://42ity.org"
     license = "GPL-2.0+"
-    repository = "https://github.com/42ity/fty-srr"
+    repository = "https://github.com/42ity/fty-common-dto"
     >
 
     <target name = "debian" />
