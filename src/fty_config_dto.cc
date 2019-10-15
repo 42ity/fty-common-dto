@@ -37,14 +37,14 @@ namespace dto
          * @param data
          * @param object
          */
-        void operator<<(messagebus::UserData &data, const ConfigQueryDto &object)
+        void operator<<(messagebus::UserData& data, const ConfigQueryDto &object)
         {
             data.push_back(object.action);
             data.push_back(object.featureName);
             data.push_back(object.data);
         }
 
-        void operator>>(messagebus::UserData &inputData, ConfigQueryDto &object)
+        void operator>>(messagebus::UserData& inputData, ConfigQueryDto &object)
         {
             auto action = inputData.front();
             inputData.pop_front();
@@ -60,22 +60,25 @@ namespace dto
          * @param data
          * @param object
          */
-        void operator<< (messagebus::UserData &data, const ConfigResponseDto &object)
+        void operator<< (messagebus::UserData& data, const ConfigResponseDto& object)
         {
+            data.push_back(object.featureName);
             data.push_back(object.status);
             data.push_back(object.data);
             data.push_back(object.error);
         }
 
-        void operator>> (messagebus::UserData &inputData, ConfigResponseDto &object)
+        void operator>> (messagebus::UserData& inputData, ConfigResponseDto& object)
         {
+            auto featureName = inputData.front();
+            inputData.pop_front();
             auto status = inputData.front();
             inputData.pop_front();
             auto data = inputData.front();
             inputData.pop_front();
             auto error = inputData.front();
             inputData.pop_front();
-            object = ConfigResponseDto(status, data, error);
+            object = ConfigResponseDto(featureName, status, data, error);
         }
     }
 }

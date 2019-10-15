@@ -40,9 +40,9 @@ namespace dto
             std::string data;
 
             ConfigQueryDto() = default;
-            ConfigQueryDto(const std::string action) : action(action) {}
-            ConfigQueryDto(const std::string action, const std::string featureName) : action(action), featureName(featureName) {}
-            ConfigQueryDto(const std::string action, const std::string featureName, const std::string data) :
+            ConfigQueryDto(const std::string& action) : action(action) {}
+            ConfigQueryDto(const std::string& action, const std::string& featureName) : action(action), featureName(featureName) {}
+            ConfigQueryDto(const std::string& action, const std::string& featureName, const std::string& data) :
                 action(action),
                 featureName(featureName),
                 data(data) {}
@@ -55,14 +55,16 @@ namespace dto
          * Config response object
          */
         struct ConfigResponseDto {
+            std::string featureName;
             std::string status;
             std::string data;
             std::string error;
 
             ConfigResponseDto() = default;
-            ConfigResponseDto(const std::string status) : status(status) {}
-            ConfigResponseDto(const std::string status, const std::string data) : status(status), data(data) {}
-            ConfigResponseDto(const std::string status, const std::string data, const std::string error) : status(status), data(data), error(error) {}
+            ConfigResponseDto(const std::string& featureName) : featureName(featureName) {}
+            ConfigResponseDto(const std::string& featureName, const std::string& status) : featureName(featureName), status(status) {}
+            ConfigResponseDto(const std::string& featureName, const std::string& status, const std::string& data) : featureName(featureName), status(status), data(data) {}
+            ConfigResponseDto(const std::string& featureName, const std::string& status, const std::string& data, const std::string& error) : featureName(featureName), status(status), data(data), error(error) {}
         };
 
         void operator<<(messagebus::UserData &data, const ConfigResponseDto &object);

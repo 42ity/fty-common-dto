@@ -24,14 +24,13 @@ Maintainer:     fty-common-dto Developers <eatonipcopensource@eaton.com>
 Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     pkg-config,
+    libcxxtools-dev,
     libsodium-dev,
     libzmq3-dev,
     libczmq-dev (>= 3.0.2),
     libmlm-dev (>= 1.0.0),
     liblog4cplus-dev,
     libfty-common-logging-dev,
-    libfty-common-dev,
-    libcxxtools-dev,
     libfty-common-messagebus-dev,
     gcc (>= 4.9.0), g++ (>= 4.9.0),
     asciidoc-base | asciidoc, xmlto,
@@ -49,14 +48,13 @@ Architecture: any
 Section: libdevel
 Depends:
     ${misc:Depends},
+    libcxxtools-dev,
     libsodium-dev,
     libzmq3-dev,
     libczmq-dev (>= 3.0.2),
     libmlm-dev (>= 1.0.0),
     liblog4cplus-dev,
     libfty-common-logging-dev,
-    libfty-common-dev,
-    libcxxtools-dev,
     libfty-common-messagebus-dev,
     libfty-common-dto0 (= ${binary:Version})
 Description: fty-common-dto development tools

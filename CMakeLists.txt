@@ -93,6 +93,23 @@ set(OPTIONAL_LIBRARIES)
 set(OPTIONAL_LIBRARIES_STATIC)
 
 ########################################################################
+# CXXTOOLS dependency
+########################################################################
+find_package(cxxtools REQUIRED)
+IF (CXXTOOLS_FOUND)
+    include_directories(${CXXTOOLS_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${CXXTOOLS_LIBRARIES})
+  IF (PC_CXXTOOLS_FOUND)
+      set(pkg_config_names_private "${pkg_config_names_private} cxxtools")
+      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_CXXTOOLS_STATIC_LDFLAGS})
+  ELSE (PC_CXXTOOLS_FOUND)
+      set(pkg_config_libs_private "${pkg_config_libs_private} -lcxxtools")
+  ENDIF (PC_CXXTOOLS_FOUND)
+ELSE (CXXTOOLS_FOUND)
+    message( FATAL_ERROR "cxxtools not found." )
+ENDIF (CXXTOOLS_FOUND)
+
+########################################################################
 # LIBSODIUM dependency
 ########################################################################
 find_package(libsodium REQUIRED)
@@ -195,40 +212,6 @@ ELSE (FTY-COMMON-LOGGING_FOUND)
 ENDIF (FTY-COMMON-LOGGING_FOUND)
 
 ########################################################################
-# FTY-COMMON dependency
-########################################################################
-find_package(fty-common REQUIRED)
-IF (FTY-COMMON_FOUND)
-    include_directories(${FTY-COMMON_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${FTY-COMMON_LIBRARIES})
-  IF (PC_FTY-COMMON_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} libfty_common")
-      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_FTY-COMMON_STATIC_LDFLAGS})
-  ELSE (PC_FTY-COMMON_FOUND)
-      set(pkg_config_libs_private "${pkg_config_libs_private} -lfty-common")
-  ENDIF (PC_FTY-COMMON_FOUND)
-ELSE (FTY-COMMON_FOUND)
-    message( FATAL_ERROR "fty-common not found." )
-ENDIF (FTY-COMMON_FOUND)
-
-########################################################################
-# CXXTOOLS dependency
-########################################################################
-find_package(cxxtools REQUIRED)
-IF (CXXTOOLS_FOUND)
-    include_directories(${CXXTOOLS_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${CXXTOOLS_LIBRARIES})
-  IF (PC_CXXTOOLS_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} cxxtools")
-      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_CXXTOOLS_STATIC_LDFLAGS})
-  ELSE (PC_CXXTOOLS_FOUND)
-      set(pkg_config_libs_private "${pkg_config_libs_private} -lcxxtools")
-  ENDIF (PC_CXXTOOLS_FOUND)
-ELSE (CXXTOOLS_FOUND)
-    message( FATAL_ERROR "cxxtools not found." )
-ENDIF (CXXTOOLS_FOUND)
-
-########################################################################
 # FTY-COMMON-MESSAGEBUS dependency
 ########################################################################
 find_package(fty-common-messagebus REQUIRED)
@@ -266,6 +249,7 @@ set (fty_common_dto_headers
 IF (ENABLE_DRAFTS)
     list(APPEND fty_common_dto_headers
         include/fty_srr_dto.h
+        include/fty_config_dto.h
     )
 ENDIF (ENABLE_DRAFTS)
 
@@ -284,6 +268,7 @@ set (fty_common_dto_sources
 IF (ENABLE_DRAFTS)
     list (APPEND fty_common_dto_sources
         src/fty_srr_dto.cc
+        src/fty_config_dto.cc
     )
 ENDIF (ENABLE_DRAFTS)
 
@@ -447,14 +432,13 @@ if (TARGET fty_common_dto)
 target_link_libraries(
     fty_common_dto_selftest
     fty_common_dto
+    ${CXXTOOLS_LIBRARIES}
     ${LIBSODIUM_LIBRARIES}
     ${LIBZMQ_LIBRARIES}
     ${CZMQ_LIBRARIES}
     ${MALAMUTE_LIBRARIES}
     ${LOG4CPLUS_LIBRARIES}
     ${FTY-COMMON-LOGGING_LIBRARIES}
-    ${FTY-COMMON_LIBRARIES}
-    ${CXXTOOLS_LIBRARIES}
     ${FTY-COMMON-MESSAGEBUS_LIBRARIES}
     ${OPTIONAL_LIBRARIES}
 )
@@ -463,14 +447,13 @@ if (NOT TARGET fty_common_dto AND TARGET fty_common_dto-static)
 target_link_libraries(
     fty_common_dto_selftest
     fty_common_dto-static
+    ${CXXTOOLS_LIBRARIES}
     ${LIBSODIUM_LIBRARIES}
     ${LIBZMQ_LIBRARIES}
     ${CZMQ_LIBRARIES}
     ${MALAMUTE_LIBRARIES}
     ${LOG4CPLUS_LIBRARIES}
     ${FTY-COMMON-LOGGING_LIBRARIES}
-    ${FTY-COMMON_LIBRARIES}
-    ${CXXTOOLS_LIBRARIES}
     ${FTY-COMMON-MESSAGEBUS_LIBRARIES}
     ${OPTIONAL_LIBRARIES}
     ${OPTIONAL_LIBRARIES_STATIC}
@@ -496,6 +479,7 @@ set(TEST_CLASSES
 IF (ENABLE_DRAFTS)
     list (APPEND TEST_CLASSES
     fty_srr_dto
+    fty_config_dto
     )
 ENDIF (ENABLE_DRAFTS)
 
