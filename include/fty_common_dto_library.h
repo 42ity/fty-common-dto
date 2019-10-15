@@ -30,7 +30,6 @@
 //  Set up environment for the application
 
 //  External dependencies
-#include <sodium.h>
 #include <cxxtools/allocator.h>
 #include <fty_common_messagebus.h>
 

@@ -93,23 +93,6 @@ set(OPTIONAL_LIBRARIES)
 set(OPTIONAL_LIBRARIES_STATIC)
 
 ########################################################################
-# LIBSODIUM dependency
-########################################################################
-find_package(libsodium REQUIRED)
-IF (LIBSODIUM_FOUND)
-    include_directories(${LIBSODIUM_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${LIBSODIUM_LIBRARIES})
-  IF (PC_LIBSODIUM_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} libsodium")
-      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_LIBSODIUM_STATIC_LDFLAGS})
-  ELSE (PC_LIBSODIUM_FOUND)
-      set(pkg_config_libs_private "${pkg_config_libs_private} -lsodium")
-  ENDIF (PC_LIBSODIUM_FOUND)
-ELSE (LIBSODIUM_FOUND)
-    message( FATAL_ERROR "libsodium not found." )
-ENDIF (LIBSODIUM_FOUND)
-
-########################################################################
 # CXXTOOLS dependency
 ########################################################################
 find_package(cxxtools REQUIRED)
@@ -125,6 +108,23 @@ IF (CXXTOOLS_FOUND)
 ELSE (CXXTOOLS_FOUND)
     message( FATAL_ERROR "cxxtools not found." )
 ENDIF (CXXTOOLS_FOUND)
+
+########################################################################
+# LIBSODIUM dependency
+########################################################################
+find_package(libsodium REQUIRED)
+IF (LIBSODIUM_FOUND)
+    include_directories(${LIBSODIUM_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${LIBSODIUM_LIBRARIES})
+  IF (PC_LIBSODIUM_FOUND)
+      set(pkg_config_names_private "${pkg_config_names_private} libsodium")
+      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_LIBSODIUM_STATIC_LDFLAGS})
+  ELSE (PC_LIBSODIUM_FOUND)
+      set(pkg_config_libs_private "${pkg_config_libs_private} -lsodium")
+  ENDIF (PC_LIBSODIUM_FOUND)
+ELSE (LIBSODIUM_FOUND)
+    message( FATAL_ERROR "libsodium not found." )
+ENDIF (LIBSODIUM_FOUND)
 
 ########################################################################
 # LIBZMQ dependency
@@ -381,8 +381,8 @@ if (TARGET fty_common_dto)
 target_link_libraries(
     fty_common_dto_selftest
     fty_common_dto
-    ${LIBSODIUM_LIBRARIES}
     ${CXXTOOLS_LIBRARIES}
+    ${LIBSODIUM_LIBRARIES}
     ${LIBZMQ_LIBRARIES}
     ${CZMQ_LIBRARIES}
     ${FTY-COMMON-MESSAGEBUS_LIBRARIES}
@@ -393,8 +393,8 @@ if (NOT TARGET fty_common_dto AND TARGET fty_common_dto-static)
 target_link_libraries(
     fty_common_dto_selftest
     fty_common_dto-static
-    ${LIBSODIUM_LIBRARIES}
     ${CXXTOOLS_LIBRARIES}
+    ${LIBSODIUM_LIBRARIES}
     ${LIBZMQ_LIBRARIES}
     ${CZMQ_LIBRARIES}
     ${FTY-COMMON-MESSAGEBUS_LIBRARIES}

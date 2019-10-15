@@ -62,12 +62,12 @@ fi
 
 # Clone and build dependencies
 [ -z "$CI_TIME" ] || echo "`date`: Starting build of dependencies (if any)..."
-if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libsodium-dev >/dev/null 2>&1) || \
-       (command -v brew >/dev/null 2>&1 && brew ls --versions libsodium >/dev/null 2>&1)); then
+if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list cxxtools-dev >/dev/null 2>&1) || \
+       (command -v brew >/dev/null 2>&1 && brew ls --versions cxxtools >/dev/null 2>&1)); then
     BASE_PWD=${PWD}
     cd tmp-deps
-    $CI_TIME git clone --quiet --depth 1 -b 1.0.5-FTY-master https://github.com/42ity/libsodium.git libsodium
-    cd libsodium
+    $CI_TIME git clone --quiet --depth 1 -b 2.2-FTY-master https://github.com/42ity/cxxtools.git cxxtools
+    cd cxxtools
     CCACHE_BASEDIR=${PWD}
     export CCACHE_BASEDIR
     git --no-pager log --oneline -n1
@@ -90,12 +90,12 @@ if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libsodium-dev 
     $CI_TIME make install
     cd "${BASE_PWD}"
 fi
-if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list cxxtools-dev >/dev/null 2>&1) || \
-       (command -v brew >/dev/null 2>&1 && brew ls --versions cxxtools >/dev/null 2>&1)); then
+if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libsodium-dev >/dev/null 2>&1) || \
+       (command -v brew >/dev/null 2>&1 && brew ls --versions libsodium >/dev/null 2>&1)); then
     BASE_PWD=${PWD}
     cd tmp-deps
-    $CI_TIME git clone --quiet --depth 1 -b 2.2-FTY-master https://github.com/42ity/cxxtools.git cxxtools
-    cd cxxtools
+    $CI_TIME git clone --quiet --depth 1 -b 1.0.5-FTY-master https://github.com/42ity/libsodium.git libsodium
+    cd libsodium
     CCACHE_BASEDIR=${PWD}
     export CCACHE_BASEDIR
     git --no-pager log --oneline -n1

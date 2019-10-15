@@ -9,15 +9,15 @@ AM_CXXFLAGS = \
     -std=c++11
 
 AM_CPPFLAGS = \
-    ${libsodium_CFLAGS} \
     ${cxxtools_CFLAGS} \
+    ${libsodium_CFLAGS} \
     ${libzmq_CFLAGS} \
     ${czmq_CFLAGS} \
     ${fty_common_messagebus_CFLAGS} \
     -D__STDC_FORMAT_MACROS \
     -I$(srcdir)/include
 
-project_libs = ${libsodium_LIBS} ${cxxtools_LIBS} ${libzmq_LIBS} ${czmq_LIBS} ${fty_common_messagebus_LIBS}
+project_libs = ${cxxtools_LIBS} ${libsodium_LIBS} ${libzmq_LIBS} ${czmq_LIBS} ${fty_common_messagebus_LIBS}
 
 SUBDIRS = doc
 SUBDIRS += include
@@ -38,8 +38,8 @@ DISTCLEANFILES =
 
 if ENABLE_DIST_CMAKEFILES
 EXTRA_DIST += \
-    Findlibsodium.cmake \
     Findcxxtools.cmake \
+    Findlibsodium.cmake \
     Findlibzmq.cmake \
     Findczmq.cmake \
     Findfty_common_messagebus.cmake \
