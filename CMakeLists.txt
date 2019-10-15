@@ -161,6 +161,57 @@ ELSE (CZMQ_FOUND)
 ENDIF (CZMQ_FOUND)
 
 ########################################################################
+# MALAMUTE dependency
+########################################################################
+find_package(malamute REQUIRED)
+IF (MALAMUTE_FOUND)
+    include_directories(${MALAMUTE_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${MALAMUTE_LIBRARIES})
+  IF (PC_MALAMUTE_FOUND)
+      set(pkg_config_names_private "${pkg_config_names_private} libmlm >= 1.0.0")
+      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_MALAMUTE_STATIC_LDFLAGS})
+  ELSE (PC_MALAMUTE_FOUND)
+      set(pkg_config_libs_private "${pkg_config_libs_private} -lmlm")
+  ENDIF (PC_MALAMUTE_FOUND)
+ELSE (MALAMUTE_FOUND)
+    message( FATAL_ERROR "malamute not found." )
+ENDIF (MALAMUTE_FOUND)
+
+########################################################################
+# LOG4CPLUS dependency
+########################################################################
+find_package(log4cplus REQUIRED)
+IF (LOG4CPLUS_FOUND)
+    include_directories(${LOG4CPLUS_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${LOG4CPLUS_LIBRARIES})
+  IF (PC_LOG4CPLUS_FOUND)
+      set(pkg_config_names_private "${pkg_config_names_private} log4cplus")
+      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_LOG4CPLUS_STATIC_LDFLAGS})
+  ELSE (PC_LOG4CPLUS_FOUND)
+      set(pkg_config_libs_private "${pkg_config_libs_private} -llog4cplus")
+  ENDIF (PC_LOG4CPLUS_FOUND)
+ELSE (LOG4CPLUS_FOUND)
+    message( FATAL_ERROR "log4cplus not found." )
+ENDIF (LOG4CPLUS_FOUND)
+
+########################################################################
+# FTY-COMMON-LOGGING dependency
+########################################################################
+find_package(fty-common-logging REQUIRED)
+IF (FTY-COMMON-LOGGING_FOUND)
+    include_directories(${FTY-COMMON-LOGGING_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${FTY-COMMON-LOGGING_LIBRARIES})
+  IF (PC_FTY-COMMON-LOGGING_FOUND)
+      set(pkg_config_names_private "${pkg_config_names_private} libfty_common_logging")
+      list(APPEND OPTIONAL_LIBRARIES_STATIC ${PC_FTY-COMMON-LOGGING_STATIC_LDFLAGS})
+  ELSE (PC_FTY-COMMON-LOGGING_FOUND)
+      set(pkg_config_libs_private "${pkg_config_libs_private} -lfty-common-logging")
+  ENDIF (PC_FTY-COMMON-LOGGING_FOUND)
+ELSE (FTY-COMMON-LOGGING_FOUND)
+    message( FATAL_ERROR "fty-common-logging not found." )
+ENDIF (FTY-COMMON-LOGGING_FOUND)
+
+########################################################################
 # FTY-COMMON-MESSAGEBUS dependency
 ########################################################################
 find_package(fty-common-messagebus REQUIRED)
@@ -385,6 +436,9 @@ target_link_libraries(
     ${LIBSODIUM_LIBRARIES}
     ${LIBZMQ_LIBRARIES}
     ${CZMQ_LIBRARIES}
+    ${MALAMUTE_LIBRARIES}
+    ${LOG4CPLUS_LIBRARIES}
+    ${FTY-COMMON-LOGGING_LIBRARIES}
     ${FTY-COMMON-MESSAGEBUS_LIBRARIES}
     ${OPTIONAL_LIBRARIES}
 )
@@ -397,6 +451,9 @@ target_link_libraries(
     ${LIBSODIUM_LIBRARIES}
     ${LIBZMQ_LIBRARIES}
     ${CZMQ_LIBRARIES}
+    ${MALAMUTE_LIBRARIES}
+    ${LOG4CPLUS_LIBRARIES}
+    ${FTY-COMMON-LOGGING_LIBRARIES}
     ${FTY-COMMON-MESSAGEBUS_LIBRARIES}
     ${OPTIONAL_LIBRARIES}
     ${OPTIONAL_LIBRARIES_STATIC}

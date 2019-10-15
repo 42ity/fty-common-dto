@@ -13,11 +13,14 @@ AM_CPPFLAGS = \
     ${libsodium_CFLAGS} \
     ${libzmq_CFLAGS} \
     ${czmq_CFLAGS} \
+    ${malamute_CFLAGS} \
+    ${log4cplus_CFLAGS} \
+    ${fty_common_logging_CFLAGS} \
     ${fty_common_messagebus_CFLAGS} \
     -D__STDC_FORMAT_MACROS \
     -I$(srcdir)/include
 
-project_libs = ${cxxtools_LIBS} ${libsodium_LIBS} ${libzmq_LIBS} ${czmq_LIBS} ${fty_common_messagebus_LIBS}
+project_libs = ${cxxtools_LIBS} ${libsodium_LIBS} ${libzmq_LIBS} ${czmq_LIBS} ${malamute_LIBS} ${log4cplus_LIBS} ${fty_common_logging_LIBS} ${fty_common_messagebus_LIBS}
 
 SUBDIRS = doc
 SUBDIRS += include
@@ -42,6 +45,9 @@ EXTRA_DIST += \
     Findlibsodium.cmake \
     Findlibzmq.cmake \
     Findczmq.cmake \
+    Findmalamute.cmake \
+    Findlog4cplus.cmake \
+    Findfty_common_logging.cmake \
     Findfty_common_messagebus.cmake \
     builds/cmake/Modules/ClangFormat.cmake \
     builds/cmake/clang-format-check.sh.in \
