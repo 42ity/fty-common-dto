@@ -38,12 +38,6 @@
     <version major = "1" minor = "0" patch = "0" />
     <abi current = "0" revision = "0" age = "0" />
     
-    <use project = "libsodium" prefix = "sodium"
-                repository = "https://github.com/42ity/libsodium.git"
-                release = "1.0.5-FTY-master"
-                test = "sodium_init"
-                />
-    
     <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
             repository = "https://github.com/42ity/cxxtools.git"
             release = "2.2-FTY-master"
@@ -72,7 +66,8 @@
         </use>
         
     </use>
-    
+
+    <!-- Project -->    
     <class name = "fty-srr-dto" selftest = "0">Fty srr dto</class>
     <class name = "fty-config-dto" selftest = "0">Fty config dto</class>
     
