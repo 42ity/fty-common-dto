@@ -1,5 +1,5 @@
 #
-#    fty-common-dto - Common  Data Transfert Object for 42ITy ecosystem
+#    fty-common-dto - Common Data Transfer Object for 42ITy ecosystem
 #
 #    Copyright (C) 2014 - 2018 Eaton
 #
@@ -25,23 +25,16 @@ Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     pkg-config,
     libcxxtools-dev,
-    libsodium-dev,
-    libzmq3-dev,
-    libczmq-dev (>= 3.0.2),
-    libmlm-dev (>= 1.0.0),
-    liblog4cplus-dev,
-    libfty-common-logging-dev,
-    libfty-common-messagebus-dev,
     gcc (>= 4.9.0), g++ (>= 4.9.0),
     asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
 
-Package: libfty-common-dto0
+Package: libfty-common-dto1
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: fty-common-dto shared library
  This package contains shared library for fty-common-dto:
- common  data transfert object for 42ity ecosystem
+ common data transfer object for 42ity ecosystem
 
 Package: libfty-common-dto-dev
 Architecture: any
@@ -49,25 +42,18 @@ Section: libdevel
 Depends:
     ${misc:Depends},
     libcxxtools-dev,
-    libsodium-dev,
-    libzmq3-dev,
-    libczmq-dev (>= 3.0.2),
-    libmlm-dev (>= 1.0.0),
-    liblog4cplus-dev,
-    libfty-common-logging-dev,
-    libfty-common-messagebus-dev,
-    libfty-common-dto0 (= ${binary:Version})
+    libfty-common-dto1 (= ${binary:Version})
 Description: fty-common-dto development tools
  This package contains development files for fty-common-dto:
- common  data transfert object for 42ity ecosystem
+ common data transfer object for 42ity ecosystem
 
 Package: fty-common-dto-dbg
 Architecture: any
 Section: debug
 Priority: optional
 Depends:
-    libfty-common-dto0 (= ${binary:Version}),
+    libfty-common-dto1 (= ${binary:Version}),
     ${misc:Depends}
 Description: fty-common-dto debugging symbols
  This package contains the debugging symbols for fty-common-dto:
- common  data transfert object for 42ity ecosystem.
+ common data transfer object for 42ity ecosystem.

@@ -38,13 +38,13 @@ namespace dto
          * @param data
          * @param object
          */
-        void operator<<(messagebus::UserData& data, const SrrQueryDto& object)
+        void operator<<(UserData& data, const SrrQueryDto& object)
         {
             data.push_back(object.action);
             data.push_back(object.data);
         }
 
-        void operator>>(messagebus::UserData& inputData, SrrQueryDto& object)
+        void operator>>(UserData& inputData, SrrQueryDto& object)
         {
             auto action = inputData.front();
             inputData.pop_front();
@@ -58,7 +58,7 @@ namespace dto
          * @param data
          * @param object
          */
-        void operator<<(messagebus::UserData& data, const SrrFeaturesListDto& object)
+        void operator<<(UserData& data, const SrrFeaturesListDto& object)
         {
             for (const auto &dto : object.featuresList)
             {
@@ -66,7 +66,7 @@ namespace dto
             }
         }
 
-        void operator>> (messagebus::UserData& inputData, SrrFeaturesListDto& object) 
+        void operator>> (UserData& inputData, SrrFeaturesListDto& object) 
         {
             for (const auto &data : inputData)
             {
@@ -80,13 +80,13 @@ namespace dto
          * @param data
          * @param object
          */
-        void operator<<(messagebus::UserData& data, const SrrSaveDto& object)
+        void operator<<(UserData& data, const SrrSaveDto& object)
         {
             data.push_back(object.status);
             data.push_back(object.config);
         }
 
-        void operator>>(messagebus::UserData& inputData, SrrSaveDto& object)
+        void operator>>(UserData& inputData, SrrSaveDto& object)
         {
             auto status = inputData.front();
             inputData.pop_front();
@@ -100,14 +100,14 @@ namespace dto
          * @param data
          * @param object
          */
-        void operator<<(messagebus::UserData& data, const SrrRestoreDto& object)
+        void operator<<(UserData& data, const SrrRestoreDto& object)
         {
             data.push_back(object.name);
             data.push_back(object.status);
             data.push_back(object.error);
         }
 
-        void operator>>(messagebus::UserData& inputData, SrrRestoreDto& object)
+        void operator>>(UserData& inputData, SrrRestoreDto& object)
         {
             auto name = inputData.front();
             inputData.pop_front();
@@ -123,7 +123,7 @@ namespace dto
          * @param data
          * @param object
          */
-        void operator<< (messagebus::UserData& data, const SrrRestoreDtoList& object) 
+        void operator<< (UserData& data, const SrrRestoreDtoList& object) 
         {
             data.push_back(object.status);
             for (auto &srrResponseDto : object.responseList)
@@ -132,7 +132,7 @@ namespace dto
             }
         }
 
-        void operator>> (messagebus::UserData& inputData, SrrRestoreDtoList& object) {
+        void operator>> (UserData& inputData, SrrRestoreDtoList& object) {
             object.status = inputData.front();
             inputData.pop_front();
             while(!inputData.empty())

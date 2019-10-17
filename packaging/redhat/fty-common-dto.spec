@@ -1,5 +1,5 @@
 #
-#    fty-common-dto - Common  Data Transfert Object for 42ITy ecosystem
+#    fty-common-dto - Common Data Transfer Object for 42ITy ecosystem
 #
 #    Copyright (C) 2014 - 2018 Eaton
 #
@@ -31,7 +31,7 @@
 Name:           fty-common-dto
 Version:        1.0.0
 Release:        1
-Summary:        common  data transfert object for 42ity ecosystem
+Summary:        common data transfer object for 42ity ecosystem
 License:        GPL-2.0+
 URL:            https://42ity.org
 Source0:        %{name}-%{version}.tar.gz
@@ -52,48 +52,34 @@ BuildRequires:  xmlto
 BuildRequires:  devtoolset-3-gcc devtoolset-3-gcc-c++
 BuildRequires:  gcc-c++ >= 4.9.0
 BuildRequires:  cxxtools-devel
-BuildRequires:  libsodium-devel
-BuildRequires:  zeromq-devel
-BuildRequires:  czmq-devel >= 3.0.2
-BuildRequires:  malamute-devel >= 1.0.0
-BuildRequires:  log4cplus-devel
-BuildRequires:  fty-common-logging-devel
-BuildRequires:  fty-common-messagebus-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
-fty-common-dto common  data transfert object for 42ity ecosystem.
+fty-common-dto common data transfer object for 42ity ecosystem.
 
-%package -n libfty_common_dto0
+%package -n libfty_common_dto1
 Group:          System/Libraries
-Summary:        common  data transfert object for 42ity ecosystem shared library
+Summary:        common data transfer object for 42ity ecosystem shared library
 
-%description -n libfty_common_dto0
-This package contains shared library for fty-common-dto: common  data transfert object for 42ity ecosystem
+%description -n libfty_common_dto1
+This package contains shared library for fty-common-dto: common data transfer object for 42ity ecosystem
 
-%post -n libfty_common_dto0 -p /sbin/ldconfig
-%postun -n libfty_common_dto0 -p /sbin/ldconfig
+%post -n libfty_common_dto1 -p /sbin/ldconfig
+%postun -n libfty_common_dto1 -p /sbin/ldconfig
 
-%files -n libfty_common_dto0
+%files -n libfty_common_dto1
 %defattr(-,root,root)
 %{_libdir}/libfty_common_dto.so.*
 
 %package devel
-Summary:        common  data transfert object for 42ity ecosystem
+Summary:        common data transfer object for 42ity ecosystem
 Group:          System/Libraries
-Requires:       libfty_common_dto0 = %{version}
+Requires:       libfty_common_dto1 = %{version}
 Requires:       cxxtools-devel
-Requires:       libsodium-devel
-Requires:       zeromq-devel
-Requires:       czmq-devel >= 3.0.2
-Requires:       malamute-devel >= 1.0.0
-Requires:       log4cplus-devel
-Requires:       fty-common-logging-devel
-Requires:       fty-common-messagebus-devel
 
 %description devel
-common  data transfert object for 42ity ecosystem development tools
-This package contains development files for fty-common-dto: common  data transfert object for 42ity ecosystem
+common data transfer object for 42ity ecosystem development tools
+This package contains development files for fty-common-dto: common data transfer object for 42ity ecosystem
 
 %files devel
 %defattr(-,root,root)

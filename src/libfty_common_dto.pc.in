@@ -9,7 +9,7 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: libfty_common_dto
-Description: Common  Data Transfert Object for 42ITy ecosystem
+Description: Common Data Transfer Object for 42ITy ecosystem
 Version: @VERSION@
 
 Requires.private: @pkg_config_names_private@
