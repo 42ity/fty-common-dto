@@ -22,10 +22,7 @@
 #ifndef FTY_CONFIG_DTO_H_INCLUDED
 #define FTY_CONFIG_DTO_H_INCLUDED
 
-#include <string>
-#include <list>
-
-#include <fty_common_messagebus.h>
+#include "fty_userdata_dto.h"
 
 namespace dto
 {
@@ -48,8 +45,8 @@ namespace dto
                 data(data) {}
         };
 
-        void operator<<(messagebus::UserData &data, const ConfigQueryDto &object);
-        void operator>>(messagebus::UserData &inputData, ConfigQueryDto &object);
+        void operator<<(UserData &data, const ConfigQueryDto &object);
+        void operator>>(UserData &inputData, ConfigQueryDto &object);
 
         /**
          * Config response object
@@ -67,8 +64,8 @@ namespace dto
             ConfigResponseDto(const std::string& featureName, const std::string& status, const std::string& data, const std::string& error) : featureName(featureName), status(status), data(data), error(error) {}
         };
 
-        void operator<<(messagebus::UserData &data, const ConfigResponseDto &object);
-        void operator>>(messagebus::UserData &inputData, ConfigResponseDto &object);
+        void operator<<(UserData &data, const ConfigResponseDto &object);
+        void operator>>(UserData &inputData, ConfigResponseDto &object);
         
     } // config namespace
     

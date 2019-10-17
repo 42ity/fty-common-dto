@@ -31,7 +31,6 @@
 
 //  External dependencies
 #include <cxxtools/allocator.h>
-#include <fty_common_messagebus.h>
 
 //  FTY_COMMON_DTO version macros for compile-time API detection
 #define FTY_COMMON_DTO_VERSION_MAJOR 1
@@ -107,6 +106,7 @@ typedef struct _fty_config_dto_t fty_config_dto_t;
 
 
 //  Public classes, each with its own header file
+#include "fty_userdata_dto.h"
 #ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
 #include "fty_srr_dto.h"
 #include "fty_config_dto.h"

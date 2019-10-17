@@ -4,6 +4,7 @@
 ################################################################################
 include_HEADERS = \
     fty_common_dto.h \
+    fty_userdata_dto.h \
     fty_common_dto_library.h
 
 if ENABLE_DRAFTS
