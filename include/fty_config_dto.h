@@ -22,6 +22,8 @@
 #ifndef FTY_CONFIG_DTO_H_INCLUDED
 #define FTY_CONFIG_DTO_H_INCLUDED
 
+#include <vector>
+
 #include "fty_userdata_dto.h"
 
 namespace dto
@@ -33,15 +35,15 @@ namespace dto
          */
         struct ConfigQueryDto {
             std::string action;
-            std::string featureName;
+            std::list<std::string> features;
             std::string data;
 
             ConfigQueryDto() = default;
             ConfigQueryDto(const std::string& action) : action(action) {}
-            ConfigQueryDto(const std::string& action, const std::string& featureName) : action(action), featureName(featureName) {}
-            ConfigQueryDto(const std::string& action, const std::string& featureName, const std::string& data) :
+            ConfigQueryDto(const std::string& action, const std::list<std::string>& features) : action(action), features(features) {}
+            ConfigQueryDto(const std::string& action, const std::list<std::string>& features, const std::string& data) :
                 action(action),
-                featureName(featureName),
+                features(features),
                 data(data) {}
         };
 
