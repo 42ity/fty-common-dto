@@ -131,6 +131,7 @@ set (fty_common_dto_headers
 IF (ENABLE_DRAFTS)
     list(APPEND fty_common_dto_headers
         include/fty_srr_dto.h
+        include/fty_commands_dto.h
         include/fty_config_dto.h
     )
 ENDIF (ENABLE_DRAFTS)
@@ -150,6 +151,7 @@ set (fty_common_dto_sources
 IF (ENABLE_DRAFTS)
     list (APPEND fty_common_dto_sources
         src/fty_srr_dto.cc
+        src/fty_commands_dto.cc
         src/fty_config_dto.cc
     )
 ENDIF (ENABLE_DRAFTS)
@@ -179,11 +181,15 @@ ENDIF (NOT MSVC)
 
 # shared
 if (FTY_COMMON_DTO_BUILD_SHARED)
-  IF (MSVC)
+  IF (APPLE)
     add_library(fty_common_dto SHARED ${fty_common_dto_sources})
-  ELSE (MSVC)
-    add_library(fty_common_dto SHARED $<TARGET_OBJECTS:fty_common_dto_objects>)
-  ENDIF (MSVC)
+  ELSE (APPLE)
+    IF (MSVC)
+      add_library(fty_common_dto SHARED ${fty_common_dto_sources})
+    ELSE (MSVC)
+      add_library(fty_common_dto SHARED $<TARGET_OBJECTS:fty_common_dto_objects>)
+    ENDIF (MSVC)
+  ENDIF(APPLE)
 
   set_target_properties (fty_common_dto PROPERTIES
     PUBLIC_HEADER "${public_headers}"
@@ -215,11 +221,15 @@ endif()
 
 # static
 if (FTY_COMMON_DTO_BUILD_STATIC)
-  IF (MSVC)
+  IF (APPLE)
     add_library(fty_common_dto-static STATIC ${fty_common_dto_sources})
-  ELSE (MSVC)
-    add_library(fty_common_dto-static STATIC $<TARGET_OBJECTS:fty_common_dto_objects>)
-  ENDIF (MSVC)
+  ELSE (APPLE)
+    IF (MSVC)
+      add_library(fty_common_dto-static STATIC ${fty_common_dto_sources})
+    ELSE (MSVC)
+      add_library(fty_common_dto-static STATIC $<TARGET_OBJECTS:fty_common_dto_objects>)
+    ENDIF (MSVC)
+  ENDIF (APPLE)
 
   set_target_properties(fty_common_dto-static PROPERTIES
     PUBLIC_HEADER "${public_headers}"
@@ -347,6 +357,7 @@ set(TEST_CLASSES
 IF (ENABLE_DRAFTS)
     list (APPEND TEST_CLASSES
     fty_srr_dto
+    fty_commands_dto
     fty_config_dto
     )
 ENDIF (ENABLE_DRAFTS)

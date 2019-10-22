@@ -13,6 +13,8 @@
 # Ignore the source doc texts generated from program sources
 fty_srr_dto.txt
 fty_srr_dto.doc
+fty_commands_dto.txt
+fty_commands_dto.doc
 fty_config_dto.txt
 fty_config_dto.doc
 
