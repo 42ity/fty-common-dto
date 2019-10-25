@@ -35,14 +35,17 @@ namespace dto
          */
         struct ConfigQueryDto {
             std::string action;
+            std::string passPhrase;
             std::list<std::string> features;
             std::string data;
 
             ConfigQueryDto() = default;
             ConfigQueryDto(const std::string& action) : action(action) {}
-            ConfigQueryDto(const std::string& action, const std::list<std::string>& features) : action(action), features(features) {}
-            ConfigQueryDto(const std::string& action, const std::list<std::string>& features, const std::string& data) :
+            ConfigQueryDto(const std::string& action, const std::string& passPhrase) : action(action), passPhrase(passPhrase) {}
+            ConfigQueryDto(const std::string& action, const std::string& passPhrase, const std::list<std::string>& features) : action(action), passPhrase(passPhrase), features(features) {}
+            ConfigQueryDto(const std::string& action, const std::string& passPhrase, const std::list<std::string>& features, const std::string& data) : 
                 action(action),
+                passPhrase(passPhrase),
                 features(features),
                 data(data) {}
         };
