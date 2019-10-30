@@ -40,6 +40,7 @@ namespace dto
         void operator<<(UserData& data, const ConfigQueryDto &object)
         {
             data.push_back(object.action);
+            data.push_back(object.passPhrase);
             for (const auto &feature : object.features)
             {
                 data.push_back(feature);
@@ -51,6 +52,8 @@ namespace dto
         {
             auto action = inputData.front();
             inputData.pop_front();
+            auto passPhrase = inputData.front();
+            inputData.pop_front();
             auto data = inputData.back();
             inputData.pop_back();
             std::list<std::string> listTemp;
@@ -59,7 +62,7 @@ namespace dto
                 listTemp.push_back(data);
             }
             inputData.clear();
-            object = ConfigQueryDto(action, listTemp, data);
+            object = ConfigQueryDto(action, passPhrase, listTemp, data);
         }
 
         /**
