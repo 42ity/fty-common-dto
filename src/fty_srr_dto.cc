@@ -52,7 +52,26 @@ namespace dto
             inputData.pop_front();
             object = SrrQueryDto(action, data);
         }
+        
+        /**
+         * SrrFeatureDto object
+         * @param data
+         * @param object
+         */
+        void operator<<(UserData& data, const SrrFeatureDto& object)
+        {
+            data.push_back(object.name);
+            data.push_back(object.dependencies);
+        }
 
+        void operator>>(UserData& inputData, SrrFeatureDto& object)
+        {
+            object.name = inputData.front();
+            inputData.pop_front();
+            object.dependencies = inputData.front();
+            inputData.pop_front();
+        }
+        
         /**
          * All features list object threat by SRR
          * @param data
@@ -60,19 +79,20 @@ namespace dto
          */
         void operator<<(UserData& data, const SrrFeaturesListDto& object)
         {
-            for (const auto &dto : object.featuresList)
+            for (auto &srrFeatureDto : object.featuresList)
             {
-                data.push_back(dto);
+                data << srrFeatureDto;
             }
         }
 
         void operator>> (UserData& inputData, SrrFeaturesListDto& object) 
-        {
-            for (const auto &data : inputData)
+        {    
+            while(!inputData.empty())
             {
-                object.featuresList.push_back(data);
+                SrrFeatureDto currentDto;
+                inputData >> currentDto;
+                object.featuresList.push_back(currentDto);
             }
-            inputData.clear();
         }
         
         /**

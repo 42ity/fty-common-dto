@@ -43,15 +43,30 @@ namespace dto
 
         void operator<<(UserData &data, const SrrQueryDto &object);
         void operator>>(UserData &inputData, SrrQueryDto &object);
+        
+        /**
+         * FeatureDto object threat by SRR
+         */
+        struct SrrFeatureDto {
+            std::string name;
+            std::string dependencies;
+
+            SrrFeatureDto() = default;
+            SrrFeatureDto(const std::string name) : name(name) {}
+            SrrFeatureDto(const std::string name, const std::string dependencies) : name(name), dependencies(dependencies) {}
+        };
+        
+        void operator<<(UserData &data, const SrrFeatureDto &object);
+        void operator>>(UserData &inputData, SrrFeatureDto &object);
 
         /**
          * All features list object threat by SRR
          */
         struct SrrFeaturesListDto {
-            std::list<std::string> featuresList;
+            std::list<SrrFeatureDto> featuresList;
 
             SrrFeaturesListDto() = default;
-            SrrFeaturesListDto(std::list<std::string> featuresList) : featuresList(featuresList) {}
+            SrrFeaturesListDto(std::list<SrrFeatureDto> featuresList) : featuresList(featuresList) {}
         };
 
         void operator<<(UserData &data, const SrrFeaturesListDto &object);
