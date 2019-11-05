@@ -45,7 +45,7 @@ namespace dto
         void operator>>(UserData &inputData, SrrQueryDto &object);
         
         /**
-         * FeatureDto object threat by SRR
+         * FeatureDto object treated by SRR
          */
         struct SrrFeatureDto {
             std::string name;
@@ -60,7 +60,7 @@ namespace dto
         void operator>>(UserData &inputData, SrrFeatureDto &object);
 
         /**
-         * All features list object threat by SRR
+         * All features list object treated by SRR
          */
         struct SrrFeaturesListDto {
             std::list<SrrFeatureDto> featuresList;
