@@ -10,6 +10,7 @@ include_HEADERS = \
 if ENABLE_DRAFTS
 include_HEADERS += \
     fty_srr_dto.h \
+    fty_commands_dto.h \
     fty_config_dto.h
 
 endif

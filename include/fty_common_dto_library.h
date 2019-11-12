@@ -100,6 +100,8 @@
 #ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
 typedef struct _fty_srr_dto_t fty_srr_dto_t;
 #define FTY_SRR_DTO_T_DEFINED
+typedef struct _fty_commands_dto_t fty_commands_dto_t;
+#define FTY_COMMANDS_DTO_T_DEFINED
 typedef struct _fty_config_dto_t fty_config_dto_t;
 #define FTY_CONFIG_DTO_T_DEFINED
 #endif // FTY_COMMON_DTO_BUILD_DRAFT_API
@@ -109,6 +111,7 @@ typedef struct _fty_config_dto_t fty_config_dto_t;
 #include "fty_userdata_dto.h"
 #ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
 #include "fty_srr_dto.h"
+#include "fty_commands_dto.h"
 #include "fty_config_dto.h"
 #endif // FTY_COMMON_DTO_BUILD_DRAFT_API
 
