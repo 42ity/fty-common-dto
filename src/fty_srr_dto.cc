@@ -32,6 +32,64 @@ namespace dto
 {
     namespace srr 
     {
+        /**
+         * Config request object
+         * @param data
+         * @param object
+         */
+        void operator<<(UserData& data, const ConfigQueryDto &object)
+        {
+            data.push_back(object.action);
+            data.push_back(object.passPhrase);
+            for (const auto &feature : object.features)
+            {
+                data.push_back(feature);
+            }
+            data.push_back(object.data);
+        }
+
+        void operator>>(UserData& inputData, ConfigQueryDto &object)
+        {
+            auto action = inputData.front();
+            inputData.pop_front();
+            auto passPhrase = inputData.front();
+            inputData.pop_front();
+            auto data = inputData.back();
+            inputData.pop_back();
+            std::list<std::string> listTemp;
+            for (const auto &data : inputData)
+            {
+                listTemp.push_back(data);
+            }
+            inputData.clear();
+            object = ConfigQueryDto(action, passPhrase, listTemp, data);
+        }
+
+        /**
+         * Config response object
+         * @param data
+         * @param object
+         */
+        void operator<< (UserData& data, const ConfigResponseDto& object)
+        {
+            data.push_back(object.featureName);
+            data.push_back(object.status);
+            data.push_back(object.data);
+            data.push_back(object.error);
+        }
+
+        void operator>> (UserData& inputData, ConfigResponseDto& object)
+        {
+            auto featureName = inputData.front();
+            inputData.pop_front();
+            auto status = inputData.front();
+            inputData.pop_front();
+            auto data = inputData.front();
+            inputData.pop_front();
+            auto error = inputData.front();
+            inputData.pop_front();
+            object = ConfigResponseDto(featureName, status, data, error);
+        }
 
         /**
          * SRR request object

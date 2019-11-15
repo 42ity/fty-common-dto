@@ -46,6 +46,5 @@
     <!-- Project -->
     <class name = "fty-srr-dto" selftest = "0">Fty srr dto</class>
     <class name = "fty-commands-dto" selftest = "0">Fty nut dto</class>
-    <class name = "fty-config-dto" selftest = "0">Fty config dto</class>
     <header name = "fty-userdata-dto" selftest = "0">Fty user data dto</header>
 </project>

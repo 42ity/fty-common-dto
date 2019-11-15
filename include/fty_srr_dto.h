@@ -28,6 +28,47 @@ namespace dto
 {
     namespace srr 
     {
+        /**
+         * Config request object
+         */
+        struct ConfigQueryDto {
+            std::string action;
+            std::string passPhrase;
+            std::list<std::string> features;
+            std::string data;
+
+            ConfigQueryDto() = default;
+            ConfigQueryDto(const std::string& action) : action(action) {}
+            ConfigQueryDto(const std::string& action, const std::string& passPhrase) : action(action), passPhrase(passPhrase) {}
+            ConfigQueryDto(const std::string& action, const std::string& passPhrase, const std::list<std::string>& features) : action(action), passPhrase(passPhrase), features(features) {}
+            ConfigQueryDto(const std::string& action, const std::string& passPhrase, const std::list<std::string>& features, const std::string& data) : 
+                action(action),
+                passPhrase(passPhrase),
+                features(features),
+                data(data) {}
+        };
+
+        void operator<<(UserData &data, const ConfigQueryDto &object);
+        void operator>>(UserData &inputData, ConfigQueryDto &object);
+
+        /**
+         * Config response object
+         */
+        struct ConfigResponseDto {
+            std::string featureName;
+            std::string status;
+            std::string data;
+            std::string error;
+
+            ConfigResponseDto() = default;
+            ConfigResponseDto(const std::string& featureName) : featureName(featureName) {}
+            ConfigResponseDto(const std::string& featureName, const std::string& status) : featureName(featureName), status(status) {}
+            ConfigResponseDto(const std::string& featureName, const std::string& status, const std::string& data) : featureName(featureName), status(status), data(data) {}
+            ConfigResponseDto(const std::string& featureName, const std::string& status, const std::string& data, const std::string& error) : featureName(featureName), status(status), data(data), error(error) {}
+        };
+
+        void operator<<(UserData &data, const ConfigResponseDto &object);
+        void operator>>(UserData &inputData, ConfigResponseDto &object);
 
         /**
          * SRR request object
