@@ -170,7 +170,7 @@ namespace dto
          */
         void operator<<(UserData& data, const SrrQueryDto& object)
         {
-            data.push_back(object.action);
+            data.push_back(actionToString(object.action));
             data.push_back(object.data);
         }
 
@@ -180,7 +180,7 @@ namespace dto
             inputData.pop_front();
             auto data = inputData.front();
             inputData.pop_front();
-            object = SrrQueryDto(action, data);
+            object = SrrQueryDto(stringToAction(action), data);
         }
         
         /**
@@ -232,7 +232,7 @@ namespace dto
          */
         void operator<<(UserData& data, const SrrSaveDto& object)
         {
-            data.push_back(object.status);
+            data.push_back(statusToString(object.status));
             data.push_back(object.config);
         }
 
@@ -242,7 +242,7 @@ namespace dto
             inputData.pop_front();
             auto config = inputData.front();
             inputData.pop_front();
-            object = SrrSaveDto(status, config);
+            object = SrrSaveDto(stringToStatus(status), config);
         }
 
         /**
@@ -253,7 +253,7 @@ namespace dto
         void operator<<(UserData& data, const SrrRestoreDto& object)
         {
             data.push_back(object.name);
-            data.push_back(object.status);
+            data.push_back(statusToString(object.status));
             data.push_back(object.error);
         }
 
@@ -265,7 +265,7 @@ namespace dto
             inputData.pop_front();
             auto error = inputData.front();
             inputData.pop_front();
-            object = SrrRestoreDto(name, status, error);
+            object = SrrRestoreDto(name, stringToStatus(status), error);
         }
 
         /**
@@ -275,7 +275,7 @@ namespace dto
          */
         void operator<< (UserData& data, const SrrRestoreDtoList& object) 
         {
-            data.push_back(object.status);
+            data.push_back(statusToString(object.status));
             for (auto &srrResponseDto : object.responseList)
             {
                 data << srrResponseDto;
@@ -283,7 +283,7 @@ namespace dto
         }
 
         void operator>> (UserData& inputData, SrrRestoreDtoList& object) {
-            object.status = inputData.front();
+            object.status = stringToStatus(inputData.front());
             inputData.pop_front();
             while(!inputData.empty())
             {
