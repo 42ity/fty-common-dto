@@ -39,7 +39,7 @@ namespace dto
          * @param data
          * @param object
          */
-        static std::map<Action, std::string> actionInString =
+        static const std::map<Action, std::string> actionInString =
         {
             {Action::SAVE,    "save"},
             {Action::RESET,   "reset"},
@@ -49,11 +49,13 @@ namespace dto
 
         std::string actionToString(Action action)
         {
-            try
+            const auto it = actionInString.find(action);
+
+            if(it != actionInString.end())
             {
-                return actionInString.at(action);
+                return it->second;
             }
-            catch(...)
+            else
             {
                 return "unknown";
             }
@@ -100,7 +102,7 @@ namespace dto
             object = ConfigQueryDto(stringToAction(action), passPhrase, listTemp, data);
         }
 
-        static std::map<Status, std::string> statusInString =
+        static const std::map<Status, std::string> statusInString =
         {
             {Status::SUCCESS,           "success"},
             {Status::PARTIAL_SUCCESS,   "partialSuccess"},
@@ -110,11 +112,13 @@ namespace dto
 
         std::string statusToString(Status status)
         {
-            try
+            const auto it = statusInString.find(status);
+
+            if(it != statusInString.end())
             {
-                return statusInString.at(status);
+                return it->second;
             }
-            catch(...)
+            else
             {
                 return "unknown";
             }
