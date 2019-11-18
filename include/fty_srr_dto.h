@@ -28,6 +28,62 @@ namespace dto
 {
     namespace srr 
     {
+        /**
+         *  Actions for config request object
+         */
+        enum class Action { SAVE, RESET, RESTORE, UNKNOWN};
+        std::string actionToString(Action action);
+        Action stringToAction(const std::string & actionStr);
+
+        /**
+         * Config request object
+         */
+        struct ConfigQueryDto {
+            Action action;
+            std::string passPhrase;
+            std::list<std::string> features;
+            std::string data;
+
+            ConfigQueryDto() = default;
+            ConfigQueryDto(Action action) : action(action) {}
+            ConfigQueryDto(Action action, const std::string& passPhrase) : action(action), passPhrase(passPhrase) {}
+            ConfigQueryDto(Action action, const std::string& passPhrase, const std::list<std::string>& features) : action(action), passPhrase(passPhrase), features(features) {}
+            ConfigQueryDto(Action action, const std::string& passPhrase, const std::list<std::string>& features, const std::string& data) : 
+                action(action),
+                passPhrase(passPhrase),
+                features(features),
+                data(data) {}
+        };
+
+        void operator<<(UserData &data, const ConfigQueryDto &object);
+        void operator>>(UserData &inputData, ConfigQueryDto &object);
+
+        /**
+         *  Status for config response object
+         */
+        enum class Status { SUCCESS, FAILED, PARTIAL_SUCCESS, UNKNOWN};
+        std::string statusToString(Status status);
+        Status stringToStatus(const std::string & statusStr);
+
+
+        /**
+         * Config response object
+         */
+        struct ConfigResponseDto {
+            std::string featureName;
+            Status status;
+            std::string data;
+            std::string error;
+
+            ConfigResponseDto() = default;
+            ConfigResponseDto(const std::string& featureName) : featureName(featureName) {}
+            ConfigResponseDto(const std::string& featureName, Status status) : featureName(featureName), status(status) {}
+            ConfigResponseDto(const std::string& featureName, Status status, const std::string& data) : featureName(featureName), status(status), data(data) {}
+            ConfigResponseDto(const std::string& featureName, Status status, const std::string& data, const std::string& error) : featureName(featureName), status(status), data(data), error(error) {}
+        };
+
+        void operator<<(UserData &data, const ConfigResponseDto &object);
+        void operator>>(UserData &inputData, ConfigResponseDto &object);
 
         /**
          * SRR request object

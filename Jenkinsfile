@@ -1,5 +1,5 @@
 /*
-    fty-common-dto - Common  Data Transfert Object for 42ITy ecosystem
+    fty-common-dto - Common Data Transfer Object for 42ITy ecosystem
 
     Copyright (C) 2014 - 2018 Eaton
 

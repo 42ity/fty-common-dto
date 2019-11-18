@@ -28,10 +28,140 @@
 
 #include "fty_common_dto_classes.h"
 
+#include <map>
+
 namespace dto 
 {
     namespace srr 
     {
+        /**
+         * Config request object
+         * @param data
+         * @param object
+         */
+        static const std::map<Action, std::string> actionInString =
+        {
+            {Action::SAVE,    "save"},
+            {Action::RESET,   "reset"},
+            {Action::RESTORE, "restore"},
+            {Action::UNKNOWN, "unknown"}
+        };
+
+        std::string actionToString(Action action)
+        {
+            const auto it = actionInString.find(action);
+
+            if(it != actionInString.end())
+            {
+                return it->second;
+            }
+            else
+            {
+                return "unknown";
+            }
+        }
+
+        Action stringToAction(const std::string & actionStr)
+        {
+            for(const auto & item : actionInString)
+            {
+                if(item.second == actionStr)
+                {
+                    return item.first;
+                }
+            }
+
+            return Action::UNKNOWN;
+        }
+                
+        void operator<<(UserData& data, const ConfigQueryDto &object)
+        {
+            data.push_back(actionToString(object.action));
+            data.push_back(object.passPhrase);
+            for (const auto &feature : object.features)
+            {
+                data.push_back(feature);
+            }
+            data.push_back(object.data);
+        }
+
+        void operator>>(UserData& inputData, ConfigQueryDto &object)
+        {
+            auto action = inputData.front();
+            inputData.pop_front();
+            auto passPhrase = inputData.front();
+            inputData.pop_front();
+            auto data = inputData.back();
+            inputData.pop_back();
+            std::list<std::string> listTemp;
+            for (const auto &data : inputData)
+            {
+                listTemp.push_back(data);
+            }
+            inputData.clear();
+            object = ConfigQueryDto(stringToAction(action), passPhrase, listTemp, data);
+        }
+
+        static const std::map<Status, std::string> statusInString =
+        {
+            {Status::SUCCESS,           "success"},
+            {Status::PARTIAL_SUCCESS,   "partialSuccess"},
+            {Status::FAILED,            "failed"},
+            {Status::UNKNOWN,           "unknown"}
+        };
+
+        std::string statusToString(Status status)
+        {
+            const auto it = statusInString.find(status);
+
+            if(it != statusInString.end())
+            {
+                return it->second;
+            }
+            else
+            {
+                return "unknown";
+            }
+        }
+
+        Status stringToStatus(const std::string & statusStr)
+        {
+            for(const auto & item : statusInString)
+            {
+                if(item.second == statusStr)
+                {
+                    return item.first;
+                }
+            }
+
+            return Status::UNKNOWN;
+        }
+
+        /**
+         * Config response object
+         * @param data
+         * @param object
+         */
+        void operator<< (UserData& data, const ConfigResponseDto& object)
+        {
+            data.push_back(object.featureName);
+            data.push_back(statusToString(object.status));
+            data.push_back(object.data);
+            data.push_back(object.error);
+        }
+
+        void operator>> (UserData& inputData, ConfigResponseDto& object)
+        {
+            auto featureName = inputData.front();
+            inputData.pop_front();
+            auto status = inputData.front();
+            inputData.pop_front();
+            auto data = inputData.front();
+            inputData.pop_front();
+            auto error = inputData.front();
+            inputData.pop_front();
+            object = ConfigResponseDto(featureName, stringToStatus(status), data, error);
+        }
 
         /**
          * SRR request object

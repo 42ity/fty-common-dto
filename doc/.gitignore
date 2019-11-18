@@ -15,8 +15,6 @@ fty_srr_dto.txt
 fty_srr_dto.doc
 fty_commands_dto.txt
 fty_commands_dto.doc
-fty_config_dto.txt
-fty_config_dto.doc
 
 # Make sure to track the manually maintained project description
 !*.adoc
