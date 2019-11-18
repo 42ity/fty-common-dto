@@ -44,6 +44,7 @@ namespace dto
             {Action::SAVE,    "save"},
             {Action::RESET,   "reset"},
             {Action::RESTORE, "restore"},
+            {Action::GET_FEATURE_LIST, "getFeatureList"},
             {Action::UNKNOWN, "unknown"}
         };
 

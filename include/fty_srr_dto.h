@@ -89,7 +89,7 @@ namespace dto
          * SRR request object
          */
         struct SrrQueryDto {
-            Action action;;
+            Action action;
             std::string data;
 
             SrrQueryDto() = default;
