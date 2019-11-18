@@ -28,6 +28,8 @@
 
 #include "fty_common_dto_classes.h"
 
+#include <map>
+
 namespace dto 
 {
     namespace srr 
@@ -65,6 +67,39 @@ namespace dto
             object = ConfigQueryDto(action, passPhrase, listTemp, data);
         }
 
+        static std::map<Status, std::string> statusInString =
+        {
+            {Status::SUCCESS,           "success"},
+            {Status::PARTIAL_SUCCESS,   "partialSuccess"},
+            {Status::FAILED,            "failed"},
+            {Status::UNKNOWN,           "unknown"}
+        };
+
+        std::string statusToString(Status status)
+        {
+            try
+            {
+                return statusInString.at(status);
+            }
+            catch(...)
+            {
+                return "unknown";
+            }
+        }
+
+        Status stringToStatus(const std::string & statusStr)
+        {
+            for(const auto & item : statusInString)
+            {
+                if(item.second == "statusStr")
+                {
+                    return item.first;
+                }
+            }
+
+            return Status::UNKNOWN;
+        }
+
         /**
          * Config response object
          * @param data
@@ -73,7 +108,7 @@ namespace dto
         void operator<< (UserData& data, const ConfigResponseDto& object)
         {
             data.push_back(object.featureName);
-            data.push_back(object.status);
+            data.push_back(statusToString(object.status));
             data.push_back(object.data);
             data.push_back(object.error);
         }
@@ -88,7 +123,7 @@ namespace dto
             inputData.pop_front();
             auto error = inputData.front();
             inputData.pop_front();
-            object = ConfigResponseDto(featureName, status, data, error);
+            object = ConfigResponseDto(featureName, stringToStatus(status), data, error);
         }
 
         /**

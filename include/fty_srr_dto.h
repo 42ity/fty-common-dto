@@ -28,6 +28,7 @@ namespace dto
 {
     namespace srr 
     {
+
         /**
          * Config request object
          */
@@ -52,19 +53,27 @@ namespace dto
         void operator>>(UserData &inputData, ConfigQueryDto &object);
 
         /**
+         *  Status for config response object
+         */
+        enum class Status { SUCCESS, FAILED, PARTIAL_SUCCESS, UNKNOWN};
+        std::string statusToString(Status status);
+        Status stringToStatus(const std::string & statusStr);
+
+
+        /**
          * Config response object
          */
         struct ConfigResponseDto {
             std::string featureName;
-            std::string status;
+            Status status;
             std::string data;
             std::string error;
 
             ConfigResponseDto() = default;
             ConfigResponseDto(const std::string& featureName) : featureName(featureName) {}
-            ConfigResponseDto(const std::string& featureName, const std::string& status) : featureName(featureName), status(status) {}
-            ConfigResponseDto(const std::string& featureName, const std::string& status, const std::string& data) : featureName(featureName), status(status), data(data) {}
-            ConfigResponseDto(const std::string& featureName, const std::string& status, const std::string& data, const std::string& error) : featureName(featureName), status(status), data(data), error(error) {}
+            ConfigResponseDto(const std::string& featureName, Status status) : featureName(featureName), status(status) {}
+            ConfigResponseDto(const std::string& featureName, Status status, const std::string& data) : featureName(featureName), status(status), data(data) {}
+            ConfigResponseDto(const std::string& featureName, Status status, const std::string& data, const std::string& error) : featureName(featureName), status(status), data(data), error(error) {}
         };
 
         void operator<<(UserData &data, const ConfigResponseDto &object);
