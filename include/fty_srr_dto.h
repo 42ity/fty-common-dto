@@ -31,7 +31,7 @@ namespace dto
         /**
          *  Actions for config request object
          */
-        enum class Action { SAVE, RESET, RESTORE, UNKNOWN};
+        enum class Action { GET_FEATURE_LIST, SAVE, RESET, RESTORE, UNKNOWN};
         std::string actionToString(Action action);
         Action stringToAction(const std::string & actionStr);
 
@@ -89,12 +89,12 @@ namespace dto
          * SRR request object
          */
         struct SrrQueryDto {
-            std::string action;
+            Action action;
             std::string data;
 
             SrrQueryDto() = default;
-            SrrQueryDto(const std::string& action) : action(action) {}
-            SrrQueryDto(const std::string& action, const std::string& data) : action(action), data(data) {}
+            SrrQueryDto(Action action) : action(action) {}
+            SrrQueryDto(Action action, const std::string& data) : action(action), data(data) {}
         };
 
         void operator<<(UserData &data, const SrrQueryDto &object);
@@ -132,12 +132,12 @@ namespace dto
          * List of SrrSaveDto object with a global status
          */
         struct SrrSaveDto {
-            std::string status;
+            Status status;
             std::string config;
 
             SrrSaveDto() = default;
-            SrrSaveDto(const std::string& status) : status(status) {}
-            SrrSaveDto(const std::string& status, const std::string& config) : status(status), config(config) {}
+            SrrSaveDto(Status status) : status(status) {}
+            SrrSaveDto(Status status, const std::string& config) : status(status), config(config) {}
         };
 
         void operator<<(UserData &data, const SrrSaveDto &object);
@@ -148,13 +148,13 @@ namespace dto
          */
         struct SrrRestoreDto {
             std::string name;
-            std::string status;
+            Status status;
             std::string error;
 
             SrrRestoreDto() = default;
             SrrRestoreDto(const std::string& name) : name(name) {}
-            SrrRestoreDto(const std::string& name, const std::string& status) : name(name), status(status) {}
-            SrrRestoreDto(const std::string& name, const std::string& status, const std::string& error) : name(name), status(status), error(error) {}
+            SrrRestoreDto(const std::string& name, Status status) : name(name), status(status) {}
+            SrrRestoreDto(const std::string& name, Status status, const std::string& error) : name(name), status(status), error(error) {}
         };
 
         void operator<<(UserData &data, const SrrRestoreDto &object);
@@ -164,12 +164,12 @@ namespace dto
          * List of SrrRestoreDto object with a global status
          */
         struct SrrRestoreDtoList {
-            std::string status;
+            Status status;
             std::list<SrrRestoreDto> responseList;
 
             SrrRestoreDtoList() = default;
-            SrrRestoreDtoList(const std::string& status) : status(status) {}
-            SrrRestoreDtoList(const std::string& status, const std::list<SrrRestoreDto> responseList) : status(status), responseList(responseList) {}
+            SrrRestoreDtoList(Status status) : status(status) {}
+            SrrRestoreDtoList(Status status, const std::list<SrrRestoreDto> responseList) : status(status), responseList(responseList) {}
         };
 
         void operator<<(UserData &data, const SrrRestoreDtoList &object);
