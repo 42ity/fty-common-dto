@@ -39,9 +39,42 @@ namespace dto
          * @param data
          * @param object
          */
+        static std::map<Action, std::string> actionInString =
+        {
+            {Action::SAVE,    "save"},
+            {Action::RESET,   "reset"},
+            {Action::RESTORE, "restore"},
+            {Action::UNKNOWN, "unknown"}
+        };
+
+        std::string actionToString(Action action)
+        {
+            try
+            {
+                return actionInString.at(action);
+            }
+            catch(...)
+            {
+                return "unknown";
+            }
+        }
+
+        Action stringToAction(const std::string & actionStr)
+        {
+            for(const auto & item : actionInString)
+            {
+                if(item.second == actionStr)
+                {
+                    return item.first;
+                }
+            }
+
+            return Action::UNKNOWN;
+        }
+                
         void operator<<(UserData& data, const ConfigQueryDto &object)
         {
-            data.push_back(object.action);
+            data.push_back(actionToString(object.action));
             data.push_back(object.passPhrase);
             for (const auto &feature : object.features)
             {
@@ -64,7 +97,7 @@ namespace dto
                 listTemp.push_back(data);
             }
             inputData.clear();
-            object = ConfigQueryDto(action, passPhrase, listTemp, data);
+            object = ConfigQueryDto(stringToAction(action), passPhrase, listTemp, data);
         }
 
         static std::map<Status, std::string> statusInString =
@@ -91,7 +124,7 @@ namespace dto
         {
             for(const auto & item : statusInString)
             {
-                if(item.second == "statusStr")
+                if(item.second == statusStr)
                 {
                     return item.first;
                 }
