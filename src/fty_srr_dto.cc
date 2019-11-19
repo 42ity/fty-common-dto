@@ -35,9 +35,380 @@ namespace dto
     namespace srr 
     {
         /**
-         * Config request object
-         * @param data
-         * @param object
+         * SRRQuery
+         * 
+         */
+        SrrQuery SrrQuery::createSave(const std::vector<Feature> & features, const std::string & passpharse)
+        {
+            SrrQuery query;
+            query.action = Action::SAVE;
+            query.params = SrrQueryParamsPtr(new SrrSaveParams());
+
+            SrrSaveParams * saveParams = dynamic_cast<SrrSaveParams*>(query.params.get());
+            saveParams->passphrase = passpharse;
+            saveParams->features = features;
+
+            return query;
+        }
+
+        SrrQuery SrrQuery::createRestore(const std::map<Feature, std::string> & restoreData, const std::string & passpharse)
+        {
+            SrrQuery query;
+            query.action = Action::RESTORE;
+            query.params = SrrQueryParamsPtr(new SrrRestoreParams());
+
+            SrrRestoreParams * restoreParams = dynamic_cast<SrrRestoreParams*>(query.params.get());
+            restoreParams->passphrase = passpharse;
+            restoreParams->mapFeaturesData = restoreData;
+
+            return query;
+        }
+
+        SrrQuery SrrQuery::createReset(const std::vector<Feature> & features)
+        {
+            SrrQuery query;
+            query.action = Action::RESET;
+            query.params = SrrQueryParamsPtr(new SrrResetParams());
+
+            SrrResetParams * resetParams = dynamic_cast<SrrResetParams*>(query.params.get());
+            resetParams->features = features;
+
+            return query;
+        }
+
+        SrrQuery SrrQuery::createGetListFeature(const std::vector<Feature> & features)
+        {
+            SrrQuery query;
+            query.action = Action::GET_FEATURE_LIST;
+            query.params = SrrQueryParamsPtr(new SrrListFeatureParams());
+
+            return query;
+        }
+
+        void SrrQuery::fromUserData(UserData & data)
+        {
+            auto actionStr = data.front();
+            data.pop_front();
+
+            action = stringToAction(actionStr);
+
+            switch(action)
+            {
+                case Action::SAVE:
+                    params = SrrQueryParamsPtr(new SrrSaveParams());
+                    break;
+
+                case Action::RESTORE:
+                    params = SrrQueryParamsPtr(new SrrRestoreParams());
+                    break;
+
+                case Action::RESET:
+                    params = SrrQueryParamsPtr(new SrrResetParams());
+                    break;
+
+                case Action::GET_FEATURE_LIST:
+                    params = SrrQueryParamsPtr(new SrrListFeatureParams());
+                    break;
+                
+                default:
+                    params = nullptr;
+            }
+
+            if(params != nullptr)
+            {
+                params->fromUserData(data);
+            }
+        }
+
+        void SrrQuery::toUserData(UserData & data) const
+        {
+            data.push_back(actionToString(action));
+            if(action != Action::UNKNOWN)
+            {
+                params->toUserData(data);
+            }
+        }
+
+        void operator>> (UserData & data, SrrQuery & query)
+        {
+            query.fromUserData(data);
+        }
+
+        void operator<< (UserData & data, const SrrQuery & query)
+        {
+            query.toUserData(data);
+        }
+
+        /**
+         * SrrQuery Params
+         * 
+         */
+
+        //save
+        void SrrSaveParams::fromUserData(UserData & data)
+        {
+            //passphrase
+            passphrase = data.front();
+            data.pop_front();
+
+            //feature list
+            for (const auto &feature : data)
+            {
+                features.push_back(feature);
+            }
+            data.clear();
+        }
+
+        void SrrSaveParams::toUserData(UserData & data) const
+        {
+            data.push_back(passphrase);
+            for(const auto & feature : features)
+            {
+                data.push_back(feature);
+            }
+        }
+
+        //restore
+        void SrrRestoreParams::fromUserData(UserData & data)
+        {
+            //passphrase
+            passphrase = data.front();
+            data.pop_front();
+
+            while (!data.empty())
+            {
+                Feature featureName = data.front();
+                data.pop_front();
+
+                std::string dataPayload = data.front();
+                data.pop_front();
+
+                mapFeaturesData[featureName] = dataPayload;
+            }
+        }
+
+        void SrrRestoreParams::toUserData(UserData & data) const
+        {
+            data.push_back(passphrase);
+            for(const auto & item : mapFeaturesData)
+            {
+                data.push_back(item.first);
+                data.push_back(item.second);
+            }
+        }
+
+        //reset
+        void SrrResetParams::fromUserData(UserData & data)
+        {
+            //feature list
+            for (const auto &feature : data)
+            {
+                features.push_back(feature);
+            }
+            data.clear();
+        }
+
+        void SrrResetParams::toUserData(UserData & data) const
+        {
+            for(const auto & feature : features)
+            {
+                data.push_back(feature);
+            }
+        }
+
+        /**
+         * Response
+         * 
+         */
+        SrrResponse SrrResponse::createSave()
+        {
+            SrrResponse response;
+            response.action = Action::SAVE;
+            response.params = SrrResponseParamsPtr(new SrrSaveResponseParams());
+
+            return response;
+        }
+
+        SrrResponse SrrResponse::createRestore()
+        {
+            SrrResponse response;
+            response.action = Action::RESTORE;
+            response.params = SrrResponseParamsPtr(new SrrRestoreResponseParams());
+
+            return response;
+        }
+
+        SrrResponse SrrResponse::createReset()
+        {
+            SrrResponse response;
+            response.action = Action::RESET;
+            response.params = SrrResponseParamsPtr(new SrrResetResponseParams());
+
+            return response;
+        }
+
+        SrrResponse SrrResponse::createGetListFeature()
+        {
+            SrrResponse response;
+            response.action = Action::GET_FEATURE_LIST;
+            response.params = SrrResponseParamsPtr(new SrrListFeatureResponseParams());
+
+            return response;
+        }
+
+        void SrrResponse::fromUserData(UserData & data)
+        {
+            auto actionStr = data.front();
+            data.pop_front();
+            action = stringToAction(actionStr);
+
+            auto statusStr = data.front();
+            data.pop_front();
+            status = stringToStatus(statusStr);
+
+            error = data.front();
+            data.pop_front();
+
+            switch(action)
+            {
+                case Action::SAVE:
+                    params = SrrResponseParamsPtr(new SrrSaveResponseParams());
+                    break;
+
+                case Action::RESTORE:
+                    params = SrrResponseParamsPtr(new SrrRestoreResponseParams());
+                    break;
+
+                case Action::RESET:
+                    params = SrrResponseParamsPtr(new SrrResetResponseParams());
+                    break;
+
+                case Action::GET_FEATURE_LIST:
+                    params = SrrResponseParamsPtr(new SrrListFeatureResponseParams());
+                    break;
+                
+                default:
+                    params = nullptr;
+            }
+
+            if(params != nullptr)
+            {
+                params->fromUserData(data);
+            }
+        }
+
+        void SrrResponse::toUserData(UserData & data) const
+        {
+            data.push_back(actionToString(action));
+            if(action != Action::UNKNOWN)
+            {
+                params->toUserData(data);
+            }
+        }
+
+        void operator>> (UserData & data, SrrResponse & response)
+        {
+            response.fromUserData(data);
+        }
+
+        void operator<< (UserData & data, const SrrResponse & response)
+        {
+            response.toUserData(data);
+        }
+
+        //save response
+        void SrrSaveResponseParams::fromUserData(UserData & data)
+        {
+            while (!data.empty())
+            {
+                Feature featureName = data.front();
+                data.pop_front();
+
+                std::string dataPayload = data.front();
+                data.pop_front();
+
+                mapFeaturesData[featureName] = dataPayload;
+            }
+        }
+
+        void SrrSaveResponseParams::toUserData(UserData & data) const
+        {
+            for(const auto & item : mapFeaturesData)
+            {
+                data.push_back(item.first);
+                data.push_back(item.second);
+            }
+        }
+
+        //restore response
+        void SrrRestoreResponseParams::fromUserData(UserData & data)
+        {
+            while (!data.empty())
+            {
+                Feature featureName = data.front();
+                data.pop_front();
+
+                std::string statusStr = data.front();
+                data.pop_front();
+
+                mapFeaturesStatus[featureName] = stringToStatus(statusStr);
+            }
+        }
+
+        void SrrRestoreResponseParams::toUserData(UserData & data) const
+        {
+            for(const auto & item : mapFeaturesStatus)
+            {
+                data.push_back(item.first);
+                data.push_back(statusToString(item.second));
+            }
+        }
+
+        //reset response
+        void SrrResetResponseParams::fromUserData(UserData & data)
+        {
+            while (!data.empty())
+            {
+                Feature featureName = data.front();
+                data.pop_front();
+
+                std::string statusStr = data.front();
+                data.pop_front();
+
+                mapFeaturesStatus[featureName] = stringToStatus(statusStr);
+            }
+        }
+
+        void SrrResetResponseParams::toUserData(UserData & data) const
+        {
+            for(const auto & item : mapFeaturesStatus)
+            {
+                data.push_back(item.first);
+                data.push_back(statusToString(item.second));
+            }
+        }
+
+        //get feature list response
+        void SrrListFeatureResponseParams::fromUserData(UserData & data)
+        {
+            //feature list
+            for (const auto &feature : data)
+            {
+                features.push_back(feature);
+            }
+            data.clear();
+        }
+
+        void SrrListFeatureResponseParams::toUserData(UserData & data) const
+        {
+            for(const auto & feature : features)
+            {
+                data.push_back(feature);
+            }
+        }
+
+        /**
+         * Actions
          */
         static const std::map<Action, std::string> actionInString =
         {
@@ -74,34 +445,10 @@ namespace dto
 
             return Action::UNKNOWN;
         }
-                
-        void operator<<(UserData& data, const ConfigQueryDto &object)
-        {
-            data.push_back(actionToString(object.action));
-            data.push_back(object.passPhrase);
-            for (const auto &feature : object.features)
-            {
-                data.push_back(feature);
-            }
-            data.push_back(object.data);
-        }
 
-        void operator>>(UserData& inputData, ConfigQueryDto &object)
-        {
-            auto action = inputData.front();
-            inputData.pop_front();
-            auto passPhrase = inputData.front();
-            inputData.pop_front();
-            auto data = inputData.back();
-            inputData.pop_back();
-            std::list<std::string> listTemp;
-            for (const auto &data : inputData)
-            {
-                listTemp.push_back(data);
-            }
-            inputData.clear();
-            object = ConfigQueryDto(stringToAction(action), passPhrase, listTemp, data);
-        }
+        /**
+         * Status
+         */
 
         static const std::map<Status, std::string> statusInString =
         {
@@ -137,161 +484,5 @@ namespace dto
 
             return Status::UNKNOWN;
         }
-
-        /**
-         * Config response object
-         * @param data
-         * @param object
-         */
-        void operator<< (UserData& data, const ConfigResponseDto& object)
-        {
-            data.push_back(object.featureName);
-            data.push_back(statusToString(object.status));
-            data.push_back(object.data);
-            data.push_back(object.error);
-        }
-
-        void operator>> (UserData& inputData, ConfigResponseDto& object)
-        {
-            auto featureName = inputData.front();
-            inputData.pop_front();
-            auto status = inputData.front();
-            inputData.pop_front();
-            auto data = inputData.front();
-            inputData.pop_front();
-            auto error = inputData.front();
-            inputData.pop_front();
-            object = ConfigResponseDto(featureName, stringToStatus(status), data, error);
-        }
-
-        /**
-         * SRR request object
-         * @param data
-         * @param object
-         */
-        void operator<<(UserData& data, const SrrQueryDto& object)
-        {
-            data.push_back(actionToString(object.action));
-            data.push_back(object.data);
-        }
-
-        void operator>>(UserData& inputData, SrrQueryDto& object)
-        {
-            auto action = inputData.front();
-            inputData.pop_front();
-            auto data = inputData.front();
-            inputData.pop_front();
-            object = SrrQueryDto(stringToAction(action), data);
-        }
-        
-        /**
-         * SrrFeatureDto object
-         * @param data
-         * @param object
-         */
-        void operator<<(UserData& data, const SrrFeatureDto& object)
-        {
-            data.push_back(object.name);
-            data.push_back(object.dependencies);
-        }
-
-        void operator>>(UserData& inputData, SrrFeatureDto& object)
-        {
-            object.name = inputData.front();
-            inputData.pop_front();
-            object.dependencies = inputData.front();
-            inputData.pop_front();
-        }
-        
-        /**
-         * All features list object threat by SRR
-         * @param data
-         * @param object
-         */
-        void operator<<(UserData& data, const SrrFeaturesListDto& object)
-        {
-            for (auto &srrFeatureDto : object.featuresList)
-            {
-                data << srrFeatureDto;
-            }
-        }
-
-        void operator>> (UserData& inputData, SrrFeaturesListDto& object) 
-        {    
-            while(!inputData.empty())
-            {
-                SrrFeatureDto currentDto;
-                inputData >> currentDto;
-                object.featuresList.push_back(currentDto);
-            }
-        }
-        
-        /**
-         * SRR save object
-         * @param data
-         * @param object
-         */
-        void operator<<(UserData& data, const SrrSaveDto& object)
-        {
-            data.push_back(statusToString(object.status));
-            data.push_back(object.config);
-        }
-
-        void operator>>(UserData& inputData, SrrSaveDto& object)
-        {
-            auto status = inputData.front();
-            inputData.pop_front();
-            auto config = inputData.front();
-            inputData.pop_front();
-            object = SrrSaveDto(stringToStatus(status), config);
-        }
-
-        /**
-         * SRR restore object
-         * @param data
-         * @param object
-         */
-        void operator<<(UserData& data, const SrrRestoreDto& object)
-        {
-            data.push_back(object.name);
-            data.push_back(statusToString(object.status));
-            data.push_back(object.error);
-        }
-
-        void operator>>(UserData& inputData, SrrRestoreDto& object)
-        {
-            auto name = inputData.front();
-            inputData.pop_front();
-            auto status = inputData.front();
-            inputData.pop_front();
-            auto error = inputData.front();
-            inputData.pop_front();
-            object = SrrRestoreDto(name, stringToStatus(status), error);
-        }
-
-        /**
-         * List of SrrRestoreDto object with a global status
-         * @param data
-         * @param object
-         */
-        void operator<< (UserData& data, const SrrRestoreDtoList& object) 
-        {
-            data.push_back(statusToString(object.status));
-            for (auto &srrResponseDto : object.responseList)
-            {
-                data << srrResponseDto;
-            }
-        }
-
-        void operator>> (UserData& inputData, SrrRestoreDtoList& object) {
-            object.status = stringToStatus(inputData.front());
-            inputData.pop_front();
-            while(!inputData.empty())
-            {
-                SrrRestoreDto currentDto;
-                inputData >> currentDto;
-                object.responseList.push_back(currentDto);
-            }
-        }
-    }
-}
+    } // srr
+} // dto

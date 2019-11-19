@@ -23,158 +23,177 @@
 #define FTY_SRR_DTO_H_INCLUDED
 
 #include "fty_userdata_dto.h"
+#include <memory>
+#include <map>
+#include <vector>
 
 namespace dto 
 {
     namespace srr 
     {
+        using Feature = std::string;
+
+        class SrrQueryParams;
+        using SrrQueryParamsPtr = std::unique_ptr<SrrQueryParams>;
+
         /**
-         *  Actions for config request object
+         *  Actions for query object
          */
         enum class Action { GET_FEATURE_LIST, SAVE, RESET, RESTORE, UNKNOWN};
         std::string actionToString(Action action);
         Action stringToAction(const std::string & actionStr);
 
         /**
-         * Config request object
+         * Query Object
+         * 
          */
-        struct ConfigQueryDto {
-            Action action;
-            std::string passPhrase;
-            std::list<std::string> features;
-            std::string data;
 
-            ConfigQueryDto() = default;
-            ConfigQueryDto(Action action) : action(action) {}
-            ConfigQueryDto(Action action, const std::string& passPhrase) : action(action), passPhrase(passPhrase) {}
-            ConfigQueryDto(Action action, const std::string& passPhrase, const std::list<std::string>& features) : action(action), passPhrase(passPhrase), features(features) {}
-            ConfigQueryDto(Action action, const std::string& passPhrase, const std::list<std::string>& features, const std::string& data) : 
-                action(action),
-                passPhrase(passPhrase),
-                features(features),
-                data(data) {}
+        class SrrQuery
+        {
+        public:
+            Action action = Action::UNKNOWN;
+            SrrQueryParamsPtr params;
+
+            SrrQuery() = default;
+
+            void fromUserData(UserData & data);
+            void toUserData(UserData & data) const;
+
+            //create functions
+            static SrrQuery createSave(const std::vector<Feature> & features, const std::string & passpharse);
+            static SrrQuery createRestore(const std::map<Feature, std::string> & restoreData, const std::string & passpharse);
+            static SrrQuery createReset(const std::vector<Feature> & features);
+            static SrrQuery createGetListFeature(const std::vector<Feature> & features);
+
+        };
+        void operator>> (UserData & data, SrrQuery & query);
+        void operator<< (UserData & data, const SrrQuery & query);
+
+        class SrrQueryParams
+        {
+        public:
+            virtual void fromUserData(UserData & data) = 0;
+            virtual void toUserData(UserData & data) const = 0;
         };
 
-        void operator<<(UserData &data, const ConfigQueryDto &object);
-        void operator>>(UserData &inputData, ConfigQueryDto &object);
+        class SrrSaveParams : public SrrQueryParams
+        {
+        public:
+            std::vector<Feature> features;
+            std::string passphrase;
+
+            virtual void fromUserData(UserData & data) override;
+            virtual void toUserData(UserData & data) const override;
+        };
+
+        class SrrRestoreParams : public SrrQueryParams
+        {
+        public:
+            std::map<Feature, std::string> mapFeaturesData;
+            std::string passphrase;
+
+            virtual void fromUserData(UserData & data) override;
+            virtual void toUserData(UserData & data) const override;
+        };
+
+        class SrrResetParams : public SrrQueryParams
+        {
+        public:
+            std::vector<Feature> features;
+
+            virtual void fromUserData(UserData & data) override;
+            virtual void toUserData(UserData & data) const override;
+        };
+
+        class SrrListFeatureParams : public SrrQueryParams
+        {
+        public:
+            virtual void fromUserData(UserData & data) override {}
+            virtual void toUserData(UserData & data) const override {}
+        };
+
 
         /**
-         *  Status for config response object
+         * Response object
+         * 
+         */
+
+        /**
+         *  Status for SRR response object
          */
         enum class Status { SUCCESS, FAILED, PARTIAL_SUCCESS, UNKNOWN};
         std::string statusToString(Status status);
         Status stringToStatus(const std::string & statusStr);
 
+        class SrrResponseParams;
+        using SrrResponseParamsPtr = std::unique_ptr<SrrResponseParams>;
 
-        /**
-         * Config response object
-         */
-        struct ConfigResponseDto {
-            std::string featureName;
-            Status status;
-            std::string data;
+        class SrrResponse
+        {
+        public:
+            Action action = Action::UNKNOWN;
+            Status status = Status::UNKNOWN;
+
             std::string error;
 
-            ConfigResponseDto() = default;
-            ConfigResponseDto(const std::string& featureName) : featureName(featureName) {}
-            ConfigResponseDto(const std::string& featureName, Status status) : featureName(featureName), status(status) {}
-            ConfigResponseDto(const std::string& featureName, Status status, const std::string& data) : featureName(featureName), status(status), data(data) {}
-            ConfigResponseDto(const std::string& featureName, Status status, const std::string& data, const std::string& error) : featureName(featureName), status(status), data(data), error(error) {}
+            SrrResponseParamsPtr params;
+
+            SrrResponse() = default;
+
+            void fromUserData(UserData & data);
+            void toUserData(UserData & data) const;
+
+            //create functions
+            static SrrResponse createSave();
+            static SrrResponse createRestore();
+            static SrrResponse createReset();
+            static SrrResponse createGetListFeature();
         };
 
-        void operator<<(UserData &data, const ConfigResponseDto &object);
-        void operator>>(UserData &inputData, ConfigResponseDto &object);
+        void operator>> (UserData & data, SrrResponse & response);
+        void operator<< (UserData & data, const SrrResponse & response);
 
-        /**
-         * SRR request object
-         */
-        struct SrrQueryDto {
-            Action action;
-            std::string data;
-
-            SrrQueryDto() = default;
-            SrrQueryDto(Action action) : action(action) {}
-            SrrQueryDto(Action action, const std::string& data) : action(action), data(data) {}
+        class SrrResponseParams
+        {
+        public:
+            virtual void fromUserData(UserData & data) = 0;
+            virtual void toUserData(UserData & data) const = 0;
         };
 
-        void operator<<(UserData &data, const SrrQueryDto &object);
-        void operator>>(UserData &inputData, SrrQueryDto &object);
-        
-        /**
-         * FeatureDto object treated by SRR
-         */
-        struct SrrFeatureDto {
-            std::string name;
-            std::string dependencies;
+        class SrrSaveResponseParams : public SrrResponseParams
+        {
+        public:
+            std::map<Feature, std::string> mapFeaturesData;
 
-            SrrFeatureDto() = default;
-            SrrFeatureDto(const std::string name) : name(name) {}
-            SrrFeatureDto(const std::string name, const std::string dependencies) : name(name), dependencies(dependencies) {}
-        };
-        
-        void operator<<(UserData &data, const SrrFeatureDto &object);
-        void operator>>(UserData &inputData, SrrFeatureDto &object);
-
-        /**
-         * All features list object treated by SRR
-         */
-        struct SrrFeaturesListDto {
-            std::list<SrrFeatureDto> featuresList;
-
-            SrrFeaturesListDto() = default;
-            SrrFeaturesListDto(std::list<SrrFeatureDto> featuresList) : featuresList(featuresList) {}
+            virtual void fromUserData(UserData & data) override;
+            virtual void toUserData(UserData & data) const override;
         };
 
-        void operator<<(UserData &data, const SrrFeaturesListDto &object);
-        void operator>>(UserData &inputData, SrrFeaturesListDto &object);
-        
-        /**
-         * List of SrrSaveDto object with a global status
-         */
-        struct SrrSaveDto {
-            Status status;
-            std::string config;
+        class SrrRestoreResponseParams : public SrrResponseParams
+        {
+        public:
+            std::map<Feature, Status> mapFeaturesStatus;
 
-            SrrSaveDto() = default;
-            SrrSaveDto(Status status) : status(status) {}
-            SrrSaveDto(Status status, const std::string& config) : status(status), config(config) {}
+            virtual void fromUserData(UserData & data) override;
+            virtual void toUserData(UserData & data) const override;
         };
 
-        void operator<<(UserData &data, const SrrSaveDto &object);
-        void operator>>(UserData &inputData, SrrSaveDto &object);
+        class SrrResetResponseParams : public SrrResponseParams
+        {
+        public:
+            std::map<Feature, Status> mapFeaturesStatus;
 
-        /**
-         * SRR restore object
-         */
-        struct SrrRestoreDto {
-            std::string name;
-            Status status;
-            std::string error;
-
-            SrrRestoreDto() = default;
-            SrrRestoreDto(const std::string& name) : name(name) {}
-            SrrRestoreDto(const std::string& name, Status status) : name(name), status(status) {}
-            SrrRestoreDto(const std::string& name, Status status, const std::string& error) : name(name), status(status), error(error) {}
+            virtual void fromUserData(UserData & data) override;
+            virtual void toUserData(UserData & data) const override;
         };
 
-        void operator<<(UserData &data, const SrrRestoreDto &object);
-        void operator>>(UserData &inputData, SrrRestoreDto &object);
-
-        /**
-         * List of SrrRestoreDto object with a global status
-         */
-        struct SrrRestoreDtoList {
-            Status status;
-            std::list<SrrRestoreDto> responseList;
-
-            SrrRestoreDtoList() = default;
-            SrrRestoreDtoList(Status status) : status(status) {}
-            SrrRestoreDtoList(Status status, const std::list<SrrRestoreDto> responseList) : status(status), responseList(responseList) {}
-        };
-
-        void operator<<(UserData &data, const SrrRestoreDtoList &object);
-        void operator>>(UserData &inputData, SrrRestoreDtoList &object);
-        
+        class SrrListFeatureResponseParams : public SrrResponseParams
+        {
+        public:
+            std::vector<Feature> features;
+            virtual void fromUserData(UserData & data) override;
+            virtual void toUserData(UserData & data) const override;
+        };   
     } // srr namespace
     
 } // dto namespace
