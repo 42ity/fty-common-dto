@@ -11,6 +11,7 @@
     <target name = "debian" />
     <target name = "redhat" />
     <target name = "travis" >
+        <option name = "recursive_dependencies" value = "true" />
         <!-- option name = "clangformat_implem" value = "autotools" / -->
         <option name = "use_cmake" value = "0" />
         <!-- option name = "clangformat_require_good" value = "1" / -->
@@ -44,7 +45,7 @@
             />
 
     <!-- Project -->
-    <class name = "fty-srr-dto" selftest = "0">Fty srr dto</class>
+    <class name = "fty-srr-dto" selftest = "1">Fty srr dto</class>
     <class name = "fty-commands-dto" selftest = "0">Fty nut dto</class>
     <header name = "fty-userdata-dto" selftest = "0">Fty user data dto</header>
 </project>

@@ -39,6 +39,10 @@ typedef struct {
 
 static test_item_t
 all_tests [] = {
+#ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
+// Tests for draft public classes:
+    { "fty_srr_dto", fty_srr_dto_test, false, true, NULL },
+#endif // FTY_COMMON_DTO_BUILD_DRAFT_API
     {NULL, NULL, 0, 0, NULL}          //  Sentinel
 };
 

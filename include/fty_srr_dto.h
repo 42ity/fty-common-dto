@@ -58,6 +58,7 @@ namespace dto
 
             void fromUserData(UserData & data);
             void toUserData(UserData & data) const;
+            bool isEqual(const SrrQuery & query) const;
 
             //create functions
             static SrrQuery createSave(const std::vector<Feature> & features, const std::string & passpharse);
@@ -68,12 +69,15 @@ namespace dto
         };
         void operator>> (UserData & data, SrrQuery & query);
         void operator<< (UserData & data, const SrrQuery & query);
+        inline bool operator==(const SrrQuery& lhs, const SrrQuery& rhs){ return lhs.isEqual(rhs); }
+        inline bool operator!=(const SrrQuery& lhs, const SrrQuery& rhs){ return !(lhs == rhs); }
 
         class SrrQueryParams
         {
         public:
             virtual void fromUserData(UserData & data) = 0;
             virtual void toUserData(UserData & data) const = 0;
+            virtual void isEqual(const SrrQueryParamsPtr & params) const = 0;
         };
 
         class SrrSaveParams : public SrrQueryParams
@@ -197,5 +201,11 @@ namespace dto
     } // srr namespace
     
 } // dto namespace
+
+#ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
+    // Tests
+    void fty_srr_dto_test (bool verbose);
+
+#endif // FTY_COMMON_DTO_BUILD_DRAFT_API
 
 #endif
