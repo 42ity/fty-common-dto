@@ -40,8 +40,14 @@ if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list cxxtools-dev >/
         git --no-pager log --oneline -n1
     if [ -e ci_dependencies.sh ]; then
         PROPAGATED_BRANCH="`git branch | grep * | cut -d ' ' -f2`"
-        echo "`date`: INFO: Building prerequisites of 'cxxtools' using ci_dependencies.sh $PROPAGATED_BRANCH..." >&2
-        ($CI_TIME source ./ci_dependencies.sh $PROPAGATED_BRANCH)
+        DEFAULT_BRANCH="`git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'`"
+        if [ "x$PROPAGATED_BRANCH" = "x$PROPAGATED_BRANCH" ]; then
+            echo "`date`: INFO: Building prerequisites of 'cxxtools' using ci_dependencies.sh the default branch..." >&2
+            ($CI_TIME source ./ci_dependencies.sh)
+        else
+            echo "`date`: INFO: Building prerequisites of 'cxxtools' using ci_dependencies.sh $PROPAGATED_BRANCH branch..." >&2
+            ($CI_TIME source ./ci_dependencies.sh $PROPAGATED_BRANCH)
+        fi
     fi
     if [ -e autogen.sh ]; then
         $CI_TIME ./autogen.sh 2> /dev/null
