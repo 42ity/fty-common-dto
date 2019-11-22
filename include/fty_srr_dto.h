@@ -185,6 +185,7 @@ namespace dto
 
             Action getAction() const;
             bool isEqual(const SrrResponse & response) const;
+            void add(const SrrResponse & r);
 
             SrrResponseParamsPtr & getParams() {return m_params;}
             const SrrResponseParamsPtr & getParams() const {return m_params;}
@@ -213,10 +214,12 @@ namespace dto
             virtual bool isEqual(const SrrResponseParamsPtr & params) const = 0;
             virtual Action getAction() const = 0;
             virtual Status getGlobalStatus() const = 0;
+            virtual void add(const SrrResponseParamsPtr & params) = 0;
 
             //serialization
             virtual void deserialize(const cxxtools::SerializationInfo& si) = 0;
             virtual void serialize(cxxtools::SerializationInfo& si) const = 0;
+
         };
 
         class SrrSaveResponse : public SrrResponseParams
@@ -227,6 +230,7 @@ namespace dto
             virtual bool isEqual(const SrrResponseParamsPtr & params) const override;
             virtual Action getAction() const override { return Action::SAVE; }
             virtual Status getGlobalStatus() const override;
+            virtual void add(const SrrResponseParamsPtr & params) override;
 
             //serialization
             virtual void deserialize(const cxxtools::SerializationInfo& si) override;
@@ -242,7 +246,7 @@ namespace dto
             virtual bool isEqual(const SrrResponseParamsPtr & params) const override;
             virtual Action getAction() const override { return Action::RESTORE; }
             virtual Status getGlobalStatus() const override;
-
+            virtual void add(const SrrResponseParamsPtr & params) override;
 
             //serialization
             virtual void deserialize(const cxxtools::SerializationInfo& si) override;
@@ -257,6 +261,7 @@ namespace dto
             virtual bool isEqual(const SrrResponseParamsPtr & params) const override;
             virtual Action getAction() const override { return Action::RESET; }
             virtual Status getGlobalStatus() const override;
+            virtual void add(const SrrResponseParamsPtr & params) override;
 
             //serialization
             virtual void deserialize(const cxxtools::SerializationInfo& si) override;
@@ -272,6 +277,7 @@ namespace dto
             virtual bool isEqual(const SrrResponseParamsPtr & params) const override;
             virtual Action getAction() const override { return Action::GET_FEATURE_LIST; }
             virtual Status getGlobalStatus() const override;
+            virtual void add(const SrrResponseParamsPtr & params) override;
 
             //serialization
             virtual void deserialize(const cxxtools::SerializationInfo& si) override;

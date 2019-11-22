@@ -379,6 +379,21 @@ namespace dto
             return response;
         }
 
+        void SrrResponse::add(const SrrResponse & r)
+        {
+            if(getAction() != r.getAction())
+            {
+                throw std::runtime_error("Impossible to add 2 differents type of response");
+            }
+
+            if(getAction() == Action::UNKNOWN)
+            {
+                throw std::runtime_error("Impossible to add Unknows response");
+            }
+
+            m_params->add(r.m_params);
+        }
+
         void SrrResponse::fromUserData(UserData & data)
         {
             auto actionStr = data.front();
@@ -556,6 +571,12 @@ namespace dto
             }
         }
 
+        void SrrSaveResponse::add(const SrrResponseParamsPtr & params)
+        {
+            SrrSaveResponse * saveParams = dynamic_cast<SrrSaveResponse*>(params.get());
+            mapFeaturesData.insert(saveParams->mapFeaturesData.begin(), saveParams->mapFeaturesData.end());
+        }
+
         //restore response
         bool SrrRestoreResponse::isEqual(const SrrResponseParamsPtr & params) const
         {
@@ -597,6 +618,12 @@ namespace dto
             }
 
             return globalStatus;
+        }
+
+        void SrrRestoreResponse::add(const SrrResponseParamsPtr & params)
+        {
+            SrrRestoreResponse * restoreParams = dynamic_cast<SrrRestoreResponse*>(params.get());
+            mapFeaturesStatus.insert(restoreParams->mapFeaturesStatus.begin(), restoreParams->mapFeaturesStatus.end());
         }
 
         void SrrRestoreResponse::deserialize(const cxxtools::SerializationInfo& si)
@@ -676,6 +703,12 @@ namespace dto
             return globalStatus;
         }
 
+        void SrrResetResponse::add(const SrrResponseParamsPtr & params)
+        {
+            SrrResetResponse * resetParams = dynamic_cast<SrrResetResponse*>(params.get());
+            mapFeaturesStatus.insert(resetParams->mapFeaturesStatus.begin(), resetParams->mapFeaturesStatus.end());
+        }
+
         void SrrResetResponse::deserialize(const cxxtools::SerializationInfo& si)
         {
             const cxxtools::SerializationInfo & featuresSi = si.getMember("statusList");
@@ -730,6 +763,12 @@ namespace dto
             return status;
         }
 
+        void SrrListFeatureResponse::add(const SrrResponseParamsPtr & params)
+        {
+            SrrListFeatureResponse * pParams = dynamic_cast<SrrListFeatureResponse*>(params.get());
+            mapFeaturesDependencies.insert(pParams->mapFeaturesDependencies.begin(), pParams->mapFeaturesDependencies.end());
+        }
+
         void SrrListFeatureResponse::deserialize(const cxxtools::SerializationInfo& si)
         {
             std::string statusStr;
@@ -767,8 +806,6 @@ namespace dto
 
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
-
-        //
 
         /**
          * Actions
@@ -1263,6 +1300,137 @@ void fty_srr_dto_test (bool verbose)
             userdata >> r4;
 
             if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
+
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+
+    printf ("OK\n");
+
+//Next test
+    testNumber = "3.1";
+    testName = "Check add operation on Save Response";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+
+        try
+        {
+            FeatureStatus s1 = {Status::SUCCESS, ""};
+            Feature f1 = {"1.0", "data"};
+            
+            std::map<FeatureName, std::pair<FeatureStatus,Feature>> map1;
+            map1["test"] = {s1,f1};
+
+            std::map<FeatureName, std::pair<FeatureStatus,Feature>> map2;
+            map2["test2"] = {s1,f1};
+            
+            SrrResponse r1 = SrrResponse::createSave(map1);
+            SrrResponse r2 = SrrResponse::createSave(map2);
+            
+            r1.add(r2);
+            std::cout << r1 << std::endl;
+
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+
+    printf ("OK\n");
+
+//Next test
+    testNumber = "3.2";
+    testName = "Check add operation on Restore Response";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+
+        try
+        {
+            std::map<FeatureName, FeatureStatus> map1;
+            map1["test"] = {Status::SUCCESS, ""};
+            
+            SrrResponse r1 = SrrResponse::createRestore(map1);
+            
+            std::map<FeatureName, FeatureStatus> map2;
+            map2["test2"] = {Status::FAILED, "I'm a failure"};
+            
+            SrrResponse r2 = SrrResponse::createRestore(map2);
+
+            r1.add(r2);
+
+            std::cout << r1 << std::endl;
+
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+
+    printf ("OK\n");
+
+//Next test
+    testNumber = "3.3";
+    testName = "Check add operation on Reset Response";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+
+        try
+        {          
+            std::map<FeatureName, FeatureStatus> map1;
+            map1["test"] = {Status::SUCCESS, ""};
+
+            std::map<FeatureName, FeatureStatus> map2;
+            map2["test2"] = {Status::FAILED, "I'm a failure"};
+            
+            SrrResponse r1 = SrrResponse::createReset(map1);
+            SrrResponse r2 = SrrResponse::createReset(map2);
+
+            r1.add(r2);
+            std::cout << r1 << std::endl;
+
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+
+    printf ("OK\n");
+
+//Next test
+    testNumber = "3.4";
+    testName = "Check add operation on List Feature Response";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+
+        try
+        {          
+            SrrResponse r1 = SrrResponse::createGetListFeature({{"test", {"A","B"}}});
+            SrrResponse r2 = SrrResponse::createGetListFeature({{"test1", {"C","B"}}});
+
+            r1.add(r2);
+            std::cout << r1 << std::endl;
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
