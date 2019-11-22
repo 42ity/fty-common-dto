@@ -194,8 +194,8 @@ namespace dto
 
             //create functions
             static SrrResponse createSave(const std::map<FeatureName, std::pair<FeatureStatus,Feature>> & mapFeaturesData);
-            /*static SrrResponse createRestore();
-            static SrrResponse createReset();
+            static SrrResponse createRestore(const std::map<FeatureName, FeatureStatus> & mapStatus);
+            /*static SrrResponse createReset();
             static SrrResponse createGetListFeature();*/
         };
 
@@ -234,10 +234,10 @@ namespace dto
             
         };
 
-        /*class SrrRestoreResponse : public SrrResponseParams
+        class SrrRestoreResponse : public SrrResponseParams
         {
         public:
-            std::map<FeatureName, Status> mapFeaturesStatus;
+            std::map<FeatureName, FeatureStatus> mapFeaturesStatus;
 
             virtual bool isEqual(const SrrResponseParamsPtr & params) const override;
             virtual Action getAction() const override { return Action::RESTORE; }
@@ -249,7 +249,7 @@ namespace dto
             virtual void serialize(cxxtools::SerializationInfo& si) const override;
         };
 
-        class SrrResetResponse : public SrrResponseParams
+        /*class SrrResetResponse : public SrrResponseParams
         {
         public:
             std::map<FeatureName, Status> mapFeaturesStatus;
