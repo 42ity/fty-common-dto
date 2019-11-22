@@ -493,7 +493,7 @@ namespace dto
         {
             Status globalStatus = Status::UNKNOWN;
 
-            int nbSuccess = 0;
+            unsigned int nbSuccess = 0;
             for( const auto & item : mapFeaturesData)
             {
                 if(item.second.first.status == Status::SUCCESS)
@@ -574,7 +574,7 @@ namespace dto
         {
             Status globalStatus = Status::UNKNOWN;
 
-            int nbSuccess = 0;
+            unsigned int nbSuccess = 0;
             for( const auto & item : mapFeaturesStatus)
             {
                 if(item.second.status == Status::SUCCESS)
@@ -651,7 +651,7 @@ namespace dto
         {
             Status globalStatus = Status::UNKNOWN;
 
-            int nbSuccess = 0;
+            unsigned int nbSuccess = 0;
             for( const auto & item : mapFeaturesStatus)
             {
                 if(item.second.status == Status::SUCCESS)
@@ -767,6 +767,8 @@ namespace dto
 
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
+
+        //
 
         /**
          * Actions
