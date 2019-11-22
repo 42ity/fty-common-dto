@@ -38,12 +38,12 @@ namespace dto
     namespace srr 
     {
         static cxxtools::SerializationInfo deserializeJson(const std::string & json);
-        static std::string serializeJson(const cxxtools::SerializationInfo & si);
+        static std::string serializeJson(const cxxtools::SerializationInfo & si, bool beautify = false);
         /**
          * SRRQuery
          * 
          */
-        SrrQuery SrrQuery::createSave(const std::set<Feature> & features, const std::string & passpharse)
+        SrrQuery SrrQuery::createSave(const std::set<FeatureName> & features, const std::string & passpharse)
         {
             SrrQuery query;
             query.m_params = SrrQueryParamsPtr(new SrrSaveQuery());
@@ -55,7 +55,7 @@ namespace dto
             return query;
         }
 
-        SrrQuery SrrQuery::createRestore(const std::map<Feature, std::string> & restoreData, const std::string & passpharse)
+        SrrQuery SrrQuery::createRestore(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse)
         {
             SrrQuery query;
             query.m_params = SrrQueryParamsPtr(new SrrRestoreQuery());
@@ -67,7 +67,7 @@ namespace dto
             return query;
         }
 
-        SrrQuery SrrQuery::createReset(const std::set<Feature> & features)
+        SrrQuery SrrQuery::createReset(const std::set<FeatureName> & features)
         {
             SrrQuery query;
             query.m_params = SrrQueryParamsPtr(new SrrResetQuery());
@@ -176,7 +176,7 @@ namespace dto
             {
                 cxxtools::SerializationInfo si;
                 q.getParams()->serialize(si);
-                os << serializeJson(si) << std::endl;
+                os << serializeJson(si, true) << std::endl;
             }
             return os;
         }
@@ -190,13 +190,33 @@ namespace dto
         void SrrSaveQuery::deserialize(const cxxtools::SerializationInfo& si)
         {
             si.getMember("passphrase") >>= passphrase;
-            si.getMember("features") >>= features;           
+            const cxxtools::SerializationInfo & featuresSi = si.getMember("featuresList");
+
+            for(size_t index = 0; index < featuresSi.memberCount(); index++ )
+            {
+                const cxxtools::SerializationInfo & featureSi = featuresSi.getMember(index);
+
+                FeatureName featureName;
+
+                featureSi.getMember("name") >>= featureName;
+
+                features.insert(featureName);
+            }           
         }
 
         void SrrSaveQuery::serialize(cxxtools::SerializationInfo& si) const
         {
             si.addMember("passphrase") <<= passphrase;
-            si.addMember("features") <<= features;
+
+            cxxtools::SerializationInfo & featuresSi = si.addMember("featuresList");
+            for( const auto & feature : features)
+            {
+                cxxtools::SerializationInfo & featureSi = featuresSi.addMember("");
+                
+                featureSi.addMember("name") <<= feature;
+            }
+            
+            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
 
         bool SrrSaveQuery::isEqual(const SrrQueryParamsPtr & params) const
@@ -216,13 +236,34 @@ namespace dto
         void SrrRestoreQuery::serialize(cxxtools::SerializationInfo& si) const 
         {
             si.addMember("passphrase") <<= passphrase;
-            si.addMember("features") <<= mapFeaturesData;
+            cxxtools::SerializationInfo & featuresSi = si.addMember("features");
+            for( const auto & item : mapFeaturesData)
+            {
+                cxxtools::SerializationInfo & featureSi = featuresSi.addMember(item.first);
+                const Feature & f = mapFeaturesData.at(item.first);
+                featureSi.addMember("version") <<= f.version;
+                featureSi.addMember("data") <<= f.data;
+            }
         }
 
         void SrrRestoreQuery::deserialize(const cxxtools::SerializationInfo& si)
         {
             si.getMember("passphrase") >>= passphrase;
-            si.getMember("features") >>= mapFeaturesData;
+            const cxxtools::SerializationInfo & featuresSi = si.getMember("features");
+
+            for(size_t index = 0; index < featuresSi.memberCount(); index++ )
+            {
+                const cxxtools::SerializationInfo & featureSi = featuresSi.getMember(index);
+
+                std::string featureName = featureSi.name();
+
+                Feature f;
+
+                featureSi.getMember("data") >>= f.data;
+                featureSi.getMember("version") >>= f.version;
+
+                mapFeaturesData[featureName] = f;
+            }  
         }
 
         bool SrrRestoreQuery::isEqual(const SrrQueryParamsPtr & params) const
@@ -240,12 +281,34 @@ namespace dto
         //reset
         void SrrResetQuery::serialize(cxxtools::SerializationInfo& si) const
         {
-            si.addMember("features") <<= features;
+            //si.addMember("passphrase") <<= passphrase;
+
+            cxxtools::SerializationInfo & featuresSi = si.addMember("featuresList");
+            for( const auto & feature : features)
+            {
+                cxxtools::SerializationInfo & featureSi = featuresSi.addMember("");
+                
+                featureSi.addMember("name") <<= feature;
+            }
+            
+            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
 
         void SrrResetQuery::deserialize(const cxxtools::SerializationInfo& si)        
         {
-            si.getMember("features") >>= features;
+            //si.getMember("passphrase") >>= passphrase;
+            const cxxtools::SerializationInfo & featuresSi = si.getMember("featuresList");
+
+            for(size_t index = 0; index < featuresSi.memberCount(); index++ )
+            {
+                const cxxtools::SerializationInfo & featureSi = featuresSi.getMember(index);
+
+                FeatureName featureName;
+
+                featureSi.getMember("name") >>= featureName;
+
+                features.insert(featureName);
+            }        
         }
 
         bool SrrResetQuery::isEqual(const SrrQueryParamsPtr & params) const
@@ -272,19 +335,20 @@ namespace dto
          * Response
          * 
          */
-        SrrResponse SrrResponse::createSave()
+        SrrResponse SrrResponse::createSave( const std::map<FeatureName, std::pair<FeatureStatus,Feature>> & mapFeaturesData)
         {
             SrrResponse response;
-            response.action = Action::SAVE;
             response.m_params = SrrResponseParamsPtr(new SrrSaveResponse());
 
+            SrrSaveResponse * saveParams = dynamic_cast<SrrSaveResponse*>(response.m_params.get());
+            saveParams->mapFeaturesData = mapFeaturesData;
+            
             return response;
         }
 
-        SrrResponse SrrResponse::createRestore()
+        /*SrrResponse SrrResponse::createRestore()
         {
             SrrResponse response;
-            response.action = Action::RESTORE;
             response.m_params = SrrResponseParamsPtr(new SrrRestoreResponse());
 
             return response;
@@ -293,7 +357,6 @@ namespace dto
         SrrResponse SrrResponse::createReset()
         {
             SrrResponse response;
-            response.action = Action::RESET;
             response.m_params = SrrResponseParamsPtr(new SrrResetResponse());
 
             return response;
@@ -302,24 +365,16 @@ namespace dto
         SrrResponse SrrResponse::createGetListFeature()
         {
             SrrResponse response;
-            response.action = Action::GET_FEATURE_LIST;
             response.m_params = SrrResponseParamsPtr(new SrrListFeatureResponse());
 
             return response;
-        }
+        }*/
 
         void SrrResponse::fromUserData(UserData & data)
         {
             auto actionStr = data.front();
             data.pop_front();
-            action = stringToAction(actionStr);
-
-            auto statusStr = data.front();
-            data.pop_front();
-            status = stringToStatus(statusStr);
-
-            error = data.front();
-            data.pop_front();
+            Action action = stringToAction(actionStr);
 
             switch(action)
             {
@@ -327,7 +382,7 @@ namespace dto
                     m_params = SrrResponseParamsPtr(new SrrSaveResponse());
                     break;
 
-                case Action::RESTORE:
+                /*case Action::RESTORE:
                     m_params = SrrResponseParamsPtr(new SrrRestoreResponse());
                     break;
 
@@ -337,7 +392,7 @@ namespace dto
 
                 case Action::GET_FEATURE_LIST:
                     m_params = SrrResponseParamsPtr(new SrrListFeatureResponse());
-                    break;
+                    break;*/
                 
                 default:
                     m_params = nullptr;
@@ -345,17 +400,48 @@ namespace dto
 
             if(m_params != nullptr)
             {
-                m_params->fromUserData(data);
+                m_params->deserialize(deserializeJson(data.front()));
+                data.pop_front();
             }
         }
 
         void SrrResponse::toUserData(UserData & data) const
         {
-            data.push_back(actionToString(action));
-            if(action != Action::UNKNOWN)
+            data.push_back(actionToString(getAction()));
+            
+            if(getAction() != Action::UNKNOWN)
             {
-                m_params->toUserData(data);
+                cxxtools::SerializationInfo si;
+                m_params->serialize(si);
+                data.push_back(serializeJson(si));
+            } 
+        }
+
+        Action SrrResponse::getAction() const
+        {
+            if(m_params != nullptr)
+            {
+                return m_params->getAction();
             }
+            else
+            {
+                return Action::UNKNOWN;
+            }
+            
+        }
+
+        bool SrrResponse::isEqual(const SrrResponse & response) const
+        {
+            bool isEqualValue = false;
+            if(getAction() == response.getAction())
+            {
+                if( (m_params != nullptr) && (response.m_params != nullptr))
+                {
+                    isEqualValue =  m_params->isEqual(response.m_params);
+                }
+            }
+
+            return isEqualValue;
         }
 
         void operator>> (UserData & data, SrrResponse & response)
@@ -368,36 +454,106 @@ namespace dto
             response.toUserData(data);
         }
 
-        //save response
-        void SrrSaveResponse::fromUserData(UserData & data)
+        std::ostream& operator<< (std::ostream& os, const SrrResponse& r)
         {
-            while (!data.empty())
+            os << actionToString(r.getAction()) << std::endl;
+            if(r.getAction() != Action::UNKNOWN)
             {
-                Feature featureName = data.front();
-                data.pop_front();
-
-                std::string dataPayload = data.front();
-                data.pop_front();
-
-                mapFeaturesData[featureName] = dataPayload;
+                cxxtools::SerializationInfo si;
+                r.getParams()->serialize(si);
+                os << serializeJson(si, true) << std::endl;
             }
+            return os;
         }
 
-        void SrrSaveResponse::toUserData(UserData & data) const
+        //save response
+
+        bool SrrSaveResponse::isEqual(const SrrResponseParamsPtr & params) const
         {
-            for(const auto & item : mapFeaturesData)
+            SrrSaveResponse * saveParams = dynamic_cast<SrrSaveResponse*>(params.get());
+
+            bool equal = false;
+            if(saveParams != nullptr)
             {
-                data.push_back(item.first);
-                data.push_back(item.second);
+                equal = ((mapFeaturesData == saveParams->mapFeaturesData));
+            }
+
+            return equal;
+        }
+
+        Status SrrSaveResponse::getGlobalStatus() const
+        {
+            Status globalStatus = Status::UNKNOWN;
+
+            int nbSuccess = 0;
+            for( const auto & item : mapFeaturesData)
+            {
+                if(item.second.first.status == Status::SUCCESS)
+                {
+                    nbSuccess++;
+                }
+            }
+
+            if(nbSuccess == 0)
+            {
+                globalStatus = Status::FAILED;
+            }
+            else if(nbSuccess == mapFeaturesData.size())
+            {
+                globalStatus = Status::SUCCESS;
+            }
+            else
+            {
+                globalStatus = Status::PARTIAL_SUCCESS;
+            }
+
+            return globalStatus;
+        }
+
+        void SrrSaveResponse::deserialize(const cxxtools::SerializationInfo& si)
+        {
+            const cxxtools::SerializationInfo & featuresSi = si.getMember("features");
+
+            for(size_t index = 0; index < featuresSi.memberCount(); index++ )
+            {
+
+                const cxxtools::SerializationInfo & featureSi = featuresSi.getMember(index);
+
+                std::string featureName = featureSi.name();
+
+                std::string statusStr, errorStr, versionStr, dataStr;
+                featureSi.getMember("status") >>= statusStr;
+                featureSi.getMember("error") >>= errorStr;
+                featureSi.getMember("version") >>= versionStr;
+                featureSi.getMember("data") >>= dataStr;
+
+                mapFeaturesData[featureName] = {{stringToStatus(statusStr),errorStr},{versionStr,dataStr}};
+            }  
+        }
+
+        void SrrSaveResponse::serialize(cxxtools::SerializationInfo& si) const
+        {
+            si.addMember("status") <<= statusToString(getGlobalStatus());
+            cxxtools::SerializationInfo & featuresSi = si.addMember("features");
+            
+            for( const auto & item : mapFeaturesData)
+            {
+                cxxtools::SerializationInfo & featureSi = featuresSi.addMember(item.first);
+                const auto & pair = item.second;
+
+                featureSi.addMember("status") <<= statusToString(pair.first.status);
+                featureSi.addMember("error") <<= pair.first.errorMsg;
+                featureSi.addMember("version") <<= pair.second.version;
+                featureSi.addMember("data") <<= pair.second.data;
             }
         }
 
         //restore response
-        void SrrRestoreResponse::fromUserData(UserData & data)
+        /*void SrrRestoreResponse::fromUserData(UserData & data)
         {
             while (!data.empty())
             {
-                Feature featureName = data.front();
+                FeatureName featureName = data.front();
                 data.pop_front();
 
                 std::string statusStr = data.front();
@@ -421,7 +577,7 @@ namespace dto
         {
             while (!data.empty())
             {
-                Feature featureName = data.front();
+                FeatureName featureName = data.front();
                 data.pop_front();
 
                 std::string statusStr = data.front();
@@ -457,7 +613,7 @@ namespace dto
             {
                 data.push_back(feature);
             }
-        }
+        }*/
 
         /**
          * Actions
@@ -557,7 +713,7 @@ namespace dto
 
         }
 
-        static std::string serializeJson(const cxxtools::SerializationInfo & si)
+        static std::string serializeJson(const cxxtools::SerializationInfo & si, bool beautify)
         {
             std::string returnData("");
 
@@ -565,6 +721,7 @@ namespace dto
             {
                 std::stringstream output;
                 cxxtools::JsonSerializer serializer(output);
+                serializer.beautify(beautify);
                 serializer.serialize(si);
 
                 returnData = output.str();
@@ -619,8 +776,10 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
-            //test ==
             SrrQuery query1 = SrrQuery::createSave({"test"},"myPassphrase");
+            std::cout << query1 << std::endl;
+
+            //test ==
             SrrQuery query2 = SrrQuery::createSave({"test"},"myPassphrase");
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
@@ -628,7 +787,7 @@ void fty_srr_dto_test (bool verbose)
             SrrQuery query3 = SrrQuery::createSave({"testgg"},"hsGH<hkherjg");
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
-            //test serialize -> unserialize
+            //test serialize -> deserialize
             UserData userdata;
             userdata << query1;
 
@@ -658,16 +817,18 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
+            SrrQuery query1 = SrrQuery::createRestore({{"test", {"1.0","data"}}},"myPassphrase");
+            std::cout << query1 << std::endl;
+
             //test ==
-            SrrQuery query1 = SrrQuery::createRestore({{"test", "data"}},"myPassphrase");
-            SrrQuery query2 = SrrQuery::createRestore({{"test", "data"}},"myPassphrase");
+            SrrQuery query2 = SrrQuery::createRestore({{"test", {"1.0","data"}}},"myPassphrase");
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
-            SrrQuery query3 = SrrQuery::createRestore({{"testgg","data"}},"hsGH<hkherjg");
+            SrrQuery query3 = SrrQuery::createRestore({{"test-1", {"1.0","data2"}}},"hsGH<hkherjg");
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
-            //test serialize -> unserialize
+            //test serialize -> deserialize
             UserData userdata;
             userdata << query1;
 
@@ -697,8 +858,10 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
-            //test ==
             SrrQuery query1 = SrrQuery::createReset({"test"});
+            std::cout << query1 << std::endl;
+
+            //test ==
             SrrQuery query2 = SrrQuery::createReset({"test"});
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
@@ -729,15 +892,17 @@ void fty_srr_dto_test (bool verbose)
 
 //Next test
     testNumber = "1.4";
-    testName = "Check List Feature Query";
+    testName = "Check List FeatureName Query";
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
 
         try
         {
-            //test ==
             SrrQuery query1 = SrrQuery::createGetListFeature();
+            std::cout << query1 << std::endl;
+
+            //test ==
             SrrQuery query2 = SrrQuery::createGetListFeature();
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
@@ -745,7 +910,7 @@ void fty_srr_dto_test (bool verbose)
             SrrQuery query3 = SrrQuery::createReset({"testgg"});
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
-            //test serialize -> unserialize
+            //test serialize -> deserialize
             UserData userdata;
             userdata << query1;
 
@@ -753,6 +918,56 @@ void fty_srr_dto_test (bool verbose)
             userdata >> query4;
 
             if(query1 != query4) throw std::runtime_error("Bad serialization to userdata");
+
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+
+    printf ("OK\n");
+
+//Next test
+    testNumber = "2.1";
+    testName = "Check Save Response";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+
+        try
+        {
+            FeatureStatus s1 = {Status::SUCCESS, ""};
+            Feature f1 = {"1.0", "data"};
+            
+            std::map<FeatureName, std::pair<FeatureStatus,Feature>> map1;
+            map1["test"] = {s1,f1};
+            
+            SrrResponse r1 = SrrResponse::createSave(map1);
+            std::cout << r1 << std::endl;
+
+            //test ==
+            SrrResponse r2 = SrrResponse::createSave(map1);
+            if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
+
+            //test !=
+            std::map<FeatureName, std::pair<FeatureStatus,Feature>> map2;
+            map2["test2"] = {s1,f1};
+            
+            SrrResponse r3 = SrrResponse::createSave(map2);
+            if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
+
+            //test serialize -> deserialize
+            UserData userdata;
+            userdata << r1;
+
+            SrrResponse r4;
+            userdata >> r4;
+
+            if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
