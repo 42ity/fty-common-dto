@@ -23,9 +23,13 @@
 #define FTY_SRR_DTO_H_INCLUDED
 
 #include "fty_userdata_dto.h"
+
 #include <memory>
 #include <map>
-#include <vector>
+#include <set>
+#include <iostream>
+
+#include <cxxtools/serializationinfo.h>
 
 namespace dto 
 {
@@ -50,70 +54,85 @@ namespace dto
 
         class SrrQuery
         {
+        private:
+            SrrQueryParamsPtr m_params;
         public:
-            Action action = Action::UNKNOWN;
-            SrrQueryParamsPtr params;
-
             SrrQuery() = default;
+
+            Action getAction() const;
+            SrrQueryParamsPtr & getParams() {return m_params;}
+            const SrrQueryParamsPtr & getParams() const {return m_params;}
 
             void fromUserData(UserData & data);
             void toUserData(UserData & data) const;
             bool isEqual(const SrrQuery & query) const;
 
-            //create functions
-            static SrrQuery createSave(const std::vector<Feature> & features, const std::string & passpharse);
+            //create functions for query
+            static SrrQuery createSave(const std::set<Feature> & features, const std::string & passpharse);
             static SrrQuery createRestore(const std::map<Feature, std::string> & restoreData, const std::string & passpharse);
-            static SrrQuery createReset(const std::vector<Feature> & features);
-            static SrrQuery createGetListFeature(const std::vector<Feature> & features);
+            static SrrQuery createReset(const std::set<Feature> & features);
+            static SrrQuery createGetListFeature();
 
         };
         void operator>> (UserData & data, SrrQuery & query);
         void operator<< (UserData & data, const SrrQuery & query);
         inline bool operator==(const SrrQuery& lhs, const SrrQuery& rhs){ return lhs.isEqual(rhs); }
         inline bool operator!=(const SrrQuery& lhs, const SrrQuery& rhs){ return !(lhs == rhs); }
+        std::ostream& operator<< (std::ostream& os, const SrrQuery& q);
 
         class SrrQueryParams
         {
         public:
-            virtual void fromUserData(UserData & data) = 0;
-            virtual void toUserData(UserData & data) const = 0;
-            virtual void isEqual(const SrrQueryParamsPtr & params) const = 0;
+            virtual bool isEqual(const SrrQueryParamsPtr & params) const = 0;
+            virtual Action getAction() const = 0;
+
+            //serialization
+            virtual void deserialize(const cxxtools::SerializationInfo& si) = 0;
+            virtual void serialize(cxxtools::SerializationInfo& si) const = 0;
         };
 
-        class SrrSaveParams : public SrrQueryParams
+        class SrrSaveQuery : public SrrQueryParams
         {
         public:
-            std::vector<Feature> features;
+            std::set<Feature> features;
             std::string passphrase;
 
-            virtual void fromUserData(UserData & data) override;
-            virtual void toUserData(UserData & data) const override;
+            virtual void deserialize(const cxxtools::SerializationInfo& si) override;
+            virtual void serialize(cxxtools::SerializationInfo& si) const override;
+            virtual bool isEqual(const SrrQueryParamsPtr & params) const override;
+            virtual Action getAction() const override { return Action::SAVE; }
         };
 
-        class SrrRestoreParams : public SrrQueryParams
+        class SrrRestoreQuery : public SrrQueryParams
         {
         public:
             std::map<Feature, std::string> mapFeaturesData;
             std::string passphrase;
 
-            virtual void fromUserData(UserData & data) override;
-            virtual void toUserData(UserData & data) const override;
+            virtual void deserialize(const cxxtools::SerializationInfo& si) override;
+            virtual void serialize(cxxtools::SerializationInfo& si) const override;
+            virtual bool isEqual(const SrrQueryParamsPtr & params) const override;
+            virtual Action getAction() const override { return Action::RESTORE; }
         };
 
-        class SrrResetParams : public SrrQueryParams
+        class SrrResetQuery : public SrrQueryParams
         {
         public:
-            std::vector<Feature> features;
+            std::set<Feature> features;
 
-            virtual void fromUserData(UserData & data) override;
-            virtual void toUserData(UserData & data) const override;
+            virtual void deserialize(const cxxtools::SerializationInfo& si) override;
+            virtual void serialize(cxxtools::SerializationInfo& si) const override;
+            virtual bool isEqual(const SrrQueryParamsPtr & params) const override;
+            virtual Action getAction() const override { return Action::RESET; }
         };
 
-        class SrrListFeatureParams : public SrrQueryParams
+        class SrrListFeatureQuery : public SrrQueryParams
         {
         public:
-            virtual void fromUserData(UserData & data) override {}
-            virtual void toUserData(UserData & data) const override {}
+            virtual void deserialize(const cxxtools::SerializationInfo& si) override {}
+            virtual void serialize(cxxtools::SerializationInfo& si) const override {}
+            virtual bool isEqual(const SrrQueryParamsPtr & params) const override;
+            virtual Action getAction() const override { return Action::GET_FEATURE_LIST; }
         };
 
 
@@ -140,7 +159,7 @@ namespace dto
 
             std::string error;
 
-            SrrResponseParamsPtr params;
+            SrrResponseParamsPtr m_params;
 
             SrrResponse() = default;
 
@@ -164,7 +183,7 @@ namespace dto
             virtual void toUserData(UserData & data) const = 0;
         };
 
-        class SrrSaveResponseParams : public SrrResponseParams
+        class SrrSaveResponse : public SrrResponseParams
         {
         public:
             std::map<Feature, std::string> mapFeaturesData;
@@ -173,7 +192,7 @@ namespace dto
             virtual void toUserData(UserData & data) const override;
         };
 
-        class SrrRestoreResponseParams : public SrrResponseParams
+        class SrrRestoreResponse : public SrrResponseParams
         {
         public:
             std::map<Feature, Status> mapFeaturesStatus;
@@ -182,7 +201,7 @@ namespace dto
             virtual void toUserData(UserData & data) const override;
         };
 
-        class SrrResetResponseParams : public SrrResponseParams
+        class SrrResetResponse : public SrrResponseParams
         {
         public:
             std::map<Feature, Status> mapFeaturesStatus;
@@ -191,7 +210,7 @@ namespace dto
             virtual void toUserData(UserData & data) const override;
         };
 
-        class SrrListFeatureResponseParams : public SrrResponseParams
+        class SrrListFeatureResponse : public SrrResponseParams
         {
         public:
             std::vector<Feature> features;
