@@ -195,8 +195,8 @@ namespace dto
             //create functions
             static SrrResponse createSave(const std::map<FeatureName, std::pair<FeatureStatus,Feature>> & mapFeaturesData);
             static SrrResponse createRestore(const std::map<FeatureName, FeatureStatus> & mapStatus);
-            /*static SrrResponse createReset();
-            static SrrResponse createGetListFeature();*/
+            static SrrResponse createReset(const std::map<FeatureName, FeatureStatus> & mapStatus);
+            static SrrResponse createGetListFeature(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies);
         };
 
         void operator>> (UserData & data, SrrResponse & response);
@@ -249,10 +249,10 @@ namespace dto
             virtual void serialize(cxxtools::SerializationInfo& si) const override;
         };
 
-        /*class SrrResetResponse : public SrrResponseParams
+        class SrrResetResponse : public SrrResponseParams
         {
         public:
-            std::map<FeatureName, Status> mapFeaturesStatus;
+            std::map<FeatureName, FeatureStatus> mapFeaturesStatus;
 
             virtual bool isEqual(const SrrResponseParamsPtr & params) const override;
             virtual Action getAction() const override { return Action::RESET; }
@@ -266,7 +266,8 @@ namespace dto
         class SrrListFeatureResponse : public SrrResponseParams
         {
         public:
-            std::set<FeatureName> features;
+            Status status = Status::SUCCESS;
+            std::map<FeatureName, FeatureDependencies> mapFeaturesDependencies;
 
             virtual bool isEqual(const SrrResponseParamsPtr & params) const override;
             virtual Action getAction() const override { return Action::GET_FEATURE_LIST; }
@@ -275,7 +276,7 @@ namespace dto
             //serialization
             virtual void deserialize(const cxxtools::SerializationInfo& si) override;
             virtual void serialize(cxxtools::SerializationInfo& si) const override;
-        };*/   
+        };  
     } // srr namespace
     
 } // dto namespace
