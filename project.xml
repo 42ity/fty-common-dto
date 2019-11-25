@@ -11,6 +11,7 @@
     <target name = "debian" />
     <target name = "redhat" />
     <target name = "travis" >
+        <option name = "recursive_dependencies" value = "true"/>
         <!-- option name = "clangformat_implem" value = "autotools" / -->
         <option name = "use_cmake" value = "0" />
         <!-- option name = "clangformat_require_good" value = "1" / -->
@@ -39,9 +40,7 @@
     <abi current = "1" revision = "0" age = "0" />
     
     <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
-            repository = "https://github.com/42ity/cxxtools.git"
-            release = "2.2-FTY-master"
-            />
+            repository = "https://github.com/42ity/cxxtools.git"/>
 
     <!-- Project -->
     <class name = "fty-srr-dto" selftest = "0">Fty srr dto</class>
