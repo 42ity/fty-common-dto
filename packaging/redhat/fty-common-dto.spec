@@ -52,6 +52,7 @@ BuildRequires:  xmlto
 BuildRequires:  devtoolset-3-gcc devtoolset-3-gcc-c++
 BuildRequires:  gcc-c++ >= 4.9.0
 BuildRequires:  cxxtools-devel
+BuildRequires:  protobuf-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -76,6 +77,7 @@ Summary:        common data transfer object for 42ity ecosystem
 Group:          System/Libraries
 Requires:       libfty_common_dto1 = %{version}
 Requires:       cxxtools-devel
+Requires:       protobuf-devel
 
 %description devel
 common data transfer object for 42ity ecosystem development tools

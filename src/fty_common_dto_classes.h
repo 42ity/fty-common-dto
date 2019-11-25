@@ -30,7 +30,7 @@
 #include "platform.h"
 
 //  External API
-#include "../include/fty_common_dto.h"
+#include "../include/fty-common-dto.h"
 
 //  Opaque class structures to allow forward references
 

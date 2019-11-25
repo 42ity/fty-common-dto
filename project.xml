@@ -33,7 +33,7 @@
         <option name = "use_checkout_explicit" value = "1" />
     </target>
     
-    <classfilename use-cxx-gcc-4-9 = "true"/>
+    <classfilename use-cxx-gcc-4-9 = "true" pretty-print = "no"/>
 
     <include filename = "license.xml" />
     <version major = "1" minor = "0" patch = "0" />
@@ -41,11 +41,15 @@
     
     <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
             repository = "https://github.com/42ity/cxxtools.git"
-            release = "2.2-FTY-master"
+            />
+    
+    <use project = "protobuf" header = "google/protobuf/stubs/common.h"
+            repository = "https://github.com/42ity/protobuf.git"
             />
 
     <!-- Project -->
-    <class name = "fty-srr-dto" selftest = "1">Fty srr dto</class>
-    <class name = "fty-commands-dto" selftest = "0">Fty nut dto</class>
-    <header name = "fty-userdata-dto" selftest = "0">Fty user data dto</header>
+    <class name = "srr_pb" selftest = "0">srr protobuf</class>
+    <class name = "fty_srr_dto" selftest = "1">Fty srr dto wrapper functions for protobuf</class>
+    <class name = "fty_commands_dto" selftest = "0">Fty nut dto</class>
+    <header name = "fty_userdata_dto" selftest = "0">Fty user data dto</header>
 </project>

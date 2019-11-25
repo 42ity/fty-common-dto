@@ -7,6 +7,7 @@ Architecture: any
 Build-Depends: debhelper (>= 9),
     pkg-config,
     libcxxtools-dev,
+    libprotobuf-dev,
     asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
 

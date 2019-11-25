@@ -1,1 +1,2 @@
    fty-common-dto -> cxxtools;
+   fty-common-dto -> protobuf;
