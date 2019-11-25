@@ -39,10 +39,48 @@ namespace dto
     {
         static cxxtools::SerializationInfo deserializeJson(const std::string & json);
         static std::string serializeJson(const cxxtools::SerializationInfo & si, bool beautify = false);
+        
         /**
          * SRRQuery
          * 
          */
+        SrrQuery::SrrQuery(const SrrQuery& q)
+        {
+            switch(q.getAction())
+            {
+                case Action::SAVE:
+                {
+                    SrrSaveQuery * pParams = dynamic_cast<SrrSaveQuery*>(q.m_params.get());
+                    m_params = SrrQueryParamsPtr(new SrrSaveQuery(*pParams));
+                    break;
+                }
+
+                case Action::RESTORE:
+                {
+                    SrrResetQuery * pParams = dynamic_cast<SrrResetQuery*>(q.m_params.get());
+                    m_params = SrrQueryParamsPtr(new SrrResetQuery(*pParams));
+                    break;
+                }
+
+                case Action::RESET:
+                {
+                    SrrResetQuery * pParams = dynamic_cast<SrrResetQuery*>(q.m_params.get());
+                    m_params = SrrQueryParamsPtr(new SrrResetQuery(*pParams));
+                    break;
+                }
+
+                case Action::GET_FEATURE_LIST:
+                {
+                    SrrListFeatureQuery * pParams = dynamic_cast<SrrListFeatureQuery*>(q.m_params.get());
+                    m_params = SrrQueryParamsPtr(new SrrListFeatureQuery(*pParams));
+                    break;
+                }
+                
+                default:
+                    m_params = nullptr;
+            }
+        }
+                
         SrrQuery SrrQuery::createSave(const std::set<FeatureName> & features, const std::string & passpharse)
         {
             SrrQuery query;
@@ -335,6 +373,56 @@ namespace dto
          * Response
          * 
          */
+        SrrResponse::SrrResponse(const SrrResponse& r)
+        {
+            switch(r.getAction())
+            {
+                case Action::SAVE:
+                {
+                    SrrSaveResponse * pParams = dynamic_cast<SrrSaveResponse*>(r.m_params.get());
+                    m_params = SrrResponseParamsPtr(new SrrSaveResponse(*pParams));
+                    break;
+                }
+
+                case Action::RESTORE:
+                {
+                    SrrRestoreResponse * pParams = dynamic_cast<SrrRestoreResponse*>(r.m_params.get());
+                    m_params = SrrResponseParamsPtr(new SrrRestoreResponse(*pParams));
+                    break;
+                }
+
+                case Action::RESET:
+                {
+                    SrrResetResponse * pParams = dynamic_cast<SrrResetResponse*>(r.m_params.get());
+                    m_params = SrrResponseParamsPtr(new SrrResetResponse(*pParams));
+                    break;
+                }
+
+                case Action::GET_FEATURE_LIST:
+                {
+                    SrrListFeatureResponse * pParams = dynamic_cast<SrrListFeatureResponse*>(r.m_params.get());
+                    m_params = SrrResponseParamsPtr(new SrrListFeatureResponse(*pParams));
+                    break;
+                }
+                
+                default:
+                    m_params = nullptr;
+            }
+        }
+
+        SrrResponse operator+(const SrrResponse & r1, const SrrResponse & r2)
+        {
+            SrrResponse r = r1;
+            r.add(r2);
+            return r;
+        }
+
+        SrrResponse& operator+=(SrrResponse & r1, const SrrResponse & r2)
+        {
+            r1.add(r2);
+            return r1;
+        }
+
         SrrResponse SrrResponse::createSave( const std::map<FeatureName, std::pair<FeatureStatus,Feature>> & mapFeaturesData)
         {
             SrrResponse response;
@@ -388,7 +476,7 @@ namespace dto
 
             if(getAction() == Action::UNKNOWN)
             {
-                throw std::runtime_error("Impossible to add Unknows response");
+                throw std::runtime_error("Impossible to add Unknown response");
             }
 
             m_params->add(r.m_params);
@@ -1334,8 +1422,8 @@ void fty_srr_dto_test (bool verbose)
             SrrResponse r1 = SrrResponse::createSave(map1);
             SrrResponse r2 = SrrResponse::createSave(map2);
             
-            r1.add(r2);
-            std::cout << r1 << std::endl;
+            SrrResponse r3 = r1 + r2;
+            std::cout << r3 << std::endl;
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
@@ -1368,9 +1456,8 @@ void fty_srr_dto_test (bool verbose)
             
             SrrResponse r2 = SrrResponse::createRestore(map2);
 
-            r1.add(r2);
-
-            std::cout << r1 << std::endl;
+            SrrResponse r3 = r1 + r2;
+            std::cout << r3 << std::endl;
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
@@ -1402,8 +1489,8 @@ void fty_srr_dto_test (bool verbose)
             SrrResponse r1 = SrrResponse::createReset(map1);
             SrrResponse r2 = SrrResponse::createReset(map2);
 
-            r1.add(r2);
-            std::cout << r1 << std::endl;
+            SrrResponse r3 = r1 + r2;
+            std::cout << r3 << std::endl;
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
@@ -1429,8 +1516,8 @@ void fty_srr_dto_test (bool verbose)
             SrrResponse r1 = SrrResponse::createGetListFeature({{"test", {"A","B"}}});
             SrrResponse r2 = SrrResponse::createGetListFeature({{"test1", {"C","B"}}});
 
-            r1.add(r2);
-            std::cout << r1 << std::endl;
+            SrrResponse r3 = r1 + r2;
+            std::cout << r3 << std::endl;
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);

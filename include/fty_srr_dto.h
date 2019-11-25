@@ -89,7 +89,9 @@ namespace dto
         private:
             SrrQueryParamsPtr m_params;
         public:
-            SrrQuery() = default;
+            SrrQuery(){}
+            SrrQuery(const SrrQuery& q);
+            SrrQuery(SrrQuery&& q) : m_params(std::move(q.m_params)){}
 
             Action getAction() const;
             SrrQueryParamsPtr & getParams() {return m_params;}
@@ -175,13 +177,15 @@ namespace dto
          */
         class SrrResponseParams;
         using SrrResponseParamsPtr = std::unique_ptr<SrrResponseParams>;
-
+        
         class SrrResponse
         {
         private:
             SrrResponseParamsPtr m_params;
         public:
-            SrrResponse() = default;
+            SrrResponse(){}
+            SrrResponse(const SrrResponse& r);
+            SrrResponse(SrrResponse&& r) : m_params(std::move(r.m_params)){}
 
             Action getAction() const;
             bool isEqual(const SrrResponse & response) const;
@@ -198,13 +202,16 @@ namespace dto
             static SrrResponse createRestore(const std::map<FeatureName, FeatureStatus> & mapStatus);
             static SrrResponse createReset(const std::map<FeatureName, FeatureStatus> & mapStatus);
             static SrrResponse createGetListFeature(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies);
+
         };
 
         void operator>> (UserData & data, SrrResponse & response);
         void operator<< (UserData & data, const SrrResponse & response);
         inline bool operator==(const SrrResponse& lhs, const SrrResponse& rhs){ return lhs.isEqual(rhs); }
         inline bool operator!=(const SrrResponse& lhs, const SrrResponse& rhs){ return !(lhs == rhs); }
-        std::ostream& operator<< (std::ostream& os, const SrrResponse& r);
+        std::ostream& operator<<(std::ostream& os, const SrrResponse& r);
+        SrrResponse operator+(const SrrResponse & r1, const SrrResponse & r2);
+        SrrResponse& operator+=(SrrResponse & r1, const SrrResponse & r2);
 
         class SrrResponseParams
         {
