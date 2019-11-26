@@ -41,7 +41,7 @@ namespace dto
 
         /**
          * Helper for client of SRR.
-         * As a client of SRR, you have to implement the handlers functions and you 
+         * As a client of SRR, you have to implement the handlers functions 
          * 
          */
         class SrrQueryProcessor
@@ -54,10 +54,6 @@ namespace dto
 
             Response processQuery(const Query & q);
         };
-        /**
-         * Feature structures
-         * 
-         */
         
         
         /**
@@ -151,31 +147,30 @@ namespace dto
         inline bool operator!=(const ListFeatureResponse& lhs, const ListFeatureResponse& rhs){ return !(lhs == rhs); }
 
         //operators +        
-        /*Response operator+(const Response & r1, const Response & r2);
+        Response operator+(const Response & r1, const Response & r2);
         Response& operator+=(Response & r1, const Response & r2);
 
         SaveResponse& operator+=(SaveResponse & r1, const SaveResponse & r2);
         RestoreResponse& operator+=(RestoreResponse & r1, const RestoreResponse & r2);
         ResetResponse& operator+=(ResetResponse & r1, const ResetResponse & r2);
-        ListFeatureResponse& operator+=(ListFeatureResponse & r1, const ListFeatureResponse & r2);*/
+        ListFeatureResponse& operator+=(ListFeatureResponse & r1, const ListFeatureResponse & r2);
 
         //serializer for UI => will be moved in fty-srr-rest
-        /*void operator<<= (const cxxtools::SerializationInfo& si, Response & response);
-        void operator<<= (const cxxtools::SerializationInfo& si, SaveResponse & response);
-        void operator<<= (const cxxtools::SerializationInfo& si, RestoreResponse & response);
-        void operator<<= (const cxxtools::SerializationInfo& si, ResetResponse & response);
-        void operator<<= (const cxxtools::SerializationInfo& si, ListFeatureResponse & response);
+        std::string responseToUiJson(const Response & response);
+        void operator<<= (cxxtools::SerializationInfo& si, const Response & response);
+        void operator<<= (cxxtools::SerializationInfo& si, const SaveResponse & response);
+        void operator<<= (cxxtools::SerializationInfo& si, const RestoreResponse & response);
+        void operator<<= (cxxtools::SerializationInfo& si, const ResetResponse & response);
+        void operator<<= (cxxtools::SerializationInfo& si, const ListFeatureResponse & response);
 
         //status to string for UI
         std::string statusToString(Status status);
 
         //get global status for UI => will be moved in fty-srr-rest
-        Status getGlobalStatus(const Response & r);
-
         Status getGlobalStatus(const SaveResponse & r);
         Status getGlobalStatus(const RestoreResponse & r);
         Status getGlobalStatus(const ResetResponse & r);
-        Status getGlobalStatus(const ListFeatureResponse & r);*/
+        Status getGlobalStatus(const ListFeatureResponse & r);
 
 
         

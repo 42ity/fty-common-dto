@@ -222,7 +222,18 @@ namespace dto
                 featureSi.getMember("version") >>= *(f.mutable_version());
 
                 const cxxtools::SerializationInfo & dataSi = featureSi.getMember("data");
-                f.set_data(serializeJson(dataSi));
+                std::string data;
+                try
+                {
+                    //try to serialize if it's Json format
+                    data = serializeJson(dataSi);
+                }
+                catch(const std::exception& /*e*/)
+                {
+                    dataSi >>= data;
+                }
+                
+                f.set_data(data);
                 
                 mapFeaturesData[featureName] = std::move(f);
             }  
@@ -463,10 +474,10 @@ namespace dto
             return (map1 == map2);
         }
 
-        /*Response operator+(const Response & r1, const Response & r2)
+        Response operator+(const Response & r1, const Response & r2)
         {
             Response r = r1;
-            r.add(r2);
+            r +=r2;
             return r;
         }
 
@@ -476,34 +487,68 @@ namespace dto
             {
                 throw std::runtime_error("Response with different type cannot be added");
             }
+
+            switch (r1.parameters_case())
+            {
+            case Response::ParametersCase::kSave :
+                *(r1.mutable_save()) += r2.save();
+                break;
+
+            case Response::ParametersCase::kRestore :
+                *(r1.mutable_restore()) += r2.restore();
+                break;
+            
+            case Response::ParametersCase::kReset :
+                *(r1.mutable_reset()) += r2.reset();
+                break;
+
+            case Response::ParametersCase::kListFeature :
+                *(r1.mutable_list_feature()) += r2.list_feature();
+                break;
+            
+            default:
+                break;
+            }
+
             return r1;
-        }*/
+        }
 
-        /*void SrrResponse::add(const SrrResponse & r)
+        SaveResponse& operator+=(SaveResponse & r1, const SaveResponse & r2)
         {
-            if(getAction() != r.getAction())
-            {
-                throw std::runtime_error("Impossible to add 2 differents type of response");
-            }
+            r1.mutable_map_features_data()->insert(r2.map_features_data().begin(), r2.map_features_data().end());
+            return r1;
+        }
 
-            if(getAction() == Action::UNKNOWN)
-            {
-                throw std::runtime_error("Impossible to add Unknown response");
-            }
+        RestoreResponse& operator+=(RestoreResponse & r1, const RestoreResponse & r2)
+        {
+            r1.mutable_map_features_status()->insert(r2.map_features_status().begin(), r2.map_features_status().end());
+            return r1;
+        }
 
-            m_params->add(r.m_params);
+        ResetResponse& operator+=(ResetResponse & r1, const ResetResponse & r2)
+        {
+            r1.mutable_map_features_status()->insert(r2.map_features_status().begin(), r2.map_features_status().end());
+            return r1;
+        }
+
+        ListFeatureResponse& operator+=(ListFeatureResponse & r1, const ListFeatureResponse & r2)
+        {
+            r1.mutable_map_features_dependencies()->insert(r2.map_features_dependencies().begin(), r2.map_features_dependencies().end());
+            return r1;
         }
 
 
-        //save response
-        Status SrrSaveResponse::getGlobalStatus() const
+        //get global status for UI => will be moved in fty-srr-rest
+        Status getGlobalStatus(const SaveResponse & r)
         {
             Status globalStatus = Status::UNKNOWN;
 
             unsigned int nbSuccess = 0;
-            for( const auto & item : mapFeaturesData)
+            for( const auto & item : r.map_features_data())
             {
-                if(item.second.first.status == Status::SUCCESS)
+                const FeatureAndStatus & feature = item.second;
+
+                if(feature.status().status() == Status::SUCCESS)
                 {
                     nbSuccess++;
                 }
@@ -513,7 +558,7 @@ namespace dto
             {
                 globalStatus = Status::FAILED;
             }
-            else if(nbSuccess == mapFeaturesData.size())
+            else if(nbSuccess == r.map_features_data().size())
             {
                 globalStatus = Status::SUCCESS;
             }
@@ -525,201 +570,185 @@ namespace dto
             return globalStatus;
         }
 
-        void SrrSaveResponse::serialize(cxxtools::SerializationInfo& si) const
+        Status getGlobalStatus(const RestoreResponse & r)
         {
-            si.addMember("status") <<= statusToString(getGlobalStatus());
+            Status globalStatus = Status::UNKNOWN;
+
+            unsigned int nbSuccess = 0;
+            for( const auto & item : r.map_features_status())
+            {
+                if(item.second.status() == Status::SUCCESS)
+                {
+                    nbSuccess++;
+                }
+            }
+
+            if(nbSuccess == 0)
+            {
+                globalStatus = Status::FAILED;
+            }
+            else if(nbSuccess == r.map_features_status().size())
+            {
+                globalStatus = Status::SUCCESS;
+            }
+            else
+            {
+                globalStatus = Status::PARTIAL_SUCCESS;
+            }
+
+            return globalStatus;
+        }
+
+        Status getGlobalStatus(const ResetResponse & r)
+        {
+            Status globalStatus = Status::UNKNOWN;
+
+            unsigned int nbSuccess = 0;
+            for( const auto & item : r.map_features_status())
+            {
+                if(item.second.status() == Status::SUCCESS)
+                {
+                    nbSuccess++;
+                }
+            }
+
+            if(nbSuccess == 0)
+            {
+                globalStatus = Status::FAILED;
+            }
+            else if(nbSuccess == r.map_features_status().size())
+            {
+                globalStatus = Status::SUCCESS;
+            }
+            else
+            {
+                globalStatus = Status::PARTIAL_SUCCESS;
+            }
+
+            return globalStatus;
+        }
+
+        Status getGlobalStatus(const ListFeatureResponse & r)
+        {
+            return Status::SUCCESS;
+        }
+
+        std::string responseToUiJson(const Response & response)
+        {
+            cxxtools::SerializationInfo si; 
+            si <<= response;
+            return serializeJson(si);
+        }
+
+        void operator<<= (cxxtools::SerializationInfo& si, const Response & response)
+        {
+            switch (response.parameters_case())
+            {
+            case Response::ParametersCase::kSave :
+                si <<= response.save();
+                break;
+
+            case Response::ParametersCase::kRestore :
+                si <<= response.restore();
+                break;
+            
+            case Response::ParametersCase::kReset :
+                si <<= response.reset();
+                break;
+
+            case Response::ParametersCase::kListFeature :
+                si <<= response.list_feature();
+                break;
+            
+            default:
+                break;
+            }
+        }
+
+        void operator<<= (cxxtools::SerializationInfo& si, const SaveResponse & response)
+        {
+            si.addMember("status") <<= statusToString(getGlobalStatus(response));
             cxxtools::SerializationInfo & featuresSi = si.addMember("features");
             
-            for( const auto & item : mapFeaturesData)
+            for( const auto & item : response.map_features_data())
             {
                 cxxtools::SerializationInfo & featureSi = featuresSi.addMember(item.first);
-                const auto & pair = item.second;
+                const auto & featureAndStatus = item.second;
 
-                featureSi.addMember("status") <<= statusToString(pair.first.status);
-                featureSi.addMember("error") <<= pair.first.errorMsg;
-                featureSi.addMember("version") <<= pair.second.version;
-                featureSi.addMember("data") <<= pair.second.data;
-            }
-        }
+                featureSi.addMember("status") <<= statusToString(featureAndStatus.status().status());
+                featureSi.addMember("error") <<= featureAndStatus.status().error();
+                featureSi.addMember("version") <<= featureAndStatus.feature().version();
 
-        void SrrSaveResponse::add(const SrrResponseParamsPtr & params)
-        {
-            SrrSaveResponse * saveParams = dynamic_cast<SrrSaveResponse*>(params.get());
-            mapFeaturesData.insert(saveParams->mapFeaturesData.begin(), saveParams->mapFeaturesData.end());
-        }
-
-        //restore response
-        Status SrrRestoreResponse::getGlobalStatus() const
-        {
-            Status globalStatus = Status::UNKNOWN;
-
-            unsigned int nbSuccess = 0;
-            for( const auto & item : mapFeaturesStatus)
-            {
-                if(item.second.status == Status::SUCCESS)
+                
+                cxxtools::SerializationInfo & data = featureSi.addMember("data");
+                
+                try
                 {
-                    nbSuccess++;
+                    //try to unserialize the data if they are on Json format
+                    data = deserializeJson(featureAndStatus.feature().data());
                 }
+                catch(const std::exception& /* e */)
+                {
+                    //put the data as a string if they are not in Json
+                    data <<= featureAndStatus.feature().data();
+                }
+                
             }
-
-            if(nbSuccess == 0)
-            {
-                globalStatus = Status::FAILED;
-            }
-            else if(nbSuccess == mapFeaturesStatus.size())
-            {
-                globalStatus = Status::SUCCESS;
-            }
-            else
-            {
-                globalStatus = Status::PARTIAL_SUCCESS;
-            }
-
-            return globalStatus;
         }
 
-        void SrrRestoreResponse::add(const SrrResponseParamsPtr & params)
+        void operator<<= (cxxtools::SerializationInfo& si, const RestoreResponse & response)
         {
-            SrrRestoreResponse * restoreParams = dynamic_cast<SrrRestoreResponse*>(params.get());
-            mapFeaturesStatus.insert(restoreParams->mapFeaturesStatus.begin(), restoreParams->mapFeaturesStatus.end());
-        }
-
-        void SrrRestoreResponse::serialize(cxxtools::SerializationInfo& si) const
-        {
-            si.addMember("status") <<= statusToString(getGlobalStatus());
+            si.addMember("status") <<= statusToString(getGlobalStatus(response));
             cxxtools::SerializationInfo & featuresSi = si.addMember("statusList");
             
-            for( const auto & item : mapFeaturesStatus)
+            for( const auto & item : response.map_features_status())
             {
                 cxxtools::SerializationInfo & featureSi = featuresSi.addMember("");
 
                 featureSi.addMember("name") <<= item.first;
-                featureSi.addMember("status") <<= statusToString(item.second.status);
-                featureSi.addMember("error") <<= item.second.errorMsg;
+                featureSi.addMember("status") <<= statusToString(item.second.status());
+                featureSi.addMember("error") <<= item.second.error();
             }
 
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
 
-        //reset response
-        Status SrrResetResponse::getGlobalStatus() const
+        void operator<<= (cxxtools::SerializationInfo& si, const ResetResponse & response)
         {
-            Status globalStatus = Status::UNKNOWN;
-
-            unsigned int nbSuccess = 0;
-            for( const auto & item : mapFeaturesStatus)
-            {
-                if(item.second.status == Status::SUCCESS)
-                {
-                    nbSuccess++;
-                }
-            }
-
-            if(nbSuccess == 0)
-            {
-                globalStatus = Status::FAILED;
-            }
-            else if(nbSuccess == mapFeaturesStatus.size())
-            {
-                globalStatus = Status::SUCCESS;
-            }
-            else
-            {
-                globalStatus = Status::PARTIAL_SUCCESS;
-            }
-
-            return globalStatus;
-        }
-
-        void SrrResetResponse::add(const SrrResponseParamsPtr & params)
-        {
-            SrrResetResponse * resetParams = dynamic_cast<SrrResetResponse*>(params.get());
-            mapFeaturesStatus.insert(resetParams->mapFeaturesStatus.begin(), resetParams->mapFeaturesStatus.end());
-        }
-
-        void SrrResetResponse::serialize(cxxtools::SerializationInfo& si) const
-        {
-            si.addMember("status") <<= statusToString(getGlobalStatus());
+            si.addMember("status") <<= statusToString(getGlobalStatus(response));
             cxxtools::SerializationInfo & featuresSi = si.addMember("statusList");
             
-            for( const auto & item : mapFeaturesStatus)
+            for( const auto & item : response.map_features_status())
             {
                 cxxtools::SerializationInfo & featureSi = featuresSi.addMember("");
 
                 featureSi.addMember("name") <<= item.first;
-                featureSi.addMember("status") <<= statusToString(item.second.status);
-                featureSi.addMember("error") <<= item.second.errorMsg;
+                featureSi.addMember("status") <<= statusToString(item.second.status());
+                featureSi.addMember("error") <<= item.second.error();
             }
 
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
-       
 
-        //get feature list response
-        Status SrrListFeatureResponse::getGlobalStatus() const
+        void operator<<= (cxxtools::SerializationInfo& si, const ListFeatureResponse & response)
         {
-            return status;
-        }
-
-        void SrrListFeatureResponse::add(const SrrResponseParamsPtr & params)
-        {
-            SrrListFeatureResponse * pParams = dynamic_cast<SrrListFeatureResponse*>(params.get());
-            mapFeaturesDependencies.insert(pParams->mapFeaturesDependencies.begin(), pParams->mapFeaturesDependencies.end());
-        }
-
-        void SrrListFeatureResponse::serialize(cxxtools::SerializationInfo& si) const
-        {
-            si.addMember("status") <<= statusToString(getGlobalStatus());
+            si.addMember("status") <<= statusToString(getGlobalStatus(response));
             cxxtools::SerializationInfo & featuresSi = si.addMember("featuresList");
             
-            for( const auto & item : mapFeaturesDependencies)
+            for( const auto & item : response.map_features_dependencies())
             {
                 cxxtools::SerializationInfo & featureSi = featuresSi.addMember("");
 
                 featureSi.addMember("name") <<= item.first;
-                featureSi.addMember("dependencies") <<= item.second;
+                const FeatureDependencies & dep = item.second;
+
+                std::set<FeatureName> dependencies(dep.dependencies().begin(), dep.dependencies().end());
+
+                featureSi.addMember("dependencies") <<= dependencies;
             }
 
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
-
-
-        static const std::map<Action, std::string> actionInString =
-        {
-            {Action::SAVE,    "save"},
-            {Action::RESET,   "reset"},
-            {Action::RESTORE, "restore"},
-            {Action::GET_FEATURE_LIST, "getFeatureList"},
-            {Action::UNKNOWN, "unknown"}
-        };
-
-        std::string actionToString(Action action)
-        {
-            const auto it = actionInString.find(action);
-
-            if(it != actionInString.end())
-            {
-                return it->second;
-            }
-            else
-            {
-                return "unknown";
-            }
-        }
-
-        Action stringToAction(const std::string & actionStr)
-        {
-            for(const auto & item : actionInString)
-            {
-                if(item.second == actionStr)
-                {
-                    return item.first;
-                }
-            }
-
-            return Action::UNKNOWN;
-        }
-
 
         static const std::map<Status, std::string> statusInString =
         {
@@ -742,19 +771,6 @@ namespace dto
                 return "unknown";
             }
         }
-
-        Status stringToStatus(const std::string & statusStr)
-        {
-            for(const auto & item : statusInString)
-            {
-                if(item.second == statusStr)
-                {
-                    return item.first;
-                }
-            }
-
-            return Status::UNKNOWN;
-        }*/
 
         static cxxtools::SerializationInfo deserializeJson(const std::string & json)
         {
@@ -1207,7 +1223,7 @@ void fty_srr_dto_test (bool verbose)
     printf ("OK\n");
 
 //Next test
-    /*testNumber = "3.1";
+    testNumber = "3.1";
     testName = "Check add operation on Save Response";
     printf ("\n-------------------------------------------------------------\n");
     {
@@ -1215,20 +1231,39 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
-            FeatureStatus s1 = {Status::SUCCESS, ""};
-            Feature f1 = {"1.0", "data"};
+            Feature f1;
+            f1.set_version("1.0");
+            f1.set_data("data");
             
-            std::map<FeatureName, std::pair<FeatureStatus,Feature>> map1;
-            map1["test"] = {s1,f1};
+            FeatureStatus s1; 
+            s1.set_status(Status::SUCCESS);
+            
+            FeatureAndStatus fs1;
+            *(fs1.mutable_feature()) = f1;
+            *(fs1.mutable_status()) = s1;
+            
+            Response r1 = createSaveResponse({{"test",fs1}});
 
-            std::map<FeatureName, std::pair<FeatureStatus,Feature>> map2;
-            map2["test2"] = {s1,f1};
+            Feature f2;
+            f2.set_version("3.5");
+            f2.set_data("data-2");
+
+            FeatureStatus s2; 
+            s2.set_status(Status::FAILED);
+            s2.set_error("bad version");
+              
+            FeatureAndStatus fs2;          
+            *(fs2.mutable_feature()) = f2;
+            *(fs2.mutable_status()) = s2;
             
-            SrrResponse r1 = SrrResponse::createSave(map1);
-            SrrResponse r2 = SrrResponse::createSave(map2);
+            Response r2 = createSaveResponse({{"test-2",fs2}});
             
-            SrrResponse r3 = r1 + r2;
-            std::cout << r3 << std::endl;
+            Response r3 = createSaveResponse({{"test",fs1},{"test-2",fs2}});
+            
+            Response r = r1 + r2;
+            std::cout << r << std::endl;
+            
+            if(r != r3) throw std::runtime_error("Bad aggregation");
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
@@ -1243,7 +1278,7 @@ void fty_srr_dto_test (bool verbose)
     printf ("OK\n");
 
 //Next test
-    testNumber = "3.2";
+   testNumber = "3.2";
     testName = "Check add operation on Restore Response";
     printf ("\n-------------------------------------------------------------\n");
     {
@@ -1251,18 +1286,22 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
-            std::map<FeatureName, FeatureStatus> map1;
-            map1["test"] = {Status::SUCCESS, ""};
+            FeatureStatus s1;
+            s1.set_status(Status::SUCCESS);
+            Response r1 = createRestoreResponse({{"test", s1}});
+ 
+            FeatureStatus s2;
+            s2.set_status(Status::FAILED);
+            s2.set_error("error msg");
             
-            SrrResponse r1 = SrrResponse::createRestore(map1);
+            Response r2 = createRestoreResponse({{"test-2", s2}});
             
-            std::map<FeatureName, FeatureStatus> map2;
-            map2["test2"] = {Status::FAILED, "I'm a failure"};
-            
-            SrrResponse r2 = SrrResponse::createRestore(map2);
+            Response r = createRestoreResponse({{"test", s1},{"test-2", s2}});
 
-            SrrResponse r3 = r1 + r2;
+            Response r3 = r1 + r2;
             std::cout << r3 << std::endl;
+            
+            if(r != r3) throw std::runtime_error("Bad aggregation");
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
@@ -1285,17 +1324,22 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {          
-            std::map<FeatureName, FeatureStatus> map1;
-            map1["test"] = {Status::SUCCESS, ""};
-
-            std::map<FeatureName, FeatureStatus> map2;
-            map2["test2"] = {Status::FAILED, "I'm a failure"};
+            FeatureStatus s1;
+            s1.set_status(Status::SUCCESS);
+            Response r1 = createResetResponse({{"test", s1}});
+ 
+            FeatureStatus s2;
+            s2.set_status(Status::FAILED);
+            s2.set_error("error msg");
             
-            SrrResponse r1 = SrrResponse::createReset(map1);
-            SrrResponse r2 = SrrResponse::createReset(map2);
+            Response r2 = createResetResponse({{"test-2", s2}});
+            
+            Response r = createResetResponse({{"test", s1},{"test-2", s2}});
 
-            SrrResponse r3 = r1 + r2;
+            Response r3 = r1 + r2;
             std::cout << r3 << std::endl;
+            
+            if(r != r3) throw std::runtime_error("Bad aggregation");
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
@@ -1308,7 +1352,6 @@ void fty_srr_dto_test (bool verbose)
     }
 
     printf ("OK\n");
-
 //Next test
     testNumber = "3.4";
     testName = "Check add operation on List Feature Response";
@@ -1317,13 +1360,26 @@ void fty_srr_dto_test (bool verbose)
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
 
         try
-        {          
-            SrrResponse r1 = SrrResponse::createGetListFeature({{"test", {"A","B"}}});
-            SrrResponse r2 = SrrResponse::createGetListFeature({{"test1", {"C","B"}}});
+        {  
+            FeatureDependencies d1;
+            d1.add_dependencies("A");
+            d1.add_dependencies("B");
+          
+            Response r1 = createListFeatureResponse({{"test", d1}});
 
-            SrrResponse r3 = r1 + r2;
-            std::cout << r3 << std::endl;
+            FeatureDependencies d2;
+            d2.add_dependencies("A");
+            d2.add_dependencies("B");
 
+            Response r2 = createListFeatureResponse({{"test2", d2}});
+            
+            Response r3 = createListFeatureResponse({{"test", d1},{"test2", d2}});
+
+            Response r = r1 + r2;
+            std::cout << r << std::endl;
+            
+            if(r != r3) throw std::runtime_error("Bad aggregation");
+            
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
         }
@@ -1335,7 +1391,7 @@ void fty_srr_dto_test (bool verbose)
     }
 
     printf ("OK\n");
-*/
+
 //Collect results
 
     printf ("\n-------------------------------------------------------------\n");
