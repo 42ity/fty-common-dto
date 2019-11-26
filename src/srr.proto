@@ -68,7 +68,7 @@ message Query
 
 message FeatureAndStatus
 {
-    Status status = 1;
+    FeatureStatus status = 1;
     Feature feature = 2;
 }
 

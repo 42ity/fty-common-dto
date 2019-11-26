@@ -144,10 +144,10 @@ namespace dto
         SaveResponse& operator+=(SaveResponse & r1, const SaveResponse & r2);
         RestoreResponse& operator+=(RestoreResponse & r1, const RestoreResponse & r2);
         ResetResponse& operator+=(ResetResponse & r1, const ResetResponse & r2);
-        ListFeatureResponse& operator+=(ListFeatureResponse & r1, const ListFeatureResponse & r2);
+        ListFeatureResponse& operator+=(ListFeatureResponse & r1, const ListFeatureResponse & r2);*/
 
         //serializer for UI => will be moved in fty-srr-rest
-        void operator<<= (const cxxtools::SerializationInfo& si, Response & response);
+        /*void operator<<= (const cxxtools::SerializationInfo& si, Response & response);
         void operator<<= (const cxxtools::SerializationInfo& si, SaveResponse & response);
         void operator<<= (const cxxtools::SerializationInfo& si, RestoreResponse & response);
         void operator<<= (const cxxtools::SerializationInfo& si, ResetResponse & response);

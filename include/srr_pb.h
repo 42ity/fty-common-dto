@@ -1395,9 +1395,24 @@ class FeatureAndStatus :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kFeatureFieldNumber = 2,
     kStatusFieldNumber = 1,
+    kFeatureFieldNumber = 2,
   };
+  // .dto.srr.FeatureStatus status = 1;
+  bool has_status() const;
+  private:
+  bool _internal_has_status() const;
+  public:
+  void clear_status();
+  const ::dto::srr::FeatureStatus& status() const;
+  ::dto::srr::FeatureStatus* release_status();
+  ::dto::srr::FeatureStatus* mutable_status();
+  void set_allocated_status(::dto::srr::FeatureStatus* status);
+  private:
+  const ::dto::srr::FeatureStatus& _internal_status() const;
+  ::dto::srr::FeatureStatus* _internal_mutable_status();
+  public:
+
   // .dto.srr.Feature feature = 2;
   bool has_feature() const;
   private:
@@ -1413,22 +1428,13 @@ class FeatureAndStatus :
   ::dto::srr::Feature* _internal_mutable_feature();
   public:
 
-  // .dto.srr.Status status = 1;
-  void clear_status();
-  ::dto::srr::Status status() const;
-  void set_status(::dto::srr::Status value);
-  private:
-  ::dto::srr::Status _internal_status() const;
-  void _internal_set_status(::dto::srr::Status value);
-  public:
-
   // @@protoc_insertion_point(class_scope:dto.srr.FeatureAndStatus)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::dto::srr::FeatureStatus* status_;
   ::dto::srr::Feature* feature_;
-  int status_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_srr_2eproto;
 };
@@ -3225,24 +3231,64 @@ inline Query::ParametersCase Query::parameters_case() const {
 
 // FeatureAndStatus
 
-// .dto.srr.Status status = 1;
+// .dto.srr.FeatureStatus status = 1;
+inline bool FeatureAndStatus::_internal_has_status() const {
+  return this != internal_default_instance() && status_ != nullptr;
+}
+inline bool FeatureAndStatus::has_status() const {
+  return _internal_has_status();
+}
 inline void FeatureAndStatus::clear_status() {
-  status_ = 0;
+  if (GetArenaNoVirtual() == nullptr && status_ != nullptr) {
+    delete status_;
+  }
+  status_ = nullptr;
 }
-inline ::dto::srr::Status FeatureAndStatus::_internal_status() const {
-  return static_cast< ::dto::srr::Status >(status_);
+inline const ::dto::srr::FeatureStatus& FeatureAndStatus::_internal_status() const {
+  const ::dto::srr::FeatureStatus* p = status_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::dto::srr::FeatureStatus*>(
+      &::dto::srr::_FeatureStatus_default_instance_);
 }
-inline ::dto::srr::Status FeatureAndStatus::status() const {
+inline const ::dto::srr::FeatureStatus& FeatureAndStatus::status() const {
   // @@protoc_insertion_point(field_get:dto.srr.FeatureAndStatus.status)
   return _internal_status();
 }
-inline void FeatureAndStatus::_internal_set_status(::dto::srr::Status value) {
+inline ::dto::srr::FeatureStatus* FeatureAndStatus::release_status() {
+  // @@protoc_insertion_point(field_release:dto.srr.FeatureAndStatus.status)
   
-  status_ = value;
+  ::dto::srr::FeatureStatus* temp = status_;
+  status_ = nullptr;
+  return temp;
 }
-inline void FeatureAndStatus::set_status(::dto::srr::Status value) {
-  _internal_set_status(value);
-  // @@protoc_insertion_point(field_set:dto.srr.FeatureAndStatus.status)
+inline ::dto::srr::FeatureStatus* FeatureAndStatus::_internal_mutable_status() {
+  
+  if (status_ == nullptr) {
+    auto* p = CreateMaybeMessage<::dto::srr::FeatureStatus>(GetArenaNoVirtual());
+    status_ = p;
+  }
+  return status_;
+}
+inline ::dto::srr::FeatureStatus* FeatureAndStatus::mutable_status() {
+  // @@protoc_insertion_point(field_mutable:dto.srr.FeatureAndStatus.status)
+  return _internal_mutable_status();
+}
+inline void FeatureAndStatus::set_allocated_status(::dto::srr::FeatureStatus* status) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == nullptr) {
+    delete status_;
+  }
+  if (status) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      status = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, status, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  status_ = status;
+  // @@protoc_insertion_point(field_set_allocated:dto.srr.FeatureAndStatus.status)
 }
 
 // .dto.srr.Feature feature = 2;

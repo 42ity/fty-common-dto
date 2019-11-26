@@ -968,7 +968,7 @@ void fty_srr_dto_test (bool verbose)
     printf ("OK\n");
 
 //Next test
-/*    testNumber = "2.1";
+    testNumber = "2.1";
     testName = "Check Save Response";
     printf ("\n-------------------------------------------------------------\n");
     {
@@ -976,31 +976,36 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
-            FeatureStatus s1 = {Status::SUCCESS, ""};
-            Feature f1 = {"1.0", "data"};
+            FeatureAndStatus fs1;
+            FeatureStatus & s1 = *(fs1.mutable_status());
+            s1.set_status(Status::SUCCESS);
+
+            Feature & f1 = *(fs1.mutable_feature());
+            f1.set_version("1.0");
+            f1.set_data("data");
             
-            std::map<FeatureName, std::pair<FeatureStatus,Feature>> map1;
-            map1["test"] = {s1,f1};
+            std::map<FeatureName, FeatureAndStatus> map1;
+            map1["test"] = fs1;
             
-            SrrResponse r1 = SrrResponse::createSave(map1);
+            Response r1 = createSaveResponse(map1);
             std::cout << r1 << std::endl;
 
             //test ==
-            SrrResponse r2 = SrrResponse::createSave(map1);
+            Response r2 = createSaveResponse(map1);
             if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
-            std::map<FeatureName, std::pair<FeatureStatus,Feature>> map2;
-            map2["test2"] = {s1,f1};
+            std::map<FeatureName, FeatureAndStatus> map2;
+            map2["test2"] = fs1;
             
-            SrrResponse r3 = SrrResponse::createSave(map2);
+            Response r3 = createSaveResponse(map2);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
             UserData userdata;
             userdata << r1;
 
-            SrrResponse r4;
+            Response r4;
             userdata >> r4;
 
             if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
@@ -1018,7 +1023,7 @@ void fty_srr_dto_test (bool verbose)
     printf ("OK\n");
 
 //Next test
-    testNumber = "2.2";
+/*    testNumber = "2.2";
     testName = "Check Restore Response";
     printf ("\n-------------------------------------------------------------\n");
     {
