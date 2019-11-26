@@ -8,10 +8,10 @@ package dto.srr;
 
 enum Status
 {
-    SUCCESS = 0;
-    FAILED = 1;
-    PARTIAL_SUCCESS = 2;
-    UNKNOWN = 3;
+    UNKNOWN = 0; //0 value is also equals to not set enum.
+    SUCCESS = 1;
+    FAILED = 2;
+    PARTIAL_SUCCESS = 3;
 }
 
 message Feature

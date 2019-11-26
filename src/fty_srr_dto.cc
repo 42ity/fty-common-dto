@@ -39,6 +39,40 @@ namespace dto
 {
     namespace srr 
     {
+        Response SrrQueryProcessor::processQuery(const Query & q)
+        {
+            Response response;
+
+            switch (q.parameters_case())
+            {
+            case Query::ParametersCase::kSave :
+                if(!saveHandler) throw std::runtime_error("No save handler!");
+                *(response.mutable_save()) = saveHandler(q.save());
+                break;
+
+            case Query::ParametersCase::kRestore :
+                if(!restoreHandler) throw std::runtime_error("No restore handler!");
+                *(response.mutable_restore()) = restoreHandler(q.restore());
+                break;
+            
+            case Query::ParametersCase::kReset :
+                if(!resetHandler) throw std::runtime_error("No reset handler!");
+                *(response.mutable_reset()) = resetHandler(q.reset());
+                break;
+
+            case Query::ParametersCase::kListFeature :
+                if(!listFeatureHandler) throw std::runtime_error("No list feature handler!");
+                *(response.mutable_list_feature()) = listFeatureHandler(q.list_feature());
+                break;
+            
+            default:
+                throw std::runtime_error("Unknown query!");
+                break;
+            }
+
+            return response;
+        }
+
         static cxxtools::SerializationInfo deserializeJson(const std::string & json);
         static std::string serializeJson(const cxxtools::SerializationInfo & si, bool beautify = false);
 
@@ -308,7 +342,7 @@ namespace dto
             return response;
         }
 
-        Response createGetListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies)
+        Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies)
         {
             Response response;
 
@@ -1023,7 +1057,7 @@ void fty_srr_dto_test (bool verbose)
     printf ("OK\n");
 
 //Next test
-/*    testNumber = "2.2";
+    testNumber = "2.2";
     testName = "Check Restore Response";
     printf ("\n-------------------------------------------------------------\n");
     {
@@ -1031,30 +1065,31 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
-            FeatureStatus s1 = {Status::SUCCESS, ""};
+            FeatureStatus s1;
+            s1.set_status(Status::SUCCESS);
             
             std::map<FeatureName, FeatureStatus> map1;
             map1["test"] = s1;
             
-            SrrResponse r1 = SrrResponse::createRestore(map1);
+            Response r1 = createRestoreResponse(map1);
             std::cout << r1 << std::endl;
 
             //test ==
-            SrrResponse r2 = SrrResponse::createRestore(map1);
+            Response r2 = createRestoreResponse(map1);
             if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
             std::map<FeatureName, FeatureStatus> map2;
             map2["test2"] = s1;
             
-            SrrResponse r3 = SrrResponse::createRestore(map2);
+            Response r3 = createRestoreResponse(map2);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
             UserData userdata;
             userdata << r1;
 
-            SrrResponse r4;
+            Response r4;
             userdata >> r4;
 
             if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
@@ -1080,30 +1115,32 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
-            FeatureStatus s1 = {Status::SUCCESS, ""};
+            FeatureStatus s1;
+            s1.set_status(Status::SUCCESS);
+            s1.set_error("error");
             
             std::map<FeatureName, FeatureStatus> map1;
             map1["test"] = s1;
             
-            SrrResponse r1 = SrrResponse::createReset(map1);
+            Response r1 = createResetResponse(map1);
             std::cout << r1 << std::endl;
 
             //test ==
-            SrrResponse r2 = SrrResponse::createReset(map1);
+            Response r2 = createResetResponse(map1);
             if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
             std::map<FeatureName, FeatureStatus> map2;
             map2["test2"] = s1;
             
-            SrrResponse r3 = SrrResponse::createReset(map2);
+            Response r3 = createResetResponse(map2);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
             UserData userdata;
             userdata << r1;
 
-            SrrResponse r4;
+            Response r4;
             userdata >> r4;
 
             if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
@@ -1129,23 +1166,30 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
-           
-            SrrResponse r1 = SrrResponse::createGetListFeature({{"test", {"A","B"}}});
+            FeatureDependencies d1;
+            d1.add_dependencies("A");
+            d1.add_dependencies("B");
+            
+            Response r1 = createListFeatureResponse({{"test", d1}});
             std::cout << r1 << std::endl;
 
             //test ==
-            SrrResponse r2 = SrrResponse::createGetListFeature({{"test", {"A","B"}}});
+            Response r2 = createListFeatureResponse({{"test", d1}});
             if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
-            SrrResponse r3 = SrrResponse::createGetListFeature({{"test", {"C","B"}}});
+            FeatureDependencies d2;
+            d1.add_dependencies("C");
+            d1.add_dependencies("B");
+            
+            Response r3 = createListFeatureResponse({{"test", d2}});
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
             UserData userdata;
             userdata << r1;
 
-            SrrResponse r4;
+            Response r4;
             userdata >> r4;
 
             if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
@@ -1163,7 +1207,7 @@ void fty_srr_dto_test (bool verbose)
     printf ("OK\n");
 
 //Next test
-    testNumber = "3.1";
+    /*testNumber = "3.1";
     testName = "Check add operation on Save Response";
     printf ("\n-------------------------------------------------------------\n");
     {

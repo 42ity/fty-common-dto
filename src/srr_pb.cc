@@ -634,8 +634,8 @@ const char descriptor_table_protodef_srr_2eproto[] PROTOBUF_SECTION_VARIABLE(pro
   "r.RestoreResponseH\000\022\'\n\005reset\030\003 \001(\0132\026.dto"
   ".srr.ResetResponseH\000\0224\n\014list_feature\030\004 \001"
   "(\0132\034.dto.srr.ListFeatureResponseH\000B\014\n\npa"
-  "rameters*C\n\006Status\022\013\n\007SUCCESS\020\000\022\n\n\006FAILE"
-  "D\020\001\022\023\n\017PARTIAL_SUCCESS\020\002\022\013\n\007UNKNOWN\020\003b\006p"
+  "rameters*C\n\006Status\022\013\n\007UNKNOWN\020\000\022\013\n\007SUCCE"
+  "SS\020\001\022\n\n\006FAILED\020\002\022\023\n\017PARTIAL_SUCCESS\020\003b\006p"
   "roto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_srr_2eproto_deps[1] = {

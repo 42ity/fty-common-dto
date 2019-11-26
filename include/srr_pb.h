@@ -144,16 +144,16 @@ namespace dto {
 namespace srr {
 
 enum Status : int {
-  SUCCESS = 0,
-  FAILED = 1,
-  PARTIAL_SUCCESS = 2,
-  UNKNOWN = 3,
+  UNKNOWN = 0,
+  SUCCESS = 1,
+  FAILED = 2,
+  PARTIAL_SUCCESS = 3,
   Status_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   Status_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool Status_IsValid(int value);
-constexpr Status Status_MIN = SUCCESS;
-constexpr Status Status_MAX = UNKNOWN;
+constexpr Status Status_MIN = UNKNOWN;
+constexpr Status Status_MAX = PARTIAL_SUCCESS;
 constexpr int Status_ARRAYSIZE = Status_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Status_descriptor();

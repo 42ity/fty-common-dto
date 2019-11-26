@@ -28,8 +28,9 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <functional>
 
-#include "../include/srr_pb.h"
+#include "srr_pb.h"
 
 #include <cxxtools/serializationinfo.h>
 
@@ -37,22 +38,34 @@ namespace dto
 {
     namespace srr 
     {
-        /**
-         *  Status for SRR response object
-         */
-        /*std::string statusToString(Status status);
-        Status stringToStatus(const std::string & statusStr);*/
 
+        /**
+         * Helper for client of SRR.
+         * As a client of SRR, you have to implement the handlers functions and you 
+         * 
+         */
+        class SrrQueryProcessor
+        {
+        public:
+            std::function<SaveResponse(const SaveQuery &)> saveHandler;
+            std::function<RestoreResponse(const RestoreQuery &)> restoreHandler;
+            std::function<ResetResponse(const ResetQuery &)> resetHandler;
+            std::function<ListFeatureResponse(const ListFeatureQuery &)> listFeatureHandler;
+
+            Response processQuery(const Query & q);
+        };
         /**
          * Feature structures
          * 
          */
-        using FeatureName = std::string;
+        
         
         /**
          * Query wrapper functions
          * 
          */
+
+        using FeatureName = std::string;
 
         Query createSaveQuery(const std::set<FeatureName> & features, const std::string & passpharse);
         Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse);
@@ -106,7 +119,7 @@ namespace dto
         Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData);
         Response createRestoreResponse(const std::map<FeatureName, FeatureStatus> & mapStatus);
         Response createResetResponse(const std::map<FeatureName, FeatureStatus> & mapStatus);
-        Response createGetListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies);
+        Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies);
 
         //userdata serializer / deserializer
         void operator>> (UserData & data, Response & response);
@@ -153,6 +166,9 @@ namespace dto
         void operator<<= (const cxxtools::SerializationInfo& si, ResetResponse & response);
         void operator<<= (const cxxtools::SerializationInfo& si, ListFeatureResponse & response);
 
+        //status to string for UI
+        std::string statusToString(Status status);
+
         //get global status for UI => will be moved in fty-srr-rest
         Status getGlobalStatus(const Response & r);
 
@@ -160,6 +176,8 @@ namespace dto
         Status getGlobalStatus(const RestoreResponse & r);
         Status getGlobalStatus(const ResetResponse & r);
         Status getGlobalStatus(const ListFeatureResponse & r);*/
+
+
         
 
     } // srr namespace
