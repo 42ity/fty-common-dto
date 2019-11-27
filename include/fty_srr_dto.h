@@ -156,7 +156,7 @@ namespace dto
         ListFeatureResponse& operator+=(ListFeatureResponse & r1, const ListFeatureResponse & r2);
 
         //serializer for UI => will be moved in fty-srr-rest
-        std::string responseToUiJson(const Response & response);
+        std::string responseToUiJson(const Response & response, bool beautiful = false);
         void operator<<= (cxxtools::SerializationInfo& si, const Response & response);
         void operator<<= (cxxtools::SerializationInfo& si, const SaveResponse & response);
         void operator<<= (cxxtools::SerializationInfo& si, const RestoreResponse & response);

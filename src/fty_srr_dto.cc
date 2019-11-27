@@ -632,13 +632,14 @@ namespace dto
         {
             return Status::SUCCESS;
         }
-
-        std::string responseToUiJson(const Response & response)
+        
+        std::string responseToUiJson(const Response & response, bool beautiful)
         {
             cxxtools::SerializationInfo si; 
             si <<= response;
-            return serializeJson(si);
+            return serializeJson(si, beautiful);
         }
+
 
         void operator<<= (cxxtools::SerializationInfo& si, const Response & response)
         {
