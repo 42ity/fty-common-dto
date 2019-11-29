@@ -65,6 +65,7 @@ namespace dto
 
         Query createSaveQuery(const std::set<FeatureName> & features, const std::string & passpharse);
         Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse);
+        Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse);
         Query createResetQuery(const std::set<FeatureName> & features);
         Query createListFeatureQuery();
 
@@ -87,6 +88,8 @@ namespace dto
         //Comparison operators => for tests mostly
         inline bool operator==(const Feature& lhs, const Feature& rhs){ return ((lhs.data() == rhs.data()) &&(lhs.version() == rhs.version())); }
         inline bool operator!=(const Feature& lhs, const Feature& rhs){ return !(lhs == rhs); }
+        
+        inline bool operator<(const Feature& lhs, const Feature& rhs){ return (lhs.data() < rhs.data()); }
         
         inline bool operator==(const FeatureStatus& lhs, const FeatureStatus& rhs){ return ((lhs.status() == rhs.status()) && (lhs.error() == rhs.error())); }
         inline bool operator!=(const FeatureStatus& lhs, const FeatureStatus& rhs){ return !(lhs == rhs); }

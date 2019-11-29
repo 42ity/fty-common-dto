@@ -102,7 +102,16 @@ namespace dto
 
             return query;
         }
-
+        
+        Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse)
+        {
+            Query query;
+            RestoreQuery& restoreQuery = *(query.mutable_restore());
+            
+            restoreQuery.set_passpharse(passpharse);
+            return query;
+        }
+        
         Query createResetQuery(const std::set<FeatureName> & features)
         {
             Query query;
@@ -175,7 +184,7 @@ namespace dto
             Query query;
             const cxxtools::SerializationInfo si = deserializeJson(json);
 
-            si >>= *(query.mutable_reset());
+            si >>= *(query.mutable_restore());
 
             return query;
         }
@@ -207,36 +216,35 @@ namespace dto
         {
             si.getMember("passphrase") >>= *(query.mutable_passpharse());
 
-            google::protobuf::Map<std::string, Feature > & mapFeaturesData = *(query.mutable_map_features_data());
+            google::protobuf::Map<std::string, Feature>& mapFeaturesData = *(query.mutable_map_features_data());
 
-            const cxxtools::SerializationInfo & featuresSi = si.getMember("features");
-
-            for(size_t index = 0; index < featuresSi.memberCount(); index++ )
+            cxxtools::SerializationInfo featuresSi = si.getMember("data");
+            cxxtools::SerializationInfo::Iterator it;
+            for (it = featuresSi.begin(); it != featuresSi.end(); ++it)
             {
-                const cxxtools::SerializationInfo & featureSi = featuresSi.getMember(index);
-
-                std::string featureName = featureSi.name();
-
-                Feature f;
-
-                featureSi.getMember("version") >>= *(f.mutable_version());
-
-                const cxxtools::SerializationInfo & dataSi = featureSi.getMember("data");
-                std::string data;
-                try
+                const cxxtools::SerializationInfo siTemp = (cxxtools::SerializationInfo)*it;
+                for (const auto &si : siTemp)
                 {
-                    //try to serialize if it's Json format
-                    data = serializeJson(dataSi);
+                    std::string featureName = si.name();
+                    Feature f;
+                    si.getMember("version") >>= *(f.mutable_version());
+                    const cxxtools::SerializationInfo& dataSi = si.getMember("data");
+                    std::string data;
+                    try
+                    {
+                        //try to serialize if it's Json format
+                        data = serializeJson(dataSi);
+                    }
+                    catch(const std::exception& /*e*/)
+                    {
+                        dataSi >>= data;
+                    }
+
+                    f.set_data(data);
+
+                    mapFeaturesData[featureName] = std::move(f);
                 }
-                catch(const std::exception& /*e*/)
-                {
-                    dataSi >>= data;
-                }
-                
-                f.set_data(data);
-                
-                mapFeaturesData[featureName] = std::move(f);
-            }  
+            }
         }
 
         void operator>>= (const cxxtools::SerializationInfo& si, ResetQuery & query)        
@@ -668,25 +676,30 @@ namespace dto
 
         void operator<<= (cxxtools::SerializationInfo& si, const SaveResponse & response)
         {
-            si.addMember("status") <<= statusToString(getGlobalStatus(response));
-            cxxtools::SerializationInfo & featuresSi = si.addMember("features");
+            //si.addMember("status") <<= statusToString(getGlobalStatus(response));
+            cxxtools::SerializationInfo & featuresSi = si.addMember("data");
+            
             
             for( const auto & item : response.map_features_data())
             {
-                cxxtools::SerializationInfo & featureSi = featuresSi.addMember(item.first);
+                cxxtools::SerializationInfo & entrySi = featuresSi.addMember("");
+                cxxtools::SerializationInfo & featureSi = entrySi.addMember(item.first);
                 const auto & featureAndStatus = item.second;
 
-                featureSi.addMember("status") <<= statusToString(featureAndStatus.status().status());
-                featureSi.addMember("error") <<= featureAndStatus.status().error();
+//                featureSi.addMember("status") <<= statusToString(featureAndStatus.status().status());
+//                featureSi.addMember("error") <<= featureAndStatus.status().error();
                 featureSi.addMember("version") <<= featureAndStatus.feature().version();
 
                 
                 cxxtools::SerializationInfo & data = featureSi.addMember("data");
+                //data <<= featureAndStatus.feature().data();
                 
                 try
                 {
                     //try to unserialize the data if they are on Json format
                     data = deserializeJson(featureAndStatus.feature().data());
+                    data.setName("data");
+                    data.setCategory(cxxtools::SerializationInfo::Category::Object);
                 }
                 catch(const std::exception& /* e */)
                 {
@@ -695,6 +708,7 @@ namespace dto
                 }
                 
             }
+            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
 
         void operator<<= (cxxtools::SerializationInfo& si, const RestoreResponse & response)
@@ -856,6 +870,12 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
+            std::string saveQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"\",\"featuresList\": [{\"name\":\"etn-mass-management\"}]}";
+            Query query = saveQueryFromUiJson (saveQueryJson);
+            const cxxtools::SerializationInfo si = deserializeJson(saveQueryJson);
+            std::cout << serializeJson(si, true) << std::endl;
+            std::cout << query << std::endl;
+            
             Query query1 = createSaveQuery({"test"},"myPassphrase");
             std::cout << query1 << std::endl;
 
@@ -888,7 +908,7 @@ void fty_srr_dto_test (bool verbose)
 
     printf ("OK\n");
 
-//Next test
+    //Next test
     testNumber = "1.2";
     testName = "Check Restore Query";
     printf ("\n-------------------------------------------------------------\n");
@@ -897,6 +917,13 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
+            std::string restoreQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"my pass phrase\",\"data\": [{\"user-session\": {\"version\": \"1.0\",\"data\": {\"timeout\": {\"no_activity\": \"40\",\"lease_time\": \"36\"}}}}]}";
+            Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
+//            const cxxtools::SerializationInfo si = deserializeJson(saveQueryJson);
+//            std::cout << serializeJson(si, true) << std::endl;
+            std::cout << queryRestore << std::endl;
+                    
+                    
             Feature f1;
             f1.set_version("1.0");
             f1.set_data("data");
@@ -936,498 +963,498 @@ void fty_srr_dto_test (bool verbose)
 
     printf ("OK\n");
 
-//Next test
-    testNumber = "1.3";
-    testName = "Check Reset Query";
-    printf ("\n-------------------------------------------------------------\n");
-    {
-        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
-        try
-        {
-            Query query1 = createResetQuery({"test"});
-            std::cout << query1 << std::endl;
-
-            //test ==
-            Query query2 = createResetQuery({"test"});
-            if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
-
-            //test !=
-            Query query3 = createResetQuery({"testgg"});
-            if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
-
-            //test serialize -> unserialize
-            UserData userdata;
-            userdata << query1;
-
-            Query query4;
-            userdata >> query4;
-
-            if(query1 != query4) throw std::runtime_error("Bad serialization to userdata");
-
-            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
-        }
-        catch (const std::exception &e) {
-            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
-            printf ("Error: %s\n", e.what ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
-        }
-    }
-
-    printf ("OK\n");
-
-//Next test
-    testNumber = "1.4";
-    testName = "Check List FeatureName Query";
-    printf ("\n-------------------------------------------------------------\n");
-    {
-        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
-        try
-        {
-            Query query1 = createListFeatureQuery();
-            std::cout << query1 << std::endl;
-
-            //test ==
-            Query query2 = createListFeatureQuery();
-            if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
-
-            //test !=
-            Query query3 = createResetQuery({"testgg"});
-            if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
-
-            //test serialize -> deserialize
-            UserData userdata;
-            userdata << query1;
-
-            Query query4;
-            userdata >> query4;
-
-            if(query1 != query4) throw std::runtime_error("Bad serialization to userdata");
-
-            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
-        }
-        catch (const std::exception &e) {
-            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
-            printf ("Error: %s\n", e.what ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
-        }
-    }
-
-    printf ("OK\n");
-
-//Next test
-    testNumber = "2.1";
-    testName = "Check Save Response";
-    printf ("\n-------------------------------------------------------------\n");
-    {
-        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
-        try
-        {
-            FeatureAndStatus fs1;
-            FeatureStatus & s1 = *(fs1.mutable_status());
-            s1.set_status(Status::SUCCESS);
-
-            Feature & f1 = *(fs1.mutable_feature());
-            f1.set_version("1.0");
-            f1.set_data("data");
-            
-            std::map<FeatureName, FeatureAndStatus> map1;
-            map1["test"] = fs1;
-            
-            Response r1 = createSaveResponse(map1);
-            std::cout << r1 << std::endl;
-
-            //test ==
-            Response r2 = createSaveResponse(map1);
-            if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
-
-            //test !=
-            std::map<FeatureName, FeatureAndStatus> map2;
-            map2["test2"] = fs1;
-            
-            Response r3 = createSaveResponse(map2);
-            if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
-
-            //test serialize -> deserialize
-            UserData userdata;
-            userdata << r1;
-
-            Response r4;
-            userdata >> r4;
-
-            if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
-
-            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
-        }
-        catch (const std::exception &e) {
-            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
-            printf ("Error: %s\n", e.what ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
-        }
-    }
-
-    printf ("OK\n");
-
-//Next test
-    testNumber = "2.2";
-    testName = "Check Restore Response";
-    printf ("\n-------------------------------------------------------------\n");
-    {
-        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
-        try
-        {
-            FeatureStatus s1;
-            s1.set_status(Status::SUCCESS);
-            
-            std::map<FeatureName, FeatureStatus> map1;
-            map1["test"] = s1;
-            
-            Response r1 = createRestoreResponse(map1);
-            std::cout << r1 << std::endl;
-
-            //test ==
-            Response r2 = createRestoreResponse(map1);
-            if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
-
-            //test !=
-            std::map<FeatureName, FeatureStatus> map2;
-            map2["test2"] = s1;
-            
-            Response r3 = createRestoreResponse(map2);
-            if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
-
-            //test serialize -> deserialize
-            UserData userdata;
-            userdata << r1;
-
-            Response r4;
-            userdata >> r4;
-
-            if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
-
-            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
-        }
-        catch (const std::exception &e) {
-            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
-            printf ("Error: %s\n", e.what ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
-        }
-    }
-
-    printf ("OK\n");
-
-//Next test
-    testNumber = "2.3";
-    testName = "Check Reset Response";
-    printf ("\n-------------------------------------------------------------\n");
-    {
-        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
-        try
-        {
-            FeatureStatus s1;
-            s1.set_status(Status::SUCCESS);
-            s1.set_error("error");
-            
-            std::map<FeatureName, FeatureStatus> map1;
-            map1["test"] = s1;
-            
-            Response r1 = createResetResponse(map1);
-            std::cout << r1 << std::endl;
-
-            //test ==
-            Response r2 = createResetResponse(map1);
-            if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
-
-            //test !=
-            std::map<FeatureName, FeatureStatus> map2;
-            map2["test2"] = s1;
-            
-            Response r3 = createResetResponse(map2);
-            if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
-
-            //test serialize -> deserialize
-            UserData userdata;
-            userdata << r1;
-
-            Response r4;
-            userdata >> r4;
-
-            if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
-
-            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
-        }
-        catch (const std::exception &e) {
-            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
-            printf ("Error: %s\n", e.what ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
-        }
-    }
-
-    printf ("OK\n");
-
-//Next test
-    testNumber = "2.4";
-    testName = "Check List Feature Response";
-    printf ("\n-------------------------------------------------------------\n");
-    {
-        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
-        try
-        {
-            FeatureDependencies d1;
-            d1.add_dependencies("A");
-            d1.add_dependencies("B");
-            
-            Response r1 = createListFeatureResponse({{"test", d1}});
-            std::cout << r1 << std::endl;
-
-            //test ==
-            Response r2 = createListFeatureResponse({{"test", d1}});
-            if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
-
-            //test !=
-            FeatureDependencies d2;
-            d1.add_dependencies("C");
-            d1.add_dependencies("B");
-            
-            Response r3 = createListFeatureResponse({{"test", d2}});
-            if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
-
-            //test serialize -> deserialize
-            UserData userdata;
-            userdata << r1;
-
-            Response r4;
-            userdata >> r4;
-
-            if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
-
-            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
-        }
-        catch (const std::exception &e) {
-            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
-            printf ("Error: %s\n", e.what ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
-        }
-    }
-
-    printf ("OK\n");
-
-//Next test
-    testNumber = "3.1";
-    testName = "Check add operation on Save Response";
-    printf ("\n-------------------------------------------------------------\n");
-    {
-        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
-        try
-        {
-            Feature f1;
-            f1.set_version("1.0");
-            f1.set_data("data");
-            
-            FeatureStatus s1; 
-            s1.set_status(Status::SUCCESS);
-            
-            FeatureAndStatus fs1;
-            *(fs1.mutable_feature()) = f1;
-            *(fs1.mutable_status()) = s1;
-            
-            Response r1 = createSaveResponse({{"test",fs1}});
-
-            Feature f2;
-            f2.set_version("3.5");
-            f2.set_data("data-2");
-
-            FeatureStatus s2; 
-            s2.set_status(Status::FAILED);
-            s2.set_error("bad version");
-              
-            FeatureAndStatus fs2;          
-            *(fs2.mutable_feature()) = f2;
-            *(fs2.mutable_status()) = s2;
-            
-            Response r2 = createSaveResponse({{"test-2",fs2}});
-            
-            Response r3 = createSaveResponse({{"test",fs1},{"test-2",fs2}});
-            
-            Response r = r1 + r2;
-            std::cout << r << std::endl;
-            
-            if(r != r3) throw std::runtime_error("Bad aggregation");
-
-            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
-        }
-        catch (const std::exception &e) {
-            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
-            printf ("Error: %s\n", e.what ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
-        }
-    }
-
-    printf ("OK\n");
-
-//Next test
-   testNumber = "3.2";
-    testName = "Check add operation on Restore Response";
-    printf ("\n-------------------------------------------------------------\n");
-    {
-        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
-        try
-        {
-            FeatureStatus s1;
-            s1.set_status(Status::SUCCESS);
-            Response r1 = createRestoreResponse({{"test", s1}});
- 
-            FeatureStatus s2;
-            s2.set_status(Status::FAILED);
-            s2.set_error("error msg");
-            
-            Response r2 = createRestoreResponse({{"test-2", s2}});
-            
-            Response r = createRestoreResponse({{"test", s1},{"test-2", s2}});
-
-            Response r3 = r1 + r2;
-            std::cout << r3 << std::endl;
-            
-            if(r != r3) throw std::runtime_error("Bad aggregation");
-
-            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
-        }
-        catch (const std::exception &e) {
-            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
-            printf ("Error: %s\n", e.what ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
-        }
-    }
-
-    printf ("OK\n");
-
-//Next test
-    testNumber = "3.3";
-    testName = "Check add operation on Reset Response";
-    printf ("\n-------------------------------------------------------------\n");
-    {
-        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
-        try
-        {          
-            FeatureStatus s1;
-            s1.set_status(Status::SUCCESS);
-            Response r1 = createResetResponse({{"test", s1}});
- 
-            FeatureStatus s2;
-            s2.set_status(Status::FAILED);
-            s2.set_error("error msg");
-            
-            Response r2 = createResetResponse({{"test-2", s2}});
-            
-            Response r = createResetResponse({{"test", s1},{"test-2", s2}});
-
-            Response r3 = r1 + r2;
-            std::cout << r3 << std::endl;
-            
-            if(r != r3) throw std::runtime_error("Bad aggregation");
-
-            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
-        }
-        catch (const std::exception &e) {
-            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
-            printf ("Error: %s\n", e.what ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
-        }
-    }
-
-    printf ("OK\n");
-//Next test
-    testNumber = "3.4";
-    testName = "Check add operation on List Feature Response";
-    printf ("\n-------------------------------------------------------------\n");
-    {
-        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
-        try
-        {  
-            FeatureDependencies d1;
-            d1.add_dependencies("A");
-            d1.add_dependencies("B");
-          
-            Response r1 = createListFeatureResponse({{"test", d1}});
-
-            FeatureDependencies d2;
-            d2.add_dependencies("A");
-            d2.add_dependencies("B");
-
-            Response r2 = createListFeatureResponse({{"test2", d2}});
-            
-            Response r3 = createListFeatureResponse({{"test", d1},{"test2", d2}});
-
-            Response r = r1 + r2;
-            std::cout << r << std::endl;
-            
-            if(r != r3) throw std::runtime_error("Bad aggregation");
-            
-            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
-        }
-        catch (const std::exception &e) {
-            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
-            printf ("Error: %s\n", e.what ());
-            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
-        }
-    }
-
-    printf ("OK\n");
-
-//Collect results
-
-    printf ("\n-------------------------------------------------------------\n");
-
-	uint32_t testsPassed = 0;
-	uint32_t testsFailed = 0;
-
-
-	printf("\tSummary tests from fty_srr_dto_test\n");
-	for(const auto & result : testsResults)
-	{
-		if(result.second)
-		{
-			printf(ANSI_COLOR_GREEN"\tOK " ANSI_COLOR_RESET "\t%s\n",result.first.c_str());
-			testsPassed++;
-		}
-		else
-		{
-			printf(ANSI_COLOR_RED"\tNOK" ANSI_COLOR_RESET "\t%s\n",result.first.c_str());
-			testsFailed++;
-		}
-	}
-
-	printf ("\n-------------------------------------------------------------\n");
-
-	if(testsFailed == 0)
-	{
-		printf(ANSI_COLOR_GREEN"\n %i tests passed, everything is ok\n" ANSI_COLOR_RESET "\n",testsPassed);
-	}
-	else
-	{
-		printf(ANSI_COLOR_RED"\n!!!!!!!! %i/%i tests did not pass !!!!!!!! \n" ANSI_COLOR_RESET "\n",testsFailed,(testsPassed+testsFailed));
-
-		assert(false);
-	}
+////Next test
+//    testNumber = "1.3";
+//    testName = "Check Reset Query";
+//    printf ("\n-------------------------------------------------------------\n");
+//    {
+//        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+//
+//        try
+//        {
+//            Query query1 = createResetQuery({"test"});
+//            std::cout << query1 << std::endl;
+//
+//            //test ==
+//            Query query2 = createResetQuery({"test"});
+//            if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
+//
+//            //test !=
+//            Query query3 = createResetQuery({"testgg"});
+//            if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
+//
+//            //test serialize -> unserialize
+//            UserData userdata;
+//            userdata << query1;
+//
+//            Query query4;
+//            userdata >> query4;
+//
+//            if(query1 != query4) throw std::runtime_error("Bad serialization to userdata");
+//
+//            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+//        }
+//        catch (const std::exception &e) {
+//            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+//            printf ("Error: %s\n", e.what ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+//        }
+//    }
+//
+//    printf ("OK\n");
+//
+////Next test
+//    testNumber = "1.4";
+//    testName = "Check List FeatureName Query";
+//    printf ("\n-------------------------------------------------------------\n");
+//    {
+//        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+//
+//        try
+//        {
+//            Query query1 = createListFeatureQuery();
+//            std::cout << query1 << std::endl;
+//
+//            //test ==
+//            Query query2 = createListFeatureQuery();
+//            if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
+//
+//            //test !=
+//            Query query3 = createResetQuery({"testgg"});
+//            if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
+//
+//            //test serialize -> deserialize
+//            UserData userdata;
+//            userdata << query1;
+//
+//            Query query4;
+//            userdata >> query4;
+//
+//            if(query1 != query4) throw std::runtime_error("Bad serialization to userdata");
+//
+//            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+//        }
+//        catch (const std::exception &e) {
+//            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+//            printf ("Error: %s\n", e.what ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+//        }
+//    }
+//
+//    printf ("OK\n");
+//
+////Next test
+//    testNumber = "2.1";
+//    testName = "Check Save Response";
+//    printf ("\n-------------------------------------------------------------\n");
+//    {
+//        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+//
+//        try
+//        {
+//            FeatureAndStatus fs1;
+//            FeatureStatus & s1 = *(fs1.mutable_status());
+//            s1.set_status(Status::SUCCESS);
+//
+//            Feature & f1 = *(fs1.mutable_feature());
+//            f1.set_version("1.0");
+//            f1.set_data("data");
+//            
+//            std::map<FeatureName, FeatureAndStatus> map1;
+//            map1["test"] = fs1;
+//            
+//            Response r1 = createSaveResponse(map1);
+//            std::cout << r1 << std::endl;
+//
+//            //test ==
+//            Response r2 = createSaveResponse(map1);
+//            if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
+//
+//            //test !=
+//            std::map<FeatureName, FeatureAndStatus> map2;
+//            map2["test2"] = fs1;
+//            
+//            Response r3 = createSaveResponse(map2);
+//            if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
+//
+//            //test serialize -> deserialize
+//            UserData userdata;
+//            userdata << r1;
+//
+//            Response r4;
+//            userdata >> r4;
+//
+//            if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
+//
+//            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+//        }
+//        catch (const std::exception &e) {
+//            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+//            printf ("Error: %s\n", e.what ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+//        }
+//    }
+//
+//    printf ("OK\n");
+//
+////Next test
+//    testNumber = "2.2";
+//    testName = "Check Restore Response";
+//    printf ("\n-------------------------------------------------------------\n");
+//    {
+//        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+//
+//        try
+//        {
+//            FeatureStatus s1;
+//            s1.set_status(Status::SUCCESS);
+//            
+//            std::map<FeatureName, FeatureStatus> map1;
+//            map1["test"] = s1;
+//            
+//            Response r1 = createRestoreResponse(map1);
+//            std::cout << r1 << std::endl;
+//
+//            //test ==
+//            Response r2 = createRestoreResponse(map1);
+//            if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
+//
+//            //test !=
+//            std::map<FeatureName, FeatureStatus> map2;
+//            map2["test2"] = s1;
+//            
+//            Response r3 = createRestoreResponse(map2);
+//            if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
+//
+//            //test serialize -> deserialize
+//            UserData userdata;
+//            userdata << r1;
+//
+//            Response r4;
+//            userdata >> r4;
+//
+//            if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
+//
+//            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+//        }
+//        catch (const std::exception &e) {
+//            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+//            printf ("Error: %s\n", e.what ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+//        }
+//    }
+//
+//    printf ("OK\n");
+//
+////Next test
+//    testNumber = "2.3";
+//    testName = "Check Reset Response";
+//    printf ("\n-------------------------------------------------------------\n");
+//    {
+//        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+//
+//        try
+//        {
+//            FeatureStatus s1;
+//            s1.set_status(Status::SUCCESS);
+//            s1.set_error("error");
+//            
+//            std::map<FeatureName, FeatureStatus> map1;
+//            map1["test"] = s1;
+//            
+//            Response r1 = createResetResponse(map1);
+//            std::cout << r1 << std::endl;
+//
+//            //test ==
+//            Response r2 = createResetResponse(map1);
+//            if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
+//
+//            //test !=
+//            std::map<FeatureName, FeatureStatus> map2;
+//            map2["test2"] = s1;
+//            
+//            Response r3 = createResetResponse(map2);
+//            if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
+//
+//            //test serialize -> deserialize
+//            UserData userdata;
+//            userdata << r1;
+//
+//            Response r4;
+//            userdata >> r4;
+//
+//            if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
+//
+//            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+//        }
+//        catch (const std::exception &e) {
+//            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+//            printf ("Error: %s\n", e.what ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+//        }
+//    }
+//
+//    printf ("OK\n");
+//
+////Next test
+//    testNumber = "2.4";
+//    testName = "Check List Feature Response";
+//    printf ("\n-------------------------------------------------------------\n");
+//    {
+//        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+//
+//        try
+//        {
+//            FeatureDependencies d1;
+//            d1.add_dependencies("A");
+//            d1.add_dependencies("B");
+//            
+//            Response r1 = createListFeatureResponse({{"test", d1}});
+//            std::cout << r1 << std::endl;
+//
+//            //test ==
+//            Response r2 = createListFeatureResponse({{"test", d1}});
+//            if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
+//
+//            //test !=
+//            FeatureDependencies d2;
+//            d1.add_dependencies("C");
+//            d1.add_dependencies("B");
+//            
+//            Response r3 = createListFeatureResponse({{"test", d2}});
+//            if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
+//
+//            //test serialize -> deserialize
+//            UserData userdata;
+//            userdata << r1;
+//
+//            Response r4;
+//            userdata >> r4;
+//
+//            if(r1 != r4) throw std::runtime_error("Bad serialization to userdata");
+//
+//            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+//        }
+//        catch (const std::exception &e) {
+//            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+//            printf ("Error: %s\n", e.what ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+//        }
+//    }
+//
+//    printf ("OK\n");
+//
+////Next test
+//    testNumber = "3.1";
+//    testName = "Check add operation on Save Response";
+//    printf ("\n-------------------------------------------------------------\n");
+//    {
+//        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+//
+//        try
+//        {
+//            Feature f1;
+//            f1.set_version("1.0");
+//            f1.set_data("data");
+//            
+//            FeatureStatus s1; 
+//            s1.set_status(Status::SUCCESS);
+//            
+//            FeatureAndStatus fs1;
+//            *(fs1.mutable_feature()) = f1;
+//            *(fs1.mutable_status()) = s1;
+//            
+//            Response r1 = createSaveResponse({{"test",fs1}});
+//
+//            Feature f2;
+//            f2.set_version("3.5");
+//            f2.set_data("data-2");
+//
+//            FeatureStatus s2; 
+//            s2.set_status(Status::FAILED);
+//            s2.set_error("bad version");
+//              
+//            FeatureAndStatus fs2;          
+//            *(fs2.mutable_feature()) = f2;
+//            *(fs2.mutable_status()) = s2;
+//            
+//            Response r2 = createSaveResponse({{"test-2",fs2}});
+//            
+//            Response r3 = createSaveResponse({{"test",fs1},{"test-2",fs2}});
+//            
+//            Response r = r1 + r2;
+//            std::cout << r << std::endl;
+//            
+//            if(r != r3) throw std::runtime_error("Bad aggregation");
+//
+//            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+//        }
+//        catch (const std::exception &e) {
+//            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+//            printf ("Error: %s\n", e.what ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+//        }
+//    }
+//
+//    printf ("OK\n");
+//
+////Next test
+//   testNumber = "3.2";
+//    testName = "Check add operation on Restore Response";
+//    printf ("\n-------------------------------------------------------------\n");
+//    {
+//        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+//
+//        try
+//        {
+//            FeatureStatus s1;
+//            s1.set_status(Status::SUCCESS);
+//            Response r1 = createRestoreResponse({{"test", s1}});
+// 
+//            FeatureStatus s2;
+//            s2.set_status(Status::FAILED);
+//            s2.set_error("error msg");
+//            
+//            Response r2 = createRestoreResponse({{"test-2", s2}});
+//            
+//            Response r = createRestoreResponse({{"test", s1},{"test-2", s2}});
+//
+//            Response r3 = r1 + r2;
+//            std::cout << r3 << std::endl;
+//            
+//            if(r != r3) throw std::runtime_error("Bad aggregation");
+//
+//            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+//        }
+//        catch (const std::exception &e) {
+//            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+//            printf ("Error: %s\n", e.what ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+//        }
+//    }
+//
+//    printf ("OK\n");
+//
+////Next test
+//    testNumber = "3.3";
+//    testName = "Check add operation on Reset Response";
+//    printf ("\n-------------------------------------------------------------\n");
+//    {
+//        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+//
+//        try
+//        {          
+//            FeatureStatus s1;
+//            s1.set_status(Status::SUCCESS);
+//            Response r1 = createResetResponse({{"test", s1}});
+// 
+//            FeatureStatus s2;
+//            s2.set_status(Status::FAILED);
+//            s2.set_error("error msg");
+//            
+//            Response r2 = createResetResponse({{"test-2", s2}});
+//            
+//            Response r = createResetResponse({{"test", s1},{"test-2", s2}});
+//
+//            Response r3 = r1 + r2;
+//            std::cout << r3 << std::endl;
+//            
+//            if(r != r3) throw std::runtime_error("Bad aggregation");
+//
+//            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+//        }
+//        catch (const std::exception &e) {
+//            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+//            printf ("Error: %s\n", e.what ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+//        }
+//    }
+//
+//    printf ("OK\n");
+////Next test
+//    testNumber = "3.4";
+//    testName = "Check add operation on List Feature Response";
+//    printf ("\n-------------------------------------------------------------\n");
+//    {
+//        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+//
+//        try
+//        {  
+//            FeatureDependencies d1;
+//            d1.add_dependencies("A");
+//            d1.add_dependencies("B");
+//          
+//            Response r1 = createListFeatureResponse({{"test", d1}});
+//
+//            FeatureDependencies d2;
+//            d2.add_dependencies("A");
+//            d2.add_dependencies("B");
+//
+//            Response r2 = createListFeatureResponse({{"test2", d2}});
+//            
+//            Response r3 = createListFeatureResponse({{"test", d1},{"test2", d2}});
+//
+//            Response r = r1 + r2;
+//            std::cout << r << std::endl;
+//            
+//            if(r != r3) throw std::runtime_error("Bad aggregation");
+//            
+//            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+//        }
+//        catch (const std::exception &e) {
+//            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+//            printf ("Error: %s\n", e.what ());
+//            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+//        }
+//    }
+//
+//    printf ("OK\n");
+//
+////Collect results
+//
+//    printf ("\n-------------------------------------------------------------\n");
+//
+//	uint32_t testsPassed = 0;
+//	uint32_t testsFailed = 0;
+//
+//
+//	printf("\tSummary tests from fty_srr_dto_test\n");
+//	for(const auto & result : testsResults)
+//	{
+//		if(result.second)
+//		{
+//			printf(ANSI_COLOR_GREEN"\tOK " ANSI_COLOR_RESET "\t%s\n",result.first.c_str());
+//			testsPassed++;
+//		}
+//		else
+//		{
+//			printf(ANSI_COLOR_RED"\tNOK" ANSI_COLOR_RESET "\t%s\n",result.first.c_str());
+//			testsFailed++;
+//		}
+//	}
+//
+//	printf ("\n-------------------------------------------------------------\n");
+//
+//	if(testsFailed == 0)
+//	{
+//		printf(ANSI_COLOR_GREEN"\n %i tests passed, everything is ok\n" ANSI_COLOR_RESET "\n",testsPassed);
+//	}
+//	else
+//	{
+//		printf(ANSI_COLOR_RED"\n!!!!!!!! %i/%i tests did not pass !!!!!!!! \n" ANSI_COLOR_RESET "\n",testsFailed,(testsPassed+testsFailed));
+//
+//		assert(false);
+//	}
 
     printf ("OK\n");
 }
