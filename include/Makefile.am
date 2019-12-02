@@ -3,7 +3,7 @@
 #  Read the zproject/README.md for information about making permanent changes. #
 ################################################################################
 include_HEADERS = \
-    fty-common-dto.h \
+    fty_common_dto.h \
     fty_userdata_dto.h \
     fty_common_dto_library.h
 
