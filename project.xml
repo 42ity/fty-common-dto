@@ -40,12 +40,10 @@
     <abi current = "1" revision = "0" age = "0" />
     
     <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
-            repository = "https://github.com/42ity/cxxtools.git"
-            />
+            repository = "https://github.com/42ity/cxxtools.git"/>
     
     <use project = "protobuf" header = "google/protobuf/stubs/common.h"
-            repository = "https://github.com/42ity/protobuf.git"
-            />
+            repository = "https://github.com/42ity/protobuf.git"/>
 
     <!-- Project -->
     <class name = "srr_pb" selftest = "0">srr protobuf</class>

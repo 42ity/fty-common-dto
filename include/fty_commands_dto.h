@@ -71,6 +71,7 @@ namespace dto
 
             Command() = default;
             Command(const std::string &asset, const std::string &command, const std::string &argument) : asset(asset), command(command), argument(argument) {}
+            Command(const std::string &asset, const std::string &command, const std::string &target, const std::string &argument) : asset(asset), command(command), target(target), argument(argument) {}
         } ;
 
         using Commands = std::vector<Command>;
