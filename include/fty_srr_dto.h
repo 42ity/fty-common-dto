@@ -22,23 +22,24 @@
 #ifndef FTY_SRR_DTO_H_INCLUDED
 #define FTY_SRR_DTO_H_INCLUDED
 
+#include <cxxtools/serializationinfo.h>
 #include "fty_userdata_dto.h"
-
-#include <memory>
-#include <map>
-#include <set>
-#include <iostream>
-#include <functional>
-
 #include "srr_pb.h"
 
-#include <cxxtools/serializationinfo.h>
 
 namespace dto 
 {
     namespace srr 
     {
-
+        constexpr auto PASS_PHRASE    = "passphrase";
+        constexpr auto FEATURE_LIST   = "featuresList";
+        constexpr auto FEATURE_NAME   = "name";
+        constexpr auto DATA           = "data";
+        constexpr auto SRR_VERSION    = "version";
+        constexpr auto STATUS_LIST    = "statusList";
+        constexpr auto STATUS         = "status";
+        constexpr auto ERROR          = "error";
+        
         /**
          * Helper for client of SRR.
          * As a client of SRR, you have to implement the handlers functions 
@@ -54,7 +55,6 @@ namespace dto
 
             Response processQuery(const Query & q);
         };
-        
         
         /**
          * Query wrapper functions
@@ -174,9 +174,6 @@ namespace dto
         Status getGlobalStatus(const RestoreResponse & r);
         Status getGlobalStatus(const ResetResponse & r);
         Status getGlobalStatus(const ListFeatureResponse & r);
-
-
-        
 
     } // srr namespace
     
