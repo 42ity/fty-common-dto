@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package messagebus;
+
+/**
+* Confirguration structure for message-bus
+*/
+
+message MalamuteClientConfig
+{
+    string end_point = 1;
+    string agent_name = 2;
+}
+
+message UnixSocketClientConfig
+{
+    string socket_path = 1;
+    string agent_name = 2;
+}
+
+
+message MessageBusConfig
+{
+    string queue_name = 1;
+    oneof parameters
+    {
+        MalamuteClientConfig malamute_client_config = 2;
+        UnixSocketClientConfig unix_client_config = 3;
+    };
+}

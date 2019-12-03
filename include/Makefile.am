@@ -4,12 +4,15 @@
 ################################################################################
 include_HEADERS = \
     fty_common_dto.h \
+    fty_common_dto_empty.h \
     fty_userdata_dto.h \
     fty_common_dto_library.h
 
 if ENABLE_DRAFTS
 include_HEADERS += \
     srr_pb.h \
+    message_bus_config_pb.h \
+    pb_helper.h \
     fty_srr_dto.h \
     fty_commands_dto.h
 

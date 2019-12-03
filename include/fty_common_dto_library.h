@@ -101,6 +101,10 @@
 #ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
 typedef struct _srr_pb_t srr_pb_t;
 #define SRR_PB_T_DEFINED
+typedef struct _message_bus_config_pb_t message_bus_config_pb_t;
+#define MESSAGE_BUS_CONFIG_PB_T_DEFINED
+typedef struct _pb_helper_t pb_helper_t;
+#define PB_HELPER_T_DEFINED
 typedef struct _fty_srr_dto_t fty_srr_dto_t;
 #define FTY_SRR_DTO_T_DEFINED
 typedef struct _fty_commands_dto_t fty_commands_dto_t;
@@ -109,9 +113,12 @@ typedef struct _fty_commands_dto_t fty_commands_dto_t;
 
 
 //  Public classes, each with its own header file
+#include "fty_common_dto_empty.h"
 #include "fty_userdata_dto.h"
 #ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
 #include "srr_pb.h"
+#include "message_bus_config_pb.h"
+#include "pb_helper.h"
 #include "fty_srr_dto.h"
 #include "fty_commands_dto.h"
 #endif // FTY_COMMON_DTO_BUILD_DRAFT_API
