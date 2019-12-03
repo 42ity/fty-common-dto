@@ -26,7 +26,7 @@
 @end
 */
 
-#include "fty_common_dto_classes.h"
+#include "fty_srr_dto.h"
 
 #include <cxxtools/jsonserializer.h>
 #include <cxxtools/jsondeserializer.h>
@@ -157,6 +157,7 @@ namespace dto
             std::string dataOut;
             google::protobuf::util::JsonPrintOptions options;
             options.preserve_proto_field_names=true;
+            options.always_print_primitive_fields=true;
             options.add_whitespace=true;
 
             if ( google::protobuf::util::MessageToJsonString(q, &dataOut, options) != google::protobuf::util::Status::OK )
@@ -1591,7 +1592,8 @@ void fty_srr_dto_test (bool verbose)
 	}
 
     printf ("OK\n");
+    
+    google::protobuf::ShutdownProtobufLibrary();
 }
 
-
-#endif // FTY_COMMON_DTO_BUILD_DRAFT_API
+#endif //FTY_COMMON_DTO_BUILD_DRAFT_API
