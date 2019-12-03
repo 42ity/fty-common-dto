@@ -85,6 +85,10 @@ namespace dto
         void operator>>= (const cxxtools::SerializationInfo& si, RestoreQuery & query);
         void operator>>= (const cxxtools::SerializationInfo& si, ResetQuery & query);
         
+        void operator<<= (cxxtools::SerializationInfo& si, const SaveQuery & query);
+        void operator<<= (cxxtools::SerializationInfo& si, const RestoreQuery & query);
+        void operator<<= (cxxtools::SerializationInfo& si, const ResetQuery & query);
+        
         //Comparison operators => for tests mostly
         inline bool operator==(const Feature& lhs, const Feature& rhs){ return ((lhs.data() == rhs.data()) &&(lhs.version() == rhs.version())); }
         inline bool operator!=(const Feature& lhs, const Feature& rhs){ return !(lhs == rhs); }
@@ -166,6 +170,11 @@ namespace dto
         void operator<<= (cxxtools::SerializationInfo& si, const ResetResponse & response);
         void operator<<= (cxxtools::SerializationInfo& si, const ListFeatureResponse & response);
 
+        void operator>>= (const cxxtools::SerializationInfo& si, SaveResponse & response);
+        void operator>>= (const cxxtools::SerializationInfo& si, RestoreResponse & response);
+        void operator>>= (const cxxtools::SerializationInfo& si, ResetResponse & response);
+        void operator>>= (const cxxtools::SerializationInfo& si, ListFeatureResponse & response);
+
         //status to string for UI
         std::string statusToString(Status status);
 
@@ -179,10 +188,10 @@ namespace dto
     
 } // dto namespace
 
-#ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
-    // Tests
+
+// Tests
     void fty_srr_dto_test (bool verbose);
 
-#endif // FTY_COMMON_DTO_BUILD_DRAFT_API
+
 
 #endif
