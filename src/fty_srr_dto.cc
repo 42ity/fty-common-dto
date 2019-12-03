@@ -838,7 +838,6 @@ namespace dto
 } // dto
 
 
-#ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
 //  --------------------------------------------------------------------------
 //  Self tests
 #define SELFTEST_DIR_RO "src/selftest-ro"
@@ -1596,4 +1595,3 @@ void fty_srr_dto_test (bool verbose)
     google::protobuf::ShutdownProtobufLibrary();
 }
 
-#endif //FTY_COMMON_DTO_BUILD_DRAFT_API
