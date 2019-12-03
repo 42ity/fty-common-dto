@@ -11,9 +11,10 @@
     <target name = "debian" />
     <target name = "redhat" />
     <target name = "travis" >
-        <option name = "recursive_dependencies" value = "true"/>
+        <option name = "recursive_dependencies" value = "true" />
         <!-- option name = "clangformat_implem" value = "autotools" / -->
         <option name = "use_cmake" value = "0" />
+        <option name = "shadow_gcc" value = "2" />
         <!-- option name = "clangformat_require_good" value = "1" / -->
         <option name = "clangformat_allow_failures" value = "1" />
         <option name = "use_pkg_deps_prereqs_source" value = "0" />
@@ -33,7 +34,7 @@
         <option name = "use_checkout_explicit" value = "1" />
     </target>
     
-    <classfilename use-cxx-gcc-4-9 = "true"/>
+    <classfilename use-cxx = "true" />
 
     <include filename = "license.xml" />
     <version major = "1" minor = "0" patch = "0" />
@@ -41,9 +42,24 @@
     
     <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
             repository = "https://github.com/42ity/cxxtools.git"/>
+    
+    <use project = "protobuf" header = "google/protobuf/stubs/common.h"
+            repository = "https://github.com/42ity/protobuf.git"/>
 
-    <!-- Project -->
-    <class name = "fty-srr-dto" selftest = "0">Fty srr dto</class>
-    <class name = "fty-commands-dto" selftest = "0">Fty nut dto</class>
-    <header name = "fty-userdata-dto" selftest = "0">Fty user data dto</header>
+    <!-- Project files -->
+    <header name = "fty_common_dto_empty" selftest = "0">Empty header which can be reference as the "main header" if we do not want to include all the headers into our projects</header>
+    <!-- Protobufs
+        Protobuf are generated using protoc and then they are renamed from *.pb.cc and *.pb.h to *_pb.cc and _pb.h.
+        The *_pb.h is moved after in the include folder and the 
+    -->
+    <class name = "srr_pb" selftest = "0">srr protobuf</class>
+    <class name = "message_bus_config_pb" selftest = "0">MessageBusConfig protobuf</class>
+
+    <!-- Classical classes-->
+    <class name = "pb_helper" selftest = "0" >Helper function for protobuf</class>
+
+    <class name = "fty_srr_dto" selftest = "1">Fty srr dto wrapper functions for protobuf</class>
+    <class name = "fty_commands_dto" selftest = "0">Fty nut dto</class>
+    <header name = "fty_userdata_dto" selftest = "0">Fty user data dto</header>
+
 </project>

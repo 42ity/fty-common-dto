@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package dto.srr;
+
+/**
+*   SRR DTO
+*/
+
+enum Status
+{
+    UNKNOWN = 0; //0 value is also equals to not set enum.
+    SUCCESS = 1;
+    FAILED = 2;
+    PARTIAL_SUCCESS = 3;
+}
+
+message Feature
+{
+    string version = 1;
+    string data =2;
+}
+
+message FeatureStatus
+{
+    Status status = 1;
+    string error =2;
+}
+
+/**
+*   Queries
+*/
+
+message SaveQuery
+{
+    repeated string features = 1;
+    string passpharse = 2;
+}
+
+message RestoreQuery
+{
+    map<string, Feature> map_features_data = 1;
+    string passpharse = 2;
+}
+
+message ResetQuery
+{
+    repeated string features = 1;
+}
+
+message ListFeatureQuery
+{
+}
+
+message Query
+{
+    oneof parameters
+    {
+        SaveQuery save = 1;
+        RestoreQuery restore = 2;
+        ResetQuery reset = 3;
+        ListFeatureQuery list_feature = 4;
+    };
+}
+
+/**
+*   Responses
+*/
+
+message FeatureAndStatus
+{
+    FeatureStatus status = 1;
+    Feature feature = 2;
+}
+
+message SaveResponse
+{
+    map<string, FeatureAndStatus> map_features_data = 1;
+}
+
+message RestoreResponse
+{
+    map<string, FeatureStatus> map_features_status = 1;
+}
+
+message ResetResponse
+{
+    map<string, FeatureStatus> map_features_status = 1;
+}
+
+message FeatureDependencies
+{
+    repeated string dependencies = 1;
+}
+
+message ListFeatureResponse
+{
+    map<string, FeatureDependencies> map_features_dependencies = 1;
+}
+
+message Response
+{
+    oneof parameters
+    {
+        SaveResponse save = 1;
+        RestoreResponse restore = 2;
+        ResetResponse reset = 3;
+        ListFeatureResponse list_feature = 4;
+    };
+}

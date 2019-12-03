@@ -9,6 +9,7 @@ include_HEADERS = \
 
 if ENABLE_DRAFTS
 include_HEADERS += \
+    srr_pb.h \
     fty_srr_dto.h \
     fty_commands_dto.h
 

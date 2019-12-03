@@ -22,161 +22,167 @@
 #ifndef FTY_SRR_DTO_H_INCLUDED
 #define FTY_SRR_DTO_H_INCLUDED
 
+#include <cxxtools/serializationinfo.h>
 #include "fty_userdata_dto.h"
+#include "srr_pb.h"
 
+#include <functional>
 namespace dto 
 {
     namespace srr 
     {
+        constexpr auto PASS_PHRASE    = "passphrase";
+        constexpr auto FEATURE_LIST   = "featuresList";
+        constexpr auto FEATURE_NAME   = "name";
+        constexpr auto DATA           = "data";
+        constexpr auto SRR_VERSION    = "version";
+        constexpr auto STATUS_LIST    = "statusList";
+        constexpr auto STATUS         = "status";
+        constexpr auto ERROR          = "error";
+        
         /**
-         *  Actions for config request object
+         * Helper for client of SRR.
+         * As a client of SRR, you have to implement the handlers functions 
+         * 
          */
-        enum class Action { GET_FEATURE_LIST, SAVE, RESET, RESTORE, UNKNOWN};
-        std::string actionToString(Action action);
-        Action stringToAction(const std::string & actionStr);
+        class SrrQueryProcessor
+        {
+        public:
+            std::function<SaveResponse(const SaveQuery &)> saveHandler;
+            std::function<RestoreResponse(const RestoreQuery &)> restoreHandler;
+            std::function<ResetResponse(const ResetQuery &)> resetHandler;
+            std::function<ListFeatureResponse(const ListFeatureQuery &)> listFeatureHandler;
 
-        /**
-         * Config request object
-         */
-        struct ConfigQueryDto {
-            Action action;
-            std::string passPhrase;
-            std::list<std::string> features;
-            std::string data;
-
-            ConfigQueryDto() = default;
-            ConfigQueryDto(Action action) : action(action) {}
-            ConfigQueryDto(Action action, const std::string& passPhrase) : action(action), passPhrase(passPhrase) {}
-            ConfigQueryDto(Action action, const std::string& passPhrase, const std::list<std::string>& features) : action(action), passPhrase(passPhrase), features(features) {}
-            ConfigQueryDto(Action action, const std::string& passPhrase, const std::list<std::string>& features, const std::string& data) : 
-                action(action),
-                passPhrase(passPhrase),
-                features(features),
-                data(data) {}
+            Response processQuery(const Query & q);
         };
+        
+        /**
+         * Query wrapper functions
+         * 
+         */
 
-        void operator<<(UserData &data, const ConfigQueryDto &object);
-        void operator>>(UserData &inputData, ConfigQueryDto &object);
+        using FeatureName = std::string;
+
+        Query createSaveQuery(const std::set<FeatureName> & features, const std::string & passpharse);
+        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse);
+        Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse);
+        Query createResetQuery(const std::set<FeatureName> & features);
+        Query createListFeatureQuery();
+
+        //userdata serializer / deserializer
+        void operator>> (UserData & data, Query & query);
+        void operator<< (UserData & data, const Query & query);
+
+        //ostream serializer => for tests mostly
+        std::ostream& operator<< (std::ostream& os, const Query& q);
+
+        //deserializer from UI => will be moved in fty-srr-rest
+        Query saveQueryFromUiJson(const std::string & json);
+        Query restoreQueryFromUiJson(const std::string & json);
+        Query resetQueryFromUiJson(const std::string & json);
+
+        void operator>>= (const cxxtools::SerializationInfo& si, SaveQuery & query);
+        void operator>>= (const cxxtools::SerializationInfo& si, RestoreQuery & query);
+        void operator>>= (const cxxtools::SerializationInfo& si, ResetQuery & query);
+        
+        //Comparison operators => for tests mostly
+        inline bool operator==(const Feature& lhs, const Feature& rhs){ return ((lhs.data() == rhs.data()) &&(lhs.version() == rhs.version())); }
+        inline bool operator!=(const Feature& lhs, const Feature& rhs){ return !(lhs == rhs); }
+        
+        inline bool operator<(const Feature& lhs, const Feature& rhs){ return (lhs.data() < rhs.data()); }
+        
+        inline bool operator==(const FeatureStatus& lhs, const FeatureStatus& rhs){ return ((lhs.status() == rhs.status()) && (lhs.error() == rhs.error())); }
+        inline bool operator!=(const FeatureStatus& lhs, const FeatureStatus& rhs){ return !(lhs == rhs); }
+        
+        bool operator==(const Query& lhs, const Query& rhs);
+        inline bool operator!=(const Query& lhs, const Query& rhs){ return !(lhs == rhs); }
+
+        bool operator==(const SaveQuery& lhs, const SaveQuery& rhs);
+        inline bool operator!=(const SaveQuery& lhs, const SaveQuery& rhs){ return !(lhs == rhs); }
+        
+        bool operator==(const RestoreQuery& lhs, const RestoreQuery& rhs);
+        inline bool operator!=(const RestoreQuery& lhs, const RestoreQuery& rhs){ return !(lhs == rhs); }
+        
+        bool operator==(const ResetQuery& lhs, const ResetQuery& rhs);
+        inline bool operator!=(const ResetQuery& lhs, const ResetQuery& rhs){ return !(lhs == rhs); }
+        
+        inline bool operator==(const ListFeatureQuery& lhs, const ListFeatureQuery& rhs){ return true; }
+        inline bool operator!=(const ListFeatureQuery& lhs, const ListFeatureQuery& rhs){ return !(lhs == rhs); }
 
         /**
-         *  Status for config response object
+         * Response wrapper functions
+         * 
          */
-        enum class Status { SUCCESS, FAILED, PARTIAL_SUCCESS, UNKNOWN};
+
+        //create functions
+        Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData);
+        Response createRestoreResponse(const std::map<FeatureName, FeatureStatus> & mapStatus);
+        Response createResetResponse(const std::map<FeatureName, FeatureStatus> & mapStatus);
+        Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies);
+
+        //userdata serializer / deserializer
+        void operator>> (UserData & data, Response & response);
+        void operator<< (UserData & data, const Response & response);
+
+        //ostream serializer => for tests mostly
+        std::ostream& operator<< (std::ostream& os, const Response& r);
+
+        //Comparison operators => for tests mostly      
+        inline bool operator==(const FeatureAndStatus& lhs, const FeatureAndStatus& rhs){ return ((lhs.status() == rhs.status()) && (lhs.feature() == rhs.feature())); }
+        inline bool operator!=(const FeatureAndStatus& lhs, const FeatureAndStatus& rhs){ return !(lhs == rhs); }
+
+        bool operator==(const FeatureDependencies& lhs, const FeatureDependencies& rhs);
+        inline bool operator!=(const FeatureDependencies& lhs, const FeatureDependencies& rhs){ return !(lhs == rhs); }
+        
+        bool operator==(const Response& lhs, const Response& rhs);
+        inline bool operator!=(const Response& lhs, const Response& rhs){ return !(lhs == rhs); }
+
+        bool operator==(const SaveResponse& lhs, const SaveResponse& rhs);
+        inline bool operator!=(const SaveResponse& lhs, const SaveResponse& rhs){ return !(lhs == rhs); }
+        
+        bool operator==(const RestoreResponse& lhs, const RestoreResponse& rhs);
+        inline bool operator!=(const RestoreResponse& lhs, const RestoreResponse& rhs){ return !(lhs == rhs); }
+        
+        bool operator==(const ResetResponse& lhs, const ResetResponse& rhs);
+        inline bool operator!=(const ResetResponse& lhs, const ResetResponse& rhs){ return !(lhs == rhs); }
+        
+        bool operator==(const ListFeatureResponse& lhs, const ListFeatureResponse& rhs);
+        inline bool operator!=(const ListFeatureResponse& lhs, const ListFeatureResponse& rhs){ return !(lhs == rhs); }
+
+        //operators +        
+        Response operator+(const Response & r1, const Response & r2);
+        Response& operator+=(Response & r1, const Response & r2);
+
+        SaveResponse& operator+=(SaveResponse & r1, const SaveResponse & r2);
+        RestoreResponse& operator+=(RestoreResponse & r1, const RestoreResponse & r2);
+        ResetResponse& operator+=(ResetResponse & r1, const ResetResponse & r2);
+        ListFeatureResponse& operator+=(ListFeatureResponse & r1, const ListFeatureResponse & r2);
+
+        //serializer for UI => will be moved in fty-srr-rest
+        std::string responseToUiJson(const Response & response, bool beautiful = false);
+        void operator<<= (cxxtools::SerializationInfo& si, const Response & response);
+        void operator<<= (cxxtools::SerializationInfo& si, const SaveResponse & response);
+        void operator<<= (cxxtools::SerializationInfo& si, const RestoreResponse & response);
+        void operator<<= (cxxtools::SerializationInfo& si, const ResetResponse & response);
+        void operator<<= (cxxtools::SerializationInfo& si, const ListFeatureResponse & response);
+
+        //status to string for UI
         std::string statusToString(Status status);
-        Status stringToStatus(const std::string & statusStr);
 
+        //get global status for UI => will be moved in fty-srr-rest
+        Status getGlobalStatus(const SaveResponse & r);
+        Status getGlobalStatus(const RestoreResponse & r);
+        Status getGlobalStatus(const ResetResponse & r);
+        Status getGlobalStatus(const ListFeatureResponse & r);
 
-        /**
-         * Config response object
-         */
-        struct ConfigResponseDto {
-            std::string featureName;
-            Status status;
-            std::string data;
-            std::string error;
-
-            ConfigResponseDto() = default;
-            ConfigResponseDto(const std::string& featureName) : featureName(featureName) {}
-            ConfigResponseDto(const std::string& featureName, Status status) : featureName(featureName), status(status) {}
-            ConfigResponseDto(const std::string& featureName, Status status, const std::string& data) : featureName(featureName), status(status), data(data) {}
-            ConfigResponseDto(const std::string& featureName, Status status, const std::string& data, const std::string& error) : featureName(featureName), status(status), data(data), error(error) {}
-        };
-
-        void operator<<(UserData &data, const ConfigResponseDto &object);
-        void operator>>(UserData &inputData, ConfigResponseDto &object);
-
-        /**
-         * SRR request object
-         */
-        struct SrrQueryDto {
-            Action action;
-            std::string data;
-
-            SrrQueryDto() = default;
-            SrrQueryDto(Action action) : action(action) {}
-            SrrQueryDto(Action action, const std::string& data) : action(action), data(data) {}
-        };
-
-        void operator<<(UserData &data, const SrrQueryDto &object);
-        void operator>>(UserData &inputData, SrrQueryDto &object);
-        
-        /**
-         * FeatureDto object treated by SRR
-         */
-        struct SrrFeatureDto {
-            std::string name;
-            std::string dependencies;
-
-            SrrFeatureDto() = default;
-            SrrFeatureDto(const std::string name) : name(name) {}
-            SrrFeatureDto(const std::string name, const std::string dependencies) : name(name), dependencies(dependencies) {}
-        };
-        
-        void operator<<(UserData &data, const SrrFeatureDto &object);
-        void operator>>(UserData &inputData, SrrFeatureDto &object);
-
-        /**
-         * All features list object treated by SRR
-         */
-        struct SrrFeaturesListDto {
-            std::list<SrrFeatureDto> featuresList;
-
-            SrrFeaturesListDto() = default;
-            SrrFeaturesListDto(std::list<SrrFeatureDto> featuresList) : featuresList(featuresList) {}
-        };
-
-        void operator<<(UserData &data, const SrrFeaturesListDto &object);
-        void operator>>(UserData &inputData, SrrFeaturesListDto &object);
-        
-        /**
-         * List of SrrSaveDto object with a global status
-         */
-        struct SrrSaveDto {
-            Status status;
-            std::string config;
-
-            SrrSaveDto() = default;
-            SrrSaveDto(Status status) : status(status) {}
-            SrrSaveDto(Status status, const std::string& config) : status(status), config(config) {}
-        };
-
-        void operator<<(UserData &data, const SrrSaveDto &object);
-        void operator>>(UserData &inputData, SrrSaveDto &object);
-
-        /**
-         * SRR restore object
-         */
-        struct SrrRestoreDto {
-            std::string name;
-            Status status;
-            std::string error;
-
-            SrrRestoreDto() = default;
-            SrrRestoreDto(const std::string& name) : name(name) {}
-            SrrRestoreDto(const std::string& name, Status status) : name(name), status(status) {}
-            SrrRestoreDto(const std::string& name, Status status, const std::string& error) : name(name), status(status), error(error) {}
-        };
-
-        void operator<<(UserData &data, const SrrRestoreDto &object);
-        void operator>>(UserData &inputData, SrrRestoreDto &object);
-
-        /**
-         * List of SrrRestoreDto object with a global status
-         */
-        struct SrrRestoreDtoList {
-            Status status;
-            std::list<SrrRestoreDto> responseList;
-
-            SrrRestoreDtoList() = default;
-            SrrRestoreDtoList(Status status) : status(status) {}
-            SrrRestoreDtoList(Status status, const std::list<SrrRestoreDto> responseList) : status(status), responseList(responseList) {}
-        };
-
-        void operator<<(UserData &data, const SrrRestoreDtoList &object);
-        void operator>>(UserData &inputData, SrrRestoreDtoList &object);
-        
     } // srr namespace
     
 } // dto namespace
+
+#ifdef FTY_COMMON_DTO_BUILD_DRAFT_API
+    // Tests
+    void fty_srr_dto_test (bool verbose);
+
+#endif // FTY_COMMON_DTO_BUILD_DRAFT_API
 
 #endif

@@ -17,6 +17,7 @@ src_libfty_common_dto_la_SOURCES = \
 
 if ENABLE_DRAFTS
 src_libfty_common_dto_la_SOURCES += \
+    src/srr_pb.cc \
     src/fty_srr_dto.cc \
     src/fty_commands_dto.cc
 

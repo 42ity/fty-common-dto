@@ -46,12 +46,9 @@ BuildRequires:  autoconf
 BuildRequires:  libtool
 BuildRequires:  pkgconfig
 BuildRequires:  xmlto
-# Note that with current implementation of zproject use-cxx-gcc-4-9 option,
-# this effectively hardcodes the use of specifically 4.9, not allowing for
-# "4.9 or newer".
-BuildRequires:  devtoolset-3-gcc devtoolset-3-gcc-c++
-BuildRequires:  gcc-c++ >= 4.9.0
+BuildRequires:  gcc-c++
 BuildRequires:  cxxtools-devel
+BuildRequires:  protobuf-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -76,6 +73,7 @@ Summary:        common data transfer object for 42ity ecosystem
 Group:          System/Libraries
 Requires:       libfty_common_dto1 = %{version}
 Requires:       cxxtools-devel
+Requires:       protobuf-devel
 
 %description devel
 common data transfer object for 42ity ecosystem development tools
