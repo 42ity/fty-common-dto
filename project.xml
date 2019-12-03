@@ -46,9 +46,20 @@
     <use project = "protobuf" header = "google/protobuf/stubs/common.h"
             repository = "https://github.com/42ity/protobuf.git"/>
 
-    <!-- Project -->
+    <!-- Project files -->
+    <header name = "fty_common_dto_empty" selftest = "0">Empty header which can be reference as the "main header" if we do not want to include all the headers into our projects</header>
+    <!-- Protobufs
+        Protobuf are generated using protoc and then they are renamed from *.pb.cc and *.pb.h to *_pb.cc and _pb.h.
+        The *_pb.h is moved after in the include folder and the 
+    -->
     <class name = "srr_pb" selftest = "0">srr protobuf</class>
+    <class name = "message_bus_config_pb" selftest = "0">MessageBusConfig protobuf</class>
+
+    <!-- Classical classes-->
+    <class name = "pb_helper" selftest = "0" >Helper function for protobuf</class>
+
     <class name = "fty_srr_dto" selftest = "1">Fty srr dto wrapper functions for protobuf</class>
     <class name = "fty_commands_dto" selftest = "0">Fty nut dto</class>
     <header name = "fty_userdata_dto" selftest = "0">Fty user data dto</header>
+
 </project>

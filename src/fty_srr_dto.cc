@@ -226,18 +226,22 @@ namespace dto
                 for (const auto &si : siTemp)
                 {
                     std::string featureName = si.name();
+                    std::cout << featureName << std::endl;
+                    
                     Feature f;
                     si.getMember(SRR_VERSION) >>= *(f.mutable_version());
-                    const cxxtools::SerializationInfo& dataSi = si.getMember(DATA);
+                    cxxtools::SerializationInfo dataSi = si.getMember(DATA);
+
                     std::string data;
-                    try
+                    
+                    if(dataSi.category() == cxxtools::SerializationInfo::Category::Value)
                     {
-                        //try to serialize if it's Json format
-                        data = serializeJson(dataSi);
+                        dataSi >>= data; 
                     }
-                    catch(const std::exception& /*e*/)
+                    else
                     {
-                        dataSi >>= data;
+                        dataSi.setName("");
+                        data = serializeJson(dataSi);
                     }
 
                     f.set_data(data);
@@ -691,8 +695,17 @@ namespace dto
                 {
                     //try to unserialize the data if they are on Json format
                     data = deserializeJson(featureAndStatus.feature().data());
-                    data.setName(DATA);
-                    data.setCategory(cxxtools::SerializationInfo::Category::Object);
+                    
+                    if(data.category() == cxxtools::SerializationInfo::Category::Void || data.category() == cxxtools::SerializationInfo::Category::Value)
+                    {
+                        data <<= featureAndStatus.feature().data();
+                    }
+                    else
+                    {
+                        data.setName(DATA);
+                        data.setCategory(cxxtools::SerializationInfo::Category::Object);
+                    }
+                    
                 }
                 catch(const std::exception& /* e */)
                 {
@@ -793,7 +806,7 @@ namespace dto
             }
             catch(const std::exception& e)
             {
-                throw std::runtime_error("Error in the json from server: "+std::string(e.what()));
+                throw std::runtime_error("Error in the json: "+std::string(e.what()));
             }
 
             return si;
@@ -805,7 +818,7 @@ namespace dto
             std::string returnData("");
 
             try
-            {
+            { 
                 std::stringstream output;
                 cxxtools::JsonSerializer serializer(output);
                 serializer.beautify(beautify);
@@ -862,13 +875,7 @@ void fty_srr_dto_test (bool verbose)
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
 
         try
-        {
-            std::string saveQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"\",\"featuresList\": [{\"name\":\"etn-mass-management\"}]}";
-            Query query = saveQueryFromUiJson (saveQueryJson);
-            const cxxtools::SerializationInfo si = deserializeJson(saveQueryJson);
-            std::cout << serializeJson(si, true) << std::endl;
-            std::cout << query << std::endl;
-            
+        {   
             Query query1 = createSaveQuery({"test"},"myPassphrase");
             std::cout << query1 << std::endl;
 
@@ -891,6 +898,7 @@ void fty_srr_dto_test (bool verbose)
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+            
         }
         catch (const std::exception &e) {
             printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
@@ -909,11 +917,7 @@ void fty_srr_dto_test (bool verbose)
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
 
         try
-        {
-            std::string restoreQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"my pass phrase\",\"data\": [{\"user-session\": {\"version\": \"1.0\",\"data\": {\"timeout\": {\"no_activity\": \"40\",\"lease_time\": \"36\"}}}}]}";
-            Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
-            std::cout << queryRestore << std::endl;
-                    
+        {          
             Feature f1;
             f1.set_version("1.0");
             f1.set_data(DATA);
@@ -1370,7 +1374,7 @@ void fty_srr_dto_test (bool verbose)
     }
 
     printf ("OK\n");
-    //Next test
+//Next test
     testNumber = "3.4";
     testName = "Check add operation on List Feature Response";
     printf ("\n-------------------------------------------------------------\n");
@@ -1397,6 +1401,146 @@ void fty_srr_dto_test (bool verbose)
             std::cout << r << std::endl;
             
             if(r != r3) throw std::runtime_error("Bad aggregation");
+            
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+
+    printf ("OK\n");
+
+//Next test
+    testNumber = "4.1";
+    testName = "Deserialize save query from UI";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+
+        try
+        {  
+            std::string saveQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"\",\"featuresList\": [{\"name\":\"etn-mass-management\"}]}";
+            Query query = saveQueryFromUiJson (saveQueryJson);
+            
+            if(query.parameters_case() != Query::ParametersCase::kSave)
+            {
+                const cxxtools::SerializationInfo si = deserializeJson(saveQueryJson);
+                std::cout << serializeJson(si, true) << std::endl;
+                std::cout << query << std::endl;
+
+                throw std::runtime_error("Invalid query type");
+            }
+            
+            if(query.save().features(0) != "etn-mass-management")
+            {
+                const cxxtools::SerializationInfo si = deserializeJson(saveQueryJson);
+                std::cout << serializeJson(si, true) << std::endl;
+                std::cout << query << std::endl;
+                throw std::runtime_error("bad deserialisation from UI");
+            }
+
+
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+
+    printf ("OK\n");
+    
+//Next test
+    testNumber = "4.2";
+    testName = "Deserialize restore query from UI";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+
+        try
+        {  
+            std::string restoreQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"my pass phrase\",\"data\": [{\"object\": {\"version\": \"1.0\",\"data\": {\"timeout\": \"40\"}}},{\"no-object\": {\"version\": \"1.0\",\"data\": \"data in text\"}}]}";
+            Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
+            
+            if(queryRestore.parameters_case() != Query::ParametersCase::kRestore)
+            {
+                std::cout << queryRestore << std::endl;
+                throw std::runtime_error("Invalid query type");
+            }
+            
+            if(queryRestore.restore().map_features_data().at("object").data() != "{\"timeout\":\"40\"}")
+            {
+                std::cout << queryRestore << std::endl;
+                throw std::runtime_error("bad data object serialisation");
+            }
+            
+            if(queryRestore.restore().map_features_data().at("no-object").data() != "data in text")
+            {
+                std::cout << queryRestore << std::endl;
+                throw std::runtime_error("bad data for none object serialisation");
+            }
+            
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+
+    printf ("OK\n");
+
+//Next test
+    testNumber = "4.3";
+    testName = "Serialize save response for UI";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+
+        try
+        {  
+            Feature f1;
+            f1.set_version("1.0");
+            f1.set_data("{\"timeout\":\"40\"}");
+            
+            FeatureStatus s1; 
+            s1.set_status(Status::SUCCESS);
+            
+            FeatureAndStatus fs1;
+            *(fs1.mutable_feature()) = f1;
+            *(fs1.mutable_status()) = s1;
+
+            Feature f2;
+            f2.set_version("1.0");
+            f2.set_data("data in text");
+
+            FeatureStatus s2; 
+            s2.set_status(Status::SUCCESS);
+              
+            FeatureAndStatus fs2;          
+            *(fs2.mutable_feature()) = f2;
+            *(fs2.mutable_status()) = s2;
+
+            
+            Response r = createSaveResponse({{"object",fs1},{"no-object",fs2}});
+
+            std::string strV1 = "{\"data\":[{\"no-object\":{\"version\":\"1.0\",\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"data\":{\"timeout\":\"40\"}}}]}";
+            std::string strV2 = "{\"data\":[{\"object\":{\"version\":\"1.0\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"data in text\"}}]}";
+            std::string responseInStr = responseToUiJson(r);
+            
+            if(responseInStr != strV1 && responseInStr != strV2)
+            {
+                std::cout << responseToUiJson(r) << std::endl;
+                throw std::runtime_error("invalid response");
+            }
             
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
