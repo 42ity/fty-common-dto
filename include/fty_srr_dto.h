@@ -26,7 +26,7 @@
 #include "fty_userdata_dto.h"
 #include "srr_pb.h"
 
-
+#include <functional>
 namespace dto 
 {
     namespace srr 
