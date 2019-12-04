@@ -66,5 +66,26 @@ namespace dto
         return os;
     }
 
+    void operator>> (UserData & data, google::protobuf::Message & message)
+    {
+        std::string payload = data.front();
+        data.pop_front();
+
+        if(!message.ParseFromString(payload))
+        {
+            throw std::runtime_error("Impossible to deserialize");
+        }
+    }
+
+    void operator<< (UserData & data, const google::protobuf::Message & message)
+    {
+        std::string payload;
+        if(!message.SerializeToString(&payload))
+        {
+            throw std::runtime_error("Impossible to serialize");
+        }
+        data.push_back(payload);
+    }
+
 } //namespace dto
         

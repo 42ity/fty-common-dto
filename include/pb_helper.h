@@ -23,13 +23,21 @@
 #define PB_HELPER_H_INCLUDED
 
 #include <google/protobuf/util/json_util.h>
+#include "fty_userdata_dto.h"
 
 namespace dto
 {
+    //Json string serilizer / deserializer
     void operator>>=(const std::string& str, google::protobuf::Message & message);
     void operator<<=(std::string& str, const google::protobuf::Message & message);
     
+    //Stream in Json format
     std::ostream& operator<< (std::ostream& os, const google::protobuf::Message & message);
+
+    //Userdata serializer / deserializer
+    void operator<< (UserData & data, const google::protobuf::Message & message);
+    void operator>> (UserData & data, google::protobuf::Message & message);
+
 } // namespace dto
 
 
