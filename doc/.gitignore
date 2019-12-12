@@ -13,6 +13,10 @@
 # Ignore the source doc texts generated from program sources
 srr_pb.txt
 srr_pb.doc
+message_bus_config_pb.txt
+message_bus_config_pb.doc
+pb_helper.txt
+pb_helper.doc
 fty_srr_dto.txt
 fty_srr_dto.doc
 fty_commands_dto.txt

@@ -136,20 +136,61 @@ namespace dto
             std::string payload = data.front();
             data.pop_front();
 
-            if(!query.ParseFromString(payload))
+            std::string type = data.front();
+            data.pop_front();
+
+            if(type == "save")
+                query = saveQueryFromUiJson(payload);
+            else if(type == "restore")
+                query = restoreQueryFromUiJson(payload);
+            else if(type == "reset")
+                query = resetQueryFromUiJson(payload);
+            else if(type == "list")
+                query = createListFeatureQuery();
+            else  
+                throw std::runtime_error("Wrong query type");
+
+            /*if(!query.ParseFromString(payload))
             {
                 throw std::runtime_error("Impossible to deserialize");
-            }
+            }*/
         }
 
         void operator<< (UserData & data, const Query & query)
         {
-            std::string payload;
-            if(!query.SerializeToString(&payload))
+            cxxtools::SerializationInfo si;
+            std::string type;
+
+            switch (query.parameters_case())
+            {
+            case Query::ParametersCase::kSave :
+                si <<= query.save();
+                type = "save";
+                break;
+
+            case Query::ParametersCase::kRestore :
+                si <<= query.restore();
+                type = "restore";
+                break;
+            
+            case Query::ParametersCase::kReset :
+                si <<= query.reset();
+                type = "reset";
+                break;
+
+            case Query::ParametersCase::kListFeature :
+                type = "list";
+                break;
+            
+            default:
+                break;
+            }
+            /*if(!query.SerializeToString(&payload))
             {
                 throw std::runtime_error("Impossible to serialize");
-            }
-            data.push_back(payload);
+            }*/
+            data.push_back(serializeJson(si));
+            data.push_back(type);
         }
 
         std::ostream& operator<< (std::ostream& os, const Query& q)
@@ -227,7 +268,6 @@ namespace dto
                 for (const auto &si : siTemp)
                 {
                     std::string featureName = si.name();
-                    std::cout << featureName << std::endl;
                     
                     Feature f;
                     si.getMember(SRR_VERSION) >>= *(f.mutable_version());
@@ -261,6 +301,77 @@ namespace dto
                 const cxxtools::SerializationInfo & featureSi = featuresSi.getMember(index);
                 featureSi.getMember(FEATURE_NAME) >>= *(query.add_features());
             }        
+        }
+
+        void operator<<= (cxxtools::SerializationInfo& si, const SaveQuery & query)
+        {
+            si.addMember(PASS_PHRASE) <<= query.passpharse();
+
+            cxxtools::SerializationInfo & featuresSi = si.addMember(FEATURE_LIST);
+
+            for( const auto & name : query.features() )
+            {
+                cxxtools::SerializationInfo & featureSi = featuresSi.addMember("");
+                featureSi.addMember(FEATURE_NAME) <<= name;
+            }
+
+            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);              
+        }
+        
+        void operator<<= (cxxtools::SerializationInfo& si, const RestoreQuery & query)
+        {
+            si.addMember(PASS_PHRASE) <<= query.passpharse();
+            cxxtools::SerializationInfo & featuresSi = si.addMember(DATA);
+            
+            for( const auto & item : query.map_features_data())
+            {
+                cxxtools::SerializationInfo & entrySi = featuresSi.addMember("");
+                cxxtools::SerializationInfo & featureSi = entrySi.addMember(item.first);
+                featureSi.addMember(SRR_VERSION) <<= item.second.version();
+
+                cxxtools::SerializationInfo & data = featureSi.addMember(DATA);
+                
+                try
+                {
+                    //try to unserialize the data if they are on Json format
+                    cxxtools::SerializationInfo dataSi = deserializeJson(item.second.data());
+                    
+                    if(dataSi.category() == cxxtools::SerializationInfo::Category::Void || dataSi.category() == cxxtools::SerializationInfo::Category::Value || data.isNull())
+                    {
+                        data <<= item.second.data();
+                    }
+                    else
+                    {
+                        dataSi.setName(DATA);
+                        data = dataSi;
+                        data.setName(DATA);
+                        data.setCategory(cxxtools::SerializationInfo::Category::Object);
+                    }
+                    
+                }
+                catch(const std::exception& /* e */)
+                {
+                    //put the data as a string if they are not in Json
+                    data <<= item.second.data();
+                }
+                
+            }
+            
+            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
+        }
+
+        void operator<<= (cxxtools::SerializationInfo& si, const ResetQuery & query)        
+        {
+            
+            cxxtools::SerializationInfo & featuresSi = si.addMember(FEATURE_LIST);
+
+            for( const auto & name : query.features() )
+            {
+                cxxtools::SerializationInfo & featureSi = featuresSi.addMember("");
+                featureSi.addMember(FEATURE_NAME) <<= name;
+            }
+
+            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);    
         }
         
         bool operator==(const Query& lhs, const Query& rhs)
@@ -335,6 +446,8 @@ namespace dto
          * 
          */
 
+        static Status stringToStatus(const std::string & statusStr);
+        
         //create functions
         Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData)
         {
@@ -382,20 +495,64 @@ namespace dto
             std::string payload = data.front();
             data.pop_front();
 
-            if(!response.ParseFromString(payload))
+            std::string type = data.front();
+            data.pop_front();
+            
+            cxxtools::SerializationInfo si = deserializeJson(payload);
+
+            if(type == "save")
+                si >>= *(response.mutable_save());
+            else if(type == "restore")
+                si >>= *(response.mutable_restore());
+            else if(type == "reset")
+                si >>= *(response.mutable_reset());
+            else if(type == "list")
+                si >>= *(response.mutable_list_feature());
+            else  
+                throw std::runtime_error("Wrong query type");
+
+            /*if(!response.ParseFromString(payload))
             {
                 throw std::runtime_error("Impossible to deserialize");
-            }
+            }*/
         }
 
         void operator<< (UserData & data, const Response & response)
         {
-            std::string payload;
-            if(!response.SerializeToString(&payload))
+            cxxtools::SerializationInfo si;
+            std::string type;
+
+            switch (response.parameters_case())
+            {
+            case Response::ParametersCase::kSave :
+                si <<= response.save();
+                type = "save";
+                break;
+
+            case Response::ParametersCase::kRestore :
+                si <<= response.restore();
+                type = "restore";
+                break;
+            
+            case Response::ParametersCase::kReset :
+                si <<= response.reset();
+                type = "reset";
+                break;
+
+            case Response::ParametersCase::kListFeature :
+                si <<= response.list_feature();
+                type = "list";
+                break;
+            
+            default:
+                break;
+            }
+            /*if(!response.SerializeToString(&payload))
             {
                 throw std::runtime_error("Impossible to serialize");
-            }
-            data.push_back(payload);
+            }*/
+            data.push_back(serializeJson(si));
+            data.push_back(type);
         }
 
         //ostream serializer => for tests mostly
@@ -475,7 +632,6 @@ namespace dto
         {
             std::map<FeatureName, FeatureStatus> map1(lhs.map_features_status().begin(), lhs.map_features_status().end());
             std::map<FeatureName, FeatureStatus> map2(rhs.map_features_status().begin(), rhs.map_features_status().end());
-                
             return (map1 == map2);
         }
         
@@ -688,7 +844,10 @@ namespace dto
                 cxxtools::SerializationInfo & entrySi = featuresSi.addMember("");
                 cxxtools::SerializationInfo & featureSi = entrySi.addMember(item.first);
                 const auto & featureAndStatus = item.second;
+                
                 featureSi.addMember(SRR_VERSION) <<= featureAndStatus.feature().version();
+                featureSi.addMember(STATUS) <<= statusToString(featureAndStatus.status().status());
+                featureSi.addMember(ERROR) <<= featureAndStatus.status().error();
 
                 cxxtools::SerializationInfo & data = featureSi.addMember(DATA);
                 
@@ -703,7 +862,6 @@ namespace dto
                     }
                     else
                     {
-                        data.setName(DATA);
                         data.setCategory(cxxtools::SerializationInfo::Category::Object);
                     }
                     
@@ -713,8 +871,11 @@ namespace dto
                     //put the data as a string if they are not in Json
                     data <<= featureAndStatus.feature().data();
                 }
+
+                data.setName(DATA);
                 
             }
+            
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
 
@@ -772,6 +933,119 @@ namespace dto
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
 
+        void operator>>= (const cxxtools::SerializationInfo& si, SaveResponse & response)
+        {
+            google::protobuf::Map<std::string, FeatureAndStatus> & mapFeaturesData = *(response.mutable_map_features_data());
+
+            cxxtools::SerializationInfo featuresSi = si.getMember(DATA);
+            cxxtools::SerializationInfo::Iterator it;
+            for (it = featuresSi.begin(); it != featuresSi.end(); ++it)
+            {
+                const cxxtools::SerializationInfo siTemp = (cxxtools::SerializationInfo)*it;
+                for (const auto &si : siTemp)
+                {
+                    std::string featureName = si.name();
+                    
+                    FeatureAndStatus fs;
+                    Feature & f = *(fs.mutable_feature());
+
+                    si.getMember(SRR_VERSION) >>= *(f.mutable_version());
+                    cxxtools::SerializationInfo dataSi = si.getMember(DATA);
+
+                    std::string data;
+                    
+                    if(dataSi.category() == cxxtools::SerializationInfo::Category::Value)
+                    {
+                        dataSi >>= data; 
+                    }
+                    else
+                    {
+                        dataSi.setName("");
+                        data = serializeJson(dataSi);
+                    }
+
+                    f.set_data(data);
+                    
+                    FeatureStatus & s = *(fs.mutable_status());
+                    
+                    std::string statusStr, error;
+                    
+                    si.getMember(STATUS) >>= statusStr;
+                    si.getMember(ERROR) >>= error;
+                    
+                    s.set_status(stringToStatus(statusStr));
+                    s.set_error(error);
+
+                    mapFeaturesData[featureName] = std::move(fs);
+                }
+            }
+        }
+
+        void operator>>= (const cxxtools::SerializationInfo& si, RestoreResponse & response)
+        {
+            google::protobuf::Map<std::string, FeatureStatus>& mapFeaturesData = *(response.mutable_map_features_status());
+            
+            for (const auto & featureSi : si.getMember(STATUS_LIST) )
+            {
+                std::string name, statusStr, error;
+
+                featureSi.getMember(FEATURE_NAME) >>= name;
+                featureSi.getMember(STATUS) >>= statusStr;
+                featureSi.getMember(ERROR) >>= error;
+
+                FeatureStatus f;
+                f.set_status(stringToStatus(statusStr));
+                f.set_error(error);
+
+                mapFeaturesData[name] = std::move(f);
+            }
+            
+        }
+
+        void operator>>= (const cxxtools::SerializationInfo& si, ResetResponse & response)
+        {
+            google::protobuf::Map<std::string, FeatureStatus>& mapFeaturesData = *(response.mutable_map_features_status());
+            
+            for (const auto & featureSi : si.getMember(STATUS_LIST) )
+            {
+                std::string name, statusStr, error;
+
+                featureSi.getMember(FEATURE_NAME) >>= name;
+                featureSi.getMember(STATUS) >>= statusStr;
+                featureSi.getMember(ERROR) >>= error;
+
+                FeatureStatus f;
+                f.set_status(stringToStatus(statusStr));
+                f.set_error(error);
+
+                mapFeaturesData[name] = std::move(f);
+            }
+        }
+
+        void operator>>= (const cxxtools::SerializationInfo& si, ListFeatureResponse & response)
+        {
+            google::protobuf::Map<std::string, FeatureDependencies>& mapDependencies = *(response.mutable_map_features_dependencies());
+            
+            for (const auto & featureSi : si.getMember(FEATURE_LIST) )
+            {   
+                std::string name;
+                std::set<FeatureName> dependencies;
+
+                featureSi.getMember(FEATURE_NAME) >>= name;
+                featureSi.getMember("dependencies") >>= dependencies;
+                
+                FeatureDependencies deps;
+                
+                for(const auto & dep : dependencies)
+                {
+                    deps.add_dependencies(dep);
+                }
+                
+
+                mapDependencies[name] = std::move(deps);
+            }
+        }
+
         static const std::map<Status, std::string> statusInString =
         {
             {Status::SUCCESS,           "success"},
@@ -792,6 +1066,17 @@ namespace dto
             {
                 return "unknown";
             }
+        }
+        
+        static Status stringToStatus(const std::string & statusStr)
+        {
+            for(const auto & it : statusInString )
+            {
+                if(it.second == statusStr)
+                    return it.first;
+            }
+            return Status::UNKNOWN;
+
         }
 
         static cxxtools::SerializationInfo deserializeJson(const std::string & json)
@@ -920,7 +1205,7 @@ void fty_srr_dto_test (bool verbose)
         {          
             Feature f1;
             f1.set_version("1.0");
-            f1.set_data(DATA);
+            f1.set_data("data 1");
             
             Query query1 = createRestoreQuery({{"test", f1}},"myPassphrase");
             std::cout << query1 << std::endl;
@@ -932,7 +1217,7 @@ void fty_srr_dto_test (bool verbose)
             //test !=
             Feature f2;
             f2.set_version("1.0");
-            f2.set_data("data2");
+            f2.set_data("data 2");
             Query query3 = createRestoreQuery({{"test-1", f2}},"hsGH<hkherjg");
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
@@ -944,6 +1229,22 @@ void fty_srr_dto_test (bool verbose)
             userdata >> query4;
 
             if(query1 != query4) throw std::runtime_error("Bad serialization to userdata");
+            
+            Feature f3;
+            f3.set_version("1.0");
+            f3.set_data("{\"timeout\":\"40\"}");
+            
+            Query query5 = createRestoreQuery({{"test", f3}},"myPassphrase");
+            std::cout << query5 << std::endl;
+            
+            UserData userdata1;
+            userdata1 << query5;
+
+            Query query6;
+            userdata1 >> query6;
+            
+            if(query5 != query6) throw std::runtime_error("Bad serialization to userdata");
+
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
@@ -1532,8 +1833,8 @@ void fty_srr_dto_test (bool verbose)
             
             Response r = createSaveResponse({{"object",fs1},{"no-object",fs2}});
 
-            std::string strV1 = "{\"data\":[{\"no-object\":{\"version\":\"1.0\",\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"data\":{\"timeout\":\"40\"}}}]}";
-            std::string strV2 = "{\"data\":[{\"object\":{\"version\":\"1.0\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"data in text\"}}]}";
+            std::string strV1 = "{\"data\":[{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}}]}";
+            std::string strV2 = "{\"data\":[{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}}]}";
             std::string responseInStr = responseToUiJson(r);
             
             if(responseInStr != strV1 && responseInStr != strV2)
@@ -1541,6 +1842,14 @@ void fty_srr_dto_test (bool verbose)
                 std::cout << responseToUiJson(r) << std::endl;
                 throw std::runtime_error("invalid response");
             }
+            
+            UserData userdata1;
+            userdata1 << r;
+
+            Response r1;
+            userdata1 >> r1;
+            
+            if(r != r1) throw std::runtime_error("Bad serialization to userdata");
             
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
