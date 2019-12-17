@@ -92,42 +92,41 @@ namespace dto
             return query;
         }
 
-        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse)
+        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version)
         {
             Query query;
 
             RestoreQuery & restoreQuery = *(query.mutable_restore());
             *(restoreQuery.mutable_map_features_data()) = {restoreData.begin(), restoreData.end()};
             restoreQuery.set_passpharse(passpharse);
+            restoreQuery.set_version(version);
 
             return query;
         }
         
-        Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse)
+        Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse, const std::string & version)
         {
             Query query;
             RestoreQuery& restoreQuery = *(query.mutable_restore());
-            
             restoreQuery.set_passpharse(passpharse);
+            restoreQuery.set_version(version);
             return query;
         }
         
-        Query createResetQuery(const std::set<FeatureName> & features)
+        Query createResetQuery(const std::set<FeatureName> & features, const std::string & version)
         {
             Query query;
 
             ResetQuery & resetQuery = *(query.mutable_reset());
             *(resetQuery.mutable_features()) = {features.begin(), features.end()};
-
+            resetQuery.set_version(version);
             return query;
         }
 
         Query createListFeatureQuery()
         {
             Query query;
-
             query.mutable_list_feature();
-
             return query;
         }
 
@@ -257,6 +256,7 @@ namespace dto
         void operator>>= (const cxxtools::SerializationInfo& si, RestoreQuery & query)
         {
             si.getMember(PASS_PHRASE) >>= *(query.mutable_passpharse());
+            si.getMember(SRR_VERSION) >>= *(query.mutable_version());
 
             google::protobuf::Map<std::string, Feature>& mapFeaturesData = *(query.mutable_map_features_data());
 
@@ -321,6 +321,7 @@ namespace dto
         void operator<<= (cxxtools::SerializationInfo& si, const RestoreQuery & query)
         {
             si.addMember(PASS_PHRASE) <<= query.passpharse();
+            si.addMember(SRR_VERSION) <<= query.version();
             cxxtools::SerializationInfo & featuresSi = si.addMember(DATA);
             
             for( const auto & item : query.map_features_data())
@@ -449,13 +450,13 @@ namespace dto
         static Status stringToStatus(const std::string & statusStr);
         
         //create functions
-        Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData)
+        Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version)
         {
             Response response;
 
             SaveResponse & saveResponse = *(response.mutable_save());
             *(saveResponse.mutable_map_features_data()) = {mapFeaturesData.begin(), mapFeaturesData.end()};
-
+            saveResponse.set_version(version);
             return response;
         }
 
@@ -479,13 +480,13 @@ namespace dto
             return response;
         }
 
-        Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies)
+        Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies, const std::string & version)
         {
             Response response;
 
             ListFeatureResponse & listResponse = *(response.mutable_list_feature());
             *(listResponse.mutable_map_features_dependencies()) = {mapFeaturesDependencies.begin(), mapFeaturesDependencies.end()};
-
+            listResponse.set_version(version);
             return response;
         }
 
@@ -1149,6 +1150,7 @@ void fty_srr_dto_test (bool verbose)
     printf (" * fty_srr_dto_test: ");
     std::vector<std::pair<std::string, bool>> testsResults;
 
+    std::string defaultVersion = "1.0";
     std::string testNumber;
     std::string testName;
 
@@ -1207,18 +1209,18 @@ void fty_srr_dto_test (bool verbose)
             f1.set_version("1.0");
             f1.set_data("data 1");
             
-            Query query1 = createRestoreQuery({{"test", f1}},"myPassphrase");
+            Query query1 = createRestoreQuery({{"test", f1}},"myPassphrase", defaultVersion);
             std::cout << query1 << std::endl;
 
             //test ==
-            Query query2 = createRestoreQuery({{"test", f1}},"myPassphrase");
+            Query query2 = createRestoreQuery({{"test", f1}},"myPassphrase", defaultVersion);
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
             Feature f2;
             f2.set_version("1.0");
             f2.set_data("data 2");
-            Query query3 = createRestoreQuery({{"test-1", f2}},"hsGH<hkherjg");
+            Query query3 = createRestoreQuery({{"test-1", f2}},"hsGH<hkherjg", defaultVersion);
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
@@ -1234,7 +1236,7 @@ void fty_srr_dto_test (bool verbose)
             f3.set_version("1.0");
             f3.set_data("{\"timeout\":\"40\"}");
             
-            Query query5 = createRestoreQuery({{"test", f3}},"myPassphrase");
+            Query query5 = createRestoreQuery({{"test", f3}},"myPassphrase", defaultVersion);
             std::cout << query5 << std::endl;
             
             UserData userdata1;
@@ -1267,15 +1269,15 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {
-            Query query1 = createResetQuery({"test"});
+            Query query1 = createResetQuery({"test"}, defaultVersion);
             std::cout << query1 << std::endl;
 
             //test ==
-            Query query2 = createResetQuery({"test"});
+            Query query2 = createResetQuery({"test"}, defaultVersion);
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
-            Query query3 = createResetQuery({"testgg"});
+            Query query3 = createResetQuery({"testgg"}, defaultVersion);
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> unserialize
@@ -1316,7 +1318,7 @@ void fty_srr_dto_test (bool verbose)
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
-            Query query3 = createResetQuery({"testgg"});
+            Query query3 = createResetQuery({"testgg"}, defaultVersion);
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
@@ -1360,18 +1362,18 @@ void fty_srr_dto_test (bool verbose)
             std::map<FeatureName, FeatureAndStatus> map1;
             map1["test"] = fs1;
             
-            Response r1 = createSaveResponse(map1);
+            Response r1 = createSaveResponse(map1, defaultVersion);
             std::cout << r1 << std::endl;
 
             //test ==
-            Response r2 = createSaveResponse(map1);
+            Response r2 = createSaveResponse(map1, defaultVersion);
             if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
             std::map<FeatureName, FeatureAndStatus> map2;
             map2["test2"] = fs1;
             
-            Response r3 = createSaveResponse(map2);
+            Response r3 = createSaveResponse(map2, defaultVersion);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
@@ -1509,11 +1511,11 @@ void fty_srr_dto_test (bool verbose)
             d1.add_dependencies("A");
             d1.add_dependencies("B");
             
-            Response r1 = createListFeatureResponse({{"test", d1}});
+            Response r1 = createListFeatureResponse({{"test", d1}}, defaultVersion);
             std::cout << r1 << std::endl;
 
             //test ==
-            Response r2 = createListFeatureResponse({{"test", d1}});
+            Response r2 = createListFeatureResponse({{"test", d1}}, defaultVersion);
             if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
@@ -1521,7 +1523,7 @@ void fty_srr_dto_test (bool verbose)
             d1.add_dependencies("C");
             d1.add_dependencies("B");
             
-            Response r3 = createListFeatureResponse({{"test", d2}});
+            Response r3 = createListFeatureResponse({{"test", d2}}, defaultVersion);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
@@ -1565,7 +1567,7 @@ void fty_srr_dto_test (bool verbose)
             *(fs1.mutable_feature()) = f1;
             *(fs1.mutable_status()) = s1;
             
-            Response r1 = createSaveResponse({{"test",fs1}});
+            Response r1 = createSaveResponse({{"test",fs1}}, defaultVersion);
 
             Feature f2;
             f2.set_version("3.5");
@@ -1579,9 +1581,9 @@ void fty_srr_dto_test (bool verbose)
             *(fs2.mutable_feature()) = f2;
             *(fs2.mutable_status()) = s2;
             
-            Response r2 = createSaveResponse({{"test-2",fs2}});
+            Response r2 = createSaveResponse({{"test-2",fs2}}, defaultVersion);
             
-            Response r3 = createSaveResponse({{"test",fs1},{"test-2",fs2}});
+            Response r3 = createSaveResponse({{"test",fs1},{"test-2",fs2}}, defaultVersion);
             
             Response r = r1 + r2;
             std::cout << r << std::endl;
@@ -1688,15 +1690,15 @@ void fty_srr_dto_test (bool verbose)
             d1.add_dependencies("A");
             d1.add_dependencies("B");
           
-            Response r1 = createListFeatureResponse({{"test", d1}});
+            Response r1 = createListFeatureResponse({{"test", d1}}, defaultVersion);
 
             FeatureDependencies d2;
             d2.add_dependencies("A");
             d2.add_dependencies("B");
 
-            Response r2 = createListFeatureResponse({{"test2", d2}});
+            Response r2 = createListFeatureResponse({{"test2", d2}}, defaultVersion);
             
-            Response r3 = createListFeatureResponse({{"test", d1},{"test2", d2}});
+            Response r3 = createListFeatureResponse({{"test", d1},{"test2", d2}}, defaultVersion);
 
             Response r = r1 + r2;
             std::cout << r << std::endl;
@@ -1871,7 +1873,7 @@ void fty_srr_dto_test (bool verbose)
             *(fs2.mutable_status()) = s2;
 
             
-            Response r = createSaveResponse({{"object",fs1},{"no-object",fs2}});
+            Response r = createSaveResponse({{"object",fs1},{"no-object",fs2}}, defaultVersion);
 
             std::string strV1 = "{\"data\":[{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}}]}";
             std::string strV2 = "{\"data\":[{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}}]}";
