@@ -33,12 +33,19 @@ namespace dto
     {
         constexpr auto PASS_PHRASE    = "passphrase";
         constexpr auto FEATURE_LIST   = "featuresList";
+        constexpr auto DEPENDENCIES   = "dependencies";
         constexpr auto FEATURE_NAME   = "name";
         constexpr auto DATA           = "data";
         constexpr auto SRR_VERSION    = "version";
         constexpr auto STATUS_LIST    = "statusList";
         constexpr auto STATUS         = "status";
         constexpr auto ERROR          = "error";
+        // Type
+        constexpr auto SAVE_TYPE      = "save";
+        constexpr auto RESTORE_TYPE   = "restore";
+        constexpr auto RESET_TYPE     = "reset";
+        constexpr auto LIST_TYPE      = "list";
+        
         
         /**
          * Helper for client of SRR.

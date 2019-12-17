@@ -527,22 +527,22 @@ namespace dto
             {
             case Response::ParametersCase::kSave :
                 si <<= response.save();
-                type = "save";
+                type = SAVE_TYPE;
                 break;
 
             case Response::ParametersCase::kRestore :
                 si <<= response.restore();
-                type = "restore";
+                type = RESTORE_TYPE;
                 break;
             
             case Response::ParametersCase::kReset :
                 si <<= response.reset();
-                type = "reset";
+                type = RESET_TYPE;
                 break;
 
             case Response::ParametersCase::kListFeature :
                 si <<= response.list_feature();
-                type = "list";
+                type = LIST_TYPE;
                 break;
             
             default:
@@ -838,6 +838,7 @@ namespace dto
 
         void operator<<= (cxxtools::SerializationInfo& si, const SaveResponse & response)
         {
+            si.addMember(SRR_VERSION) <<= response.version();
             cxxtools::SerializationInfo & featuresSi = si.addMember(DATA);
             
             for( const auto & item : response.map_features_data())
@@ -916,7 +917,7 @@ namespace dto
 
         void operator<<= (cxxtools::SerializationInfo& si, const ListFeatureResponse & response)
         {
-            si.addMember(STATUS) <<= statusToString(getGlobalStatus(response));
+            si.addMember(SRR_VERSION) <<= response.version();
             cxxtools::SerializationInfo & featuresSi = si.addMember(FEATURE_LIST);
             
             for( const auto & item : response.map_features_dependencies())
@@ -928,7 +929,7 @@ namespace dto
 
                 std::set<FeatureName> dependencies(dep.dependencies().begin(), dep.dependencies().end());
 
-                featureSi.addMember("dependencies") <<= dependencies;
+                featureSi.addMember(DEPENDENCIES) <<= dependencies;
             }
 
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
@@ -937,8 +938,10 @@ namespace dto
         void operator>>= (const cxxtools::SerializationInfo& si, SaveResponse & response)
         {
             google::protobuf::Map<std::string, FeatureAndStatus> & mapFeaturesData = *(response.mutable_map_features_data());
-
+            
+            si.getMember(SRR_VERSION) >>= *(response.mutable_version());
             cxxtools::SerializationInfo featuresSi = si.getMember(DATA);
+            
             cxxtools::SerializationInfo::Iterator it;
             for (it = featuresSi.begin(); it != featuresSi.end(); ++it)
             {
@@ -1027,13 +1030,15 @@ namespace dto
         {
             google::protobuf::Map<std::string, FeatureDependencies>& mapDependencies = *(response.mutable_map_features_dependencies());
             
+            si.getMember(SRR_VERSION) >>= *(response.mutable_version());
+            
             for (const auto & featureSi : si.getMember(FEATURE_LIST) )
             {   
                 std::string name;
                 std::set<FeatureName> dependencies;
 
                 featureSi.getMember(FEATURE_NAME) >>= name;
-                featureSi.getMember("dependencies") >>= dependencies;
+                featureSi.getMember(DEPENDENCIES) >>= dependencies;
                 
                 FeatureDependencies deps;
                 
@@ -1875,9 +1880,11 @@ void fty_srr_dto_test (bool verbose)
             
             Response r = createSaveResponse({{"object",fs1},{"no-object",fs2}}, defaultVersion);
 
-            std::string strV1 = "{\"data\":[{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}}]}";
-            std::string strV2 = "{\"data\":[{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}}]}";
+            std::string strV1 = "{\"version\":\"1.0\",\"data\":[{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}}]}";
+            std::string strV2 = "{\"version\":\"1.0\",\"data\":[{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}}]}";
             std::string responseInStr = responseToUiJson(r);
+            
+            std::cout << "responseToUiJson " << responseInStr << std::endl;
             
             if(responseInStr != strV1 && responseInStr != strV2)
             {
@@ -1890,6 +1897,9 @@ void fty_srr_dto_test (bool verbose)
 
             Response r1;
             userdata1 >> r1;
+            std::string responseInStrAfterDeserilize = responseToUiJson(r1);
+            
+            std::cout << "responseInStrAfterDeserilize " << responseInStrAfterDeserilize << std::endl;
             
             if(r != r1) throw std::runtime_error("Bad serialization to userdata");
             
