@@ -1796,11 +1796,51 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
+    
+    //Next test
+    testNumber = "4.3";
+    testName = "Deserialize restore query from automation";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+
+        try
+        {  
+            std::string restoreQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"my pass phrase\",\"data\": [{\"automation-settings\": {\"version\": \"1.0\",\"status\": \"success\",\"error\": \"\",\"data\": {\"server\": {\"timeout\": \"10000\",\"background\": \"0\",\"workdir\": \".\",\"verbose\": \"0\"}}}}, {\"automations\": {\"version\": \"1.0\",\"status\": \"success\",\"error\": \"\",\"data\": {\"automationList\": [{\"id\": \"etn_automation_id_1576571918088\",\"name\": \"Test\",\"createdBy\": \"admin\",\"createdOn\": \"2019-12-17T08:38:38.088+0000\",\"comments\": \"\",\"active\": false,\"timeout\": 36000,\"notification\": {\"notifyOnFailure\": false,\"emails\": []},\"schedule\": \"2019-12-17T08:37:00.000Z\",\"triggerType\": \"CAT_SCHEDULE\",\"triggers\": {\"ipmInfraEvent\": []},\"tasks\": [{\"index\": 0,\"name\": \"Wait 10 seconds\",\"group\": \"WAIT\",\"subgroup\": \"DELAY\",\"properties\": [{\"key\": \"duration\",\"value\": [\"10\"]}],\"timeout\": 3600}]}]}}}]}";
+            Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
+            
+            if(queryRestore.parameters_case() != Query::ParametersCase::kRestore)
+            {
+                std::cout << queryRestore << std::endl;
+                throw std::runtime_error("Invalid query type");
+            }
+            
+            if(queryRestore.restore().map_features_data().at("automation-settings").data() != "{\"server\":{\"timeout\":\"10000\",\"background\":\"0\",\"workdir\":\".\",\"verbose\":\"0\"}}")
+            {
+                std::cout << queryRestore << std::endl;
+                throw std::runtime_error("bad data object serialisation");
+            }
+            
+            if(queryRestore.restore().map_features_data().at("automations").data() != "{\"automationList\":[{\"id\":\"etn_automation_id_1576571918088\",\"name\":\"Test\",\"createdBy\":\"admin\",\"createdOn\":\"2019-12-17T08:38:38.088+0000\",\"comments\":\"\",\"active\":false,\"timeout\":36000,\"notification\":{\"notifyOnFailure\":false,\"emails\":[]},\"schedule\":\"2019-12-17T08:37:00.000Z\",\"triggerType\":\"CAT_SCHEDULE\",\"triggers\":{\"ipmInfraEvent\":[]},\"tasks\":[{\"index\":0,\"name\":\"Wait 10 seconds\",\"group\":\"WAIT\",\"subgroup\":\"DELAY\",\"properties\":[{\"key\":\"duration\",\"value\":[\"10\"]}],\"timeout\":3600}]}]}")
+            {
+                std::cout << queryRestore.restore().map_features_data().at("automations").data() << std::endl;
+                throw std::runtime_error("bad data object serialisation");
+            }
+            
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
 
     printf ("OK\n");
 
 //Next test
-    testNumber = "4.3";
+    testNumber = "4.4";
     testName = "Serialize save response for UI";
     printf ("\n-------------------------------------------------------------\n");
     {
