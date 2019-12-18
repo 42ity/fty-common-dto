@@ -138,13 +138,13 @@ namespace dto
             std::string type = data.front();
             data.pop_front();
 
-            if(type == "save")
+            if(type == SAVE_TYPE)
                 query = saveQueryFromUiJson(payload);
-            else if(type == "restore")
+            else if(type == RESTORE_TYPE)
                 query = restoreQueryFromUiJson(payload);
-            else if(type == "reset")
+            else if(type == RESET_TYPE)
                 query = resetQueryFromUiJson(payload);
-            else if(type == "list")
+            else if(type == LIST_TYPE)
                 query = createListFeatureQuery();
             else  
                 throw std::runtime_error("Wrong query type");
@@ -164,21 +164,21 @@ namespace dto
             {
             case Query::ParametersCase::kSave :
                 si <<= query.save();
-                type = "save";
+                type = SAVE_TYPE;
                 break;
 
             case Query::ParametersCase::kRestore :
                 si <<= query.restore();
-                type = "restore";
+                type = RESTORE_TYPE;
                 break;
             
             case Query::ParametersCase::kReset :
                 si <<= query.reset();
-                type = "reset";
+                type = RESET_TYPE;
                 break;
 
             case Query::ParametersCase::kListFeature :
-                type = "list";
+                type = LIST_TYPE;
                 break;
             
             default:
@@ -214,9 +214,7 @@ namespace dto
         {
             Query query;
             const cxxtools::SerializationInfo si = deserializeJson(json);
-
             si >>= *(query.mutable_save());
-
             return query;
         }
 
@@ -224,9 +222,7 @@ namespace dto
         {
             Query query;
             const cxxtools::SerializationInfo si = deserializeJson(json);
-
             si >>= *(query.mutable_restore());
-
             return query;
         }
 
@@ -234,16 +230,13 @@ namespace dto
         {
             Query query;
             const cxxtools::SerializationInfo si = deserializeJson(json);
-
             si >>= *(query.mutable_reset());
-
             return query;
         }
              
         void operator>>= (const cxxtools::SerializationInfo& si, SaveQuery & query)
         {
             si.getMember(PASS_PHRASE) >>= *(query.mutable_passpharse());
-
             const cxxtools::SerializationInfo & featuresSi = si.getMember(FEATURE_LIST);
 
             for(size_t index = 0; index < featuresSi.memberCount(); index++ )
@@ -315,7 +308,7 @@ namespace dto
                 featureSi.addMember(FEATURE_NAME) <<= name;
             }
 
-            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);              
+            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
         
         void operator<<= (cxxtools::SerializationInfo& si, const RestoreQuery & query)
@@ -336,8 +329,8 @@ namespace dto
                 {
                     //try to unserialize the data if they are on Json format
                     cxxtools::SerializationInfo dataSi = deserializeJson(item.second.data());
-                    
-                    if(dataSi.category() == cxxtools::SerializationInfo::Category::Void || dataSi.category() == cxxtools::SerializationInfo::Category::Value || data.isNull())
+
+                    if(dataSi.category() == cxxtools::SerializationInfo::Category::Void || dataSi.category() == cxxtools::SerializationInfo::Category::Value || dataSi.isNull())
                     {
                         data <<= item.second.data();
                     }
@@ -501,13 +494,13 @@ namespace dto
             
             cxxtools::SerializationInfo si = deserializeJson(payload);
 
-            if(type == "save")
+            if(type == SAVE_TYPE)
                 si >>= *(response.mutable_save());
-            else if(type == "restore")
+            else if(type == RESTORE_TYPE)
                 si >>= *(response.mutable_restore());
-            else if(type == "reset")
+            else if(type == RESET_TYPE)
                 si >>= *(response.mutable_reset());
-            else if(type == "list")
+            else if(type == LIST_TYPE)
                 si >>= *(response.mutable_list_feature());
             else  
                 throw std::runtime_error("Wrong query type");
@@ -939,7 +932,9 @@ namespace dto
         {
             google::protobuf::Map<std::string, FeatureAndStatus> & mapFeaturesData = *(response.mutable_map_features_data());
             
-            si.getMember(SRR_VERSION) >>= *(response.mutable_version());
+            if (si.findMember(SRR_VERSION) != NULL) {
+                si.getMember(SRR_VERSION) >>= *(response.mutable_version());
+            }
             cxxtools::SerializationInfo featuresSi = si.getMember(DATA);
             
             cxxtools::SerializationInfo::Iterator it;
@@ -995,7 +990,9 @@ namespace dto
 
                 featureSi.getMember(FEATURE_NAME) >>= name;
                 featureSi.getMember(STATUS) >>= statusStr;
-                featureSi.getMember(ERROR) >>= error;
+                if (featureSi.findMember(ERROR) != NULL){
+                    featureSi.getMember(ERROR) >>= error;
+                }
 
                 FeatureStatus f;
                 f.set_status(stringToStatus(statusStr));
@@ -1030,7 +1027,9 @@ namespace dto
         {
             google::protobuf::Map<std::string, FeatureDependencies>& mapDependencies = *(response.mutable_map_features_dependencies());
             
-            si.getMember(SRR_VERSION) >>= *(response.mutable_version());
+            if (si.findMember(SRR_VERSION) != NULL) {
+                si.getMember(SRR_VERSION) >>= *(response.mutable_version());
+            }
             
             for (const auto & featureSi : si.getMember(FEATURE_LIST) )
             {   
@@ -1413,6 +1412,7 @@ void fty_srr_dto_test (bool verbose)
         {
             FeatureStatus s1;
             s1.set_status(Status::SUCCESS);
+            s1.set_error("aaaa");
             
             std::map<FeatureName, FeatureStatus> map1;
             map1["test"] = s1;
@@ -1773,8 +1773,18 @@ void fty_srr_dto_test (bool verbose)
 
         try
         {  
-            std::string restoreQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"my pass phrase\",\"data\": [{\"object\": {\"version\": \"1.0\",\"data\": {\"timeout\": \"40\"}}},{\"no-object\": {\"version\": \"1.0\",\"data\": \"data in text\"}}]}";
+            std::string restoreQueryJson = "{\"version\":\"1.0\",\"data\":[{\"automations\":{\"version\":\"1.0\",\"data\":{\"automationList\":[{\"id\":\"etn_automation_id_1576571918088\",\"name\":\"Test\",\"createdBy\":\"admin\",\"createdOn\":\"2019-12-17T08:38:38.088+0000\",\"comments\":\"\",\"active\":false,\"timeout\":36000,\"notification\":{\"notifyOnFailure\":false,\"emails\":[]},\"schedule\":\"2019-12-17T08:37:00.000Z\",\"triggerType\":\"CAT_SCHEDULE\",\"triggers\":{\"ipmInfraEvent\":[]},\"tasks\":[{\"index\":0,\"name\":\"Wait 10 seconds\",\"group\":\"WAIT\",\"subgroup\":\"DELAY\",\"properties\":[{\"key\":\"duration\",\"value\":[\"10\"]}],\"timeout\":3600}]}]}}}],\"passphrase\":\"a\"}";
+            //std::string restoreQueryJson = "{\"version\":\"1.0\",\"data\":[{\"automations\":{\"version\":\"1.0\",\"data\":{\"automationList\":{\"id\":\"etn_automation_id_1576571918088\",\"name\":\"Test\",\"createdBy\":\"admin\",\"createdOn\":\"2019-12-17T08:38:38.088+0000\",\"comments\":\"\",\"active\":false,\"timeout\":36000,\"notification\":{\"notifyOnFailure\":false,\"emails\":[]},\"schedule\":\"2019-12-17T08:37:00.000Z\",\"triggerType\":\"CAT_SCHEDULE\",\"triggers\":{\"ipmInfraEvent\":[]},\"tasks\":[{\"index\":0,\"name\":\"Wait 10 seconds\",\"group\":\"WAIT\",\"subgroup\":\"DELAY\",\"properties\":[{\"key\":\"duration\",\"value\":[\"10\"]}],\"timeout\":3600}]}}}}],\"passphrase\":\"a\"}";
             Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
+            
+            std::cout << queryRestore << std::endl;
+            
+            dto::UserData reqData;
+            reqData << queryRestore;
+            
+            std::cout << reqData.front() << std::endl;
+            
+            
             
             if(queryRestore.parameters_case() != Query::ParametersCase::kRestore)
             {
@@ -1782,17 +1792,17 @@ void fty_srr_dto_test (bool verbose)
                 throw std::runtime_error("Invalid query type");
             }
             
-            if(queryRestore.restore().map_features_data().at("object").data() != "{\"timeout\":\"40\"}")
-            {
-                std::cout << queryRestore << std::endl;
-                throw std::runtime_error("bad data object serialisation");
-            }
-            
-            if(queryRestore.restore().map_features_data().at("no-object").data() != "data in text")
-            {
-                std::cout << queryRestore << std::endl;
-                throw std::runtime_error("bad data for none object serialisation");
-            }
+//            if(queryRestore.restore().map_features_data().at("automationList").data() != "{\"timeout\":\"40\"}")
+//            {
+//                std::cout << queryRestore << std::endl;
+//                throw std::runtime_error("bad data object serialisation");
+//            }
+//            
+//            if(queryRestore.restore().map_features_data().at("no-object").data() != "data in text")
+//            {
+//                std::cout << queryRestore << std::endl;
+//                throw std::runtime_error("bad data for none object serialisation");
+//            }
             
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
@@ -1815,6 +1825,7 @@ void fty_srr_dto_test (bool verbose)
         {  
             std::string restoreQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"my pass phrase\",\"data\": [{\"automation-settings\": {\"version\": \"1.0\",\"status\": \"success\",\"error\": \"\",\"data\": {\"server\": {\"timeout\": \"10000\",\"background\": \"0\",\"workdir\": \".\",\"verbose\": \"0\"}}}}, {\"automations\": {\"version\": \"1.0\",\"status\": \"success\",\"error\": \"\",\"data\": {\"automationList\": [{\"id\": \"etn_automation_id_1576571918088\",\"name\": \"Test\",\"createdBy\": \"admin\",\"createdOn\": \"2019-12-17T08:38:38.088+0000\",\"comments\": \"\",\"active\": false,\"timeout\": 36000,\"notification\": {\"notifyOnFailure\": false,\"emails\": []},\"schedule\": \"2019-12-17T08:37:00.000Z\",\"triggerType\": \"CAT_SCHEDULE\",\"triggers\": {\"ipmInfraEvent\": []},\"tasks\": [{\"index\": 0,\"name\": \"Wait 10 seconds\",\"group\": \"WAIT\",\"subgroup\": \"DELAY\",\"properties\": [{\"key\": \"duration\",\"value\": [\"10\"]}],\"timeout\": 3600}]}]}}}]}";
             Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
+             std::cout << queryRestore << std::endl;
             
             if(queryRestore.parameters_case() != Query::ParametersCase::kRestore)
             {
@@ -1902,6 +1913,63 @@ void fty_srr_dto_test (bool verbose)
             std::cout << "responseInStrAfterDeserilize " << responseInStrAfterDeserilize << std::endl;
             
             if(r != r1) throw std::runtime_error("Bad serialization to userdata");
+            
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+    
+    testNumber = "4.5";
+    testName = "Serialize FeatureStatus from EMC4J";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+
+        try
+        {  
+            
+            std::map<FeatureName, FeatureAndStatus> mapResponse;
+            
+            Feature f1;
+            f1.set_version("1.0");
+            
+            FeatureStatus s1; 
+            s1.set_status(Status::SUCCESS);
+            
+            FeatureAndStatus fs1;
+            *(fs1.mutable_feature()) = f1;
+            *(fs1.mutable_status()) = s1;
+
+            Feature f2;
+            f2.set_version("1.0");
+
+            FeatureStatus s2; 
+            s2.set_status(Status::SUCCESS);
+              
+            FeatureAndStatus fs2;          
+            *(fs2.mutable_feature()) = f2;
+            *(fs2.mutable_status()) = s2;
+            
+            mapResponse["automation"] = fs1;
+            mapResponse["virtual-asset"] = fs2;
+
+            Response r3 = createSaveResponse(mapResponse, defaultVersion);
+            
+            std::cout << r3 << std::endl;
+            
+            dto::UserData resp;
+            resp.push_back("{\"statusList\":[{\"name\":\"automation\",\"status\":\"success\",\"error\":\"\"}]}");
+            resp.push_back("restore");
+            
+            Response partialResp;
+            resp >> partialResp;
+            
+            
             
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
