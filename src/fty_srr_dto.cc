@@ -1164,7 +1164,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {   
             Query query1 = createSaveQuery({"test"},"myPassphrase");
@@ -1197,7 +1196,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1206,7 +1204,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {          
             Feature f1;
@@ -1261,7 +1258,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1270,7 +1266,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             Query query1 = createResetQuery({"test"}, defaultVersion);
@@ -1302,7 +1297,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1311,7 +1305,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             Query query1 = createListFeatureQuery();
@@ -1343,7 +1336,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1352,7 +1344,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             FeatureAndStatus fs1;
@@ -1398,7 +1389,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1407,7 +1397,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             FeatureStatus s1;
@@ -1449,7 +1438,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1458,7 +1446,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             FeatureStatus s1;
@@ -1500,7 +1487,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1509,7 +1495,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             FeatureDependencies d1;
@@ -1549,7 +1534,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1558,7 +1542,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             Feature f1;
@@ -1604,7 +1587,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1613,7 +1595,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             FeatureStatus s1;
@@ -1642,7 +1623,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1651,7 +1631,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {          
             FeatureStatus s1;
@@ -1682,13 +1661,13 @@ void fty_srr_dto_test (bool verbose)
     }
 
     printf ("OK\n");
-//Next test
+    
+    //Next test
     testNumber = "3.4";
     testName = "Check add operation on List Feature Response";
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {  
             FeatureDependencies d1;
@@ -1722,13 +1701,12 @@ void fty_srr_dto_test (bool verbose)
 
     printf ("OK\n");
 
-//Next test
+    //Next test
     testNumber = "4.1";
     testName = "Deserialize save query from UI";
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {  
             std::string saveQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"\",\"featuresList\": [{\"name\":\"etn-mass-management\"}]}";
@@ -1764,45 +1742,31 @@ void fty_srr_dto_test (bool verbose)
 
     printf ("OK\n");
     
-//Next test
+    //Next test
     testNumber = "4.2";
     testName = "Deserialize restore query from UI";
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {  
-            std::string restoreQueryJson = "{\"version\":\"1.0\",\"data\":[{\"automations\":{\"version\":\"1.0\",\"data\":{\"automationList\":[{\"id\":\"etn_automation_id_1576571918088\",\"name\":\"Test\",\"createdBy\":\"admin\",\"createdOn\":\"2019-12-17T08:38:38.088+0000\",\"comments\":\"\",\"active\":false,\"timeout\":36000,\"notification\":{\"notifyOnFailure\":false,\"emails\":[]},\"schedule\":\"2019-12-17T08:37:00.000Z\",\"triggerType\":\"CAT_SCHEDULE\",\"triggers\":{\"ipmInfraEvent\":[]},\"tasks\":[{\"index\":0,\"name\":\"Wait 10 seconds\",\"group\":\"WAIT\",\"subgroup\":\"DELAY\",\"properties\":[{\"key\":\"duration\",\"value\":[\"10\"]}],\"timeout\":3600}]}]}}}],\"passphrase\":\"a\"}";
-            //std::string restoreQueryJson = "{\"version\":\"1.0\",\"data\":[{\"automations\":{\"version\":\"1.0\",\"data\":{\"automationList\":{\"id\":\"etn_automation_id_1576571918088\",\"name\":\"Test\",\"createdBy\":\"admin\",\"createdOn\":\"2019-12-17T08:38:38.088+0000\",\"comments\":\"\",\"active\":false,\"timeout\":36000,\"notification\":{\"notifyOnFailure\":false,\"emails\":[]},\"schedule\":\"2019-12-17T08:37:00.000Z\",\"triggerType\":\"CAT_SCHEDULE\",\"triggers\":{\"ipmInfraEvent\":[]},\"tasks\":[{\"index\":0,\"name\":\"Wait 10 seconds\",\"group\":\"WAIT\",\"subgroup\":\"DELAY\",\"properties\":[{\"key\":\"duration\",\"value\":[\"10\"]}],\"timeout\":3600}]}}}}],\"passphrase\":\"a\"}";
+            std::string restoreQueryJson =R"TEST({
+                    "passphrase":"a","version":"1.0",
+                    "data":[{"automations":{"version":"1.0","data":{"automationList":[{"id":"etn_automation_id_1576571918088",
+                    "name":"Test","createdBy":"admin","createdOn":"2019-12-17T08:38:38.088+0000","comments":"","active":false,
+                    "timeout":36000,"notification":{"notifyOnFailure":false,"emails":[]}}]}}}]})TEST";
             Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
-            
             std::cout << queryRestore << std::endl;
             
             dto::UserData reqData;
             reqData << queryRestore;
-            
             std::cout << reqData.front() << std::endl;
-            
-            
-            
+
             if(queryRestore.parameters_case() != Query::ParametersCase::kRestore)
             {
                 std::cout << queryRestore << std::endl;
                 throw std::runtime_error("Invalid query type");
             }
-            
-//            if(queryRestore.restore().map_features_data().at("automationList").data() != "{\"timeout\":\"40\"}")
-//            {
-//                std::cout << queryRestore << std::endl;
-//                throw std::runtime_error("bad data object serialisation");
-//            }
-//            
-//            if(queryRestore.restore().map_features_data().at("no-object").data() != "data in text")
-//            {
-//                std::cout << queryRestore << std::endl;
-//                throw std::runtime_error("bad data for none object serialisation");
-//            }
             
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
@@ -1820,12 +1784,21 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {  
-            std::string restoreQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"my pass phrase\",\"data\": [{\"automation-settings\": {\"version\": \"1.0\",\"status\": \"success\",\"error\": \"\",\"data\": {\"server\": {\"timeout\": \"10000\",\"background\": \"0\",\"workdir\": \".\",\"verbose\": \"0\"}}}}, {\"automations\": {\"version\": \"1.0\",\"status\": \"success\",\"error\": \"\",\"data\": {\"automationList\": [{\"id\": \"etn_automation_id_1576571918088\",\"name\": \"Test\",\"createdBy\": \"admin\",\"createdOn\": \"2019-12-17T08:38:38.088+0000\",\"comments\": \"\",\"active\": false,\"timeout\": 36000,\"notification\": {\"notifyOnFailure\": false,\"emails\": []},\"schedule\": \"2019-12-17T08:37:00.000Z\",\"triggerType\": \"CAT_SCHEDULE\",\"triggers\": {\"ipmInfraEvent\": []},\"tasks\": [{\"index\": 0,\"name\": \"Wait 10 seconds\",\"group\": \"WAIT\",\"subgroup\": \"DELAY\",\"properties\": [{\"key\": \"duration\",\"value\": [\"10\"]}],\"timeout\": 3600}]}]}}}]}";
+            std::string restoreQueryJson = R"TEST(
+                   {"version": "1.0","passphrase": "my pass phrase",
+                    "data": [{"automation-settings": {"version": "1.0","status": "success","error": "",
+                    "data": {"server": {"timeout": "10000","background": "0","workdir": ".","verbose": "0"}}}}, 
+                    {"automations": {"version": "1.0","status": "success","error": "",
+                    "data": {"automationList": [{"id": "etn_automation_id_1576571918088","name": 
+                    "Test","createdBy": "admin","createdOn": "2019-12-17T08:38:38.088+0000","comments": "","active": false,"timeout": 36000,
+                    "notification": {"notifyOnFailure": false,"emails": []},"schedule": "2019-12-17T08:37:00.000Z",
+                    "triggerType": "CAT_SCHEDULE","triggers": {"ipmInfraEvent": []},"tasks": [{"index": 0,"name": "Wait 10 seconds",
+                    "group": "WAIT","subgroup": "DELAY","properties": [{"key": "duration","value": ["10"]}],"timeout": 3600}]}]}}}]})TEST";
+
             Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
-             std::cout << queryRestore << std::endl;
+            std::cout << queryRestore << std::endl;
             
             if(queryRestore.parameters_case() != Query::ParametersCase::kRestore)
             {
@@ -1836,12 +1809,6 @@ void fty_srr_dto_test (bool verbose)
             if(queryRestore.restore().map_features_data().at("automation-settings").data() != "{\"server\":{\"timeout\":\"10000\",\"background\":\"0\",\"workdir\":\".\",\"verbose\":\"0\"}}")
             {
                 std::cout << queryRestore << std::endl;
-                throw std::runtime_error("bad data object serialisation");
-            }
-            
-            if(queryRestore.restore().map_features_data().at("automations").data() != "{\"automationList\":[{\"id\":\"etn_automation_id_1576571918088\",\"name\":\"Test\",\"createdBy\":\"admin\",\"createdOn\":\"2019-12-17T08:38:38.088+0000\",\"comments\":\"\",\"active\":false,\"timeout\":36000,\"notification\":{\"notifyOnFailure\":false,\"emails\":[]},\"schedule\":\"2019-12-17T08:37:00.000Z\",\"triggerType\":\"CAT_SCHEDULE\",\"triggers\":{\"ipmInfraEvent\":[]},\"tasks\":[{\"index\":0,\"name\":\"Wait 10 seconds\",\"group\":\"WAIT\",\"subgroup\":\"DELAY\",\"properties\":[{\"key\":\"duration\",\"value\":[\"10\"]}],\"timeout\":3600}]}]}")
-            {
-                std::cout << queryRestore.restore().map_features_data().at("automations").data() << std::endl;
                 throw std::runtime_error("bad data object serialisation");
             }
             
@@ -1857,13 +1824,12 @@ void fty_srr_dto_test (bool verbose)
 
     printf ("OK\n");
 
-//Next test
+    //Next test
     testNumber = "4.4";
     testName = "Serialize save response for UI";
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {  
             Feature f1;
@@ -1893,8 +1859,8 @@ void fty_srr_dto_test (bool verbose)
 
             std::string strV1 = "{\"version\":\"1.0\",\"data\":[{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}}]}";
             std::string strV2 = "{\"version\":\"1.0\",\"data\":[{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}}]}";
-            std::string responseInStr = responseToUiJson(r);
             
+            std::string responseInStr = responseToUiJson(r);
             std::cout << "responseToUiJson " << responseInStr << std::endl;
             
             if(responseInStr != strV1 && responseInStr != strV2)
@@ -1909,7 +1875,6 @@ void fty_srr_dto_test (bool verbose)
             Response r1;
             userdata1 >> r1;
             std::string responseInStrAfterDeserilize = responseToUiJson(r1);
-            
             std::cout << "responseInStrAfterDeserilize " << responseInStrAfterDeserilize << std::endl;
             
             if(r != r1) throw std::runtime_error("Bad serialization to userdata");
@@ -1924,12 +1889,12 @@ void fty_srr_dto_test (bool verbose)
         }
     }
     
+    //Next test
     testNumber = "4.5";
     testName = "Serialize FeatureStatus from EMC4J";
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {  
             
@@ -1968,9 +1933,7 @@ void fty_srr_dto_test (bool verbose)
             
             Response partialResp;
             resp >> partialResp;
-            
-            
-            
+
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
         }
@@ -1980,11 +1943,9 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
-//Collect results
-
+    //Collect results
     printf ("\n-------------------------------------------------------------\n");
 
 	uint32_t testsPassed = 0;
