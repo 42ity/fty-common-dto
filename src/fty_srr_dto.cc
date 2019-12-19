@@ -92,42 +92,41 @@ namespace dto
             return query;
         }
 
-        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse)
+        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version)
         {
             Query query;
 
             RestoreQuery & restoreQuery = *(query.mutable_restore());
             *(restoreQuery.mutable_map_features_data()) = {restoreData.begin(), restoreData.end()};
             restoreQuery.set_passpharse(passpharse);
+            restoreQuery.set_version(version);
 
             return query;
         }
         
-        Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse)
+        Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse, const std::string & version)
         {
             Query query;
             RestoreQuery& restoreQuery = *(query.mutable_restore());
-            
             restoreQuery.set_passpharse(passpharse);
+            restoreQuery.set_version(version);
             return query;
         }
         
-        Query createResetQuery(const std::set<FeatureName> & features)
+        Query createResetQuery(const std::set<FeatureName> & features, const std::string & version)
         {
             Query query;
 
             ResetQuery & resetQuery = *(query.mutable_reset());
             *(resetQuery.mutable_features()) = {features.begin(), features.end()};
-
+            resetQuery.set_version(version);
             return query;
         }
 
         Query createListFeatureQuery()
         {
             Query query;
-
             query.mutable_list_feature();
-
             return query;
         }
 
@@ -139,13 +138,13 @@ namespace dto
             std::string type = data.front();
             data.pop_front();
 
-            if(type == "save")
+            if(type == SAVE_TYPE)
                 query = saveQueryFromUiJson(payload);
-            else if(type == "restore")
+            else if(type == RESTORE_TYPE)
                 query = restoreQueryFromUiJson(payload);
-            else if(type == "reset")
+            else if(type == RESET_TYPE)
                 query = resetQueryFromUiJson(payload);
-            else if(type == "list")
+            else if(type == LIST_TYPE)
                 query = createListFeatureQuery();
             else  
                 throw std::runtime_error("Wrong query type");
@@ -165,21 +164,21 @@ namespace dto
             {
             case Query::ParametersCase::kSave :
                 si <<= query.save();
-                type = "save";
+                type = SAVE_TYPE;
                 break;
 
             case Query::ParametersCase::kRestore :
                 si <<= query.restore();
-                type = "restore";
+                type = RESTORE_TYPE;
                 break;
             
             case Query::ParametersCase::kReset :
                 si <<= query.reset();
-                type = "reset";
+                type = RESET_TYPE;
                 break;
 
             case Query::ParametersCase::kListFeature :
-                type = "list";
+                type = LIST_TYPE;
                 break;
             
             default:
@@ -215,9 +214,7 @@ namespace dto
         {
             Query query;
             const cxxtools::SerializationInfo si = deserializeJson(json);
-
             si >>= *(query.mutable_save());
-
             return query;
         }
 
@@ -225,9 +222,7 @@ namespace dto
         {
             Query query;
             const cxxtools::SerializationInfo si = deserializeJson(json);
-
             si >>= *(query.mutable_restore());
-
             return query;
         }
 
@@ -235,16 +230,13 @@ namespace dto
         {
             Query query;
             const cxxtools::SerializationInfo si = deserializeJson(json);
-
             si >>= *(query.mutable_reset());
-
             return query;
         }
              
         void operator>>= (const cxxtools::SerializationInfo& si, SaveQuery & query)
         {
             si.getMember(PASS_PHRASE) >>= *(query.mutable_passpharse());
-
             const cxxtools::SerializationInfo & featuresSi = si.getMember(FEATURE_LIST);
 
             for(size_t index = 0; index < featuresSi.memberCount(); index++ )
@@ -257,6 +249,7 @@ namespace dto
         void operator>>= (const cxxtools::SerializationInfo& si, RestoreQuery & query)
         {
             si.getMember(PASS_PHRASE) >>= *(query.mutable_passpharse());
+            si.getMember(SRR_VERSION) >>= *(query.mutable_version());
 
             google::protobuf::Map<std::string, Feature>& mapFeaturesData = *(query.mutable_map_features_data());
 
@@ -315,12 +308,13 @@ namespace dto
                 featureSi.addMember(FEATURE_NAME) <<= name;
             }
 
-            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);              
+            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
         
         void operator<<= (cxxtools::SerializationInfo& si, const RestoreQuery & query)
         {
             si.addMember(PASS_PHRASE) <<= query.passpharse();
+            si.addMember(SRR_VERSION) <<= query.version();
             cxxtools::SerializationInfo & featuresSi = si.addMember(DATA);
             
             for( const auto & item : query.map_features_data())
@@ -335,8 +329,8 @@ namespace dto
                 {
                     //try to unserialize the data if they are on Json format
                     cxxtools::SerializationInfo dataSi = deserializeJson(item.second.data());
-                    
-                    if(dataSi.category() == cxxtools::SerializationInfo::Category::Void || dataSi.category() == cxxtools::SerializationInfo::Category::Value || data.isNull())
+
+                    if(dataSi.category() == cxxtools::SerializationInfo::Category::Void || dataSi.category() == cxxtools::SerializationInfo::Category::Value || dataSi.isNull())
                     {
                         data <<= item.second.data();
                     }
@@ -449,13 +443,13 @@ namespace dto
         static Status stringToStatus(const std::string & statusStr);
         
         //create functions
-        Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData)
+        Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version)
         {
             Response response;
 
             SaveResponse & saveResponse = *(response.mutable_save());
             *(saveResponse.mutable_map_features_data()) = {mapFeaturesData.begin(), mapFeaturesData.end()};
-
+            saveResponse.set_version(version);
             return response;
         }
 
@@ -479,13 +473,13 @@ namespace dto
             return response;
         }
 
-        Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies)
+        Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies, const std::string & version)
         {
             Response response;
 
             ListFeatureResponse & listResponse = *(response.mutable_list_feature());
             *(listResponse.mutable_map_features_dependencies()) = {mapFeaturesDependencies.begin(), mapFeaturesDependencies.end()};
-
+            listResponse.set_version(version);
             return response;
         }
 
@@ -500,13 +494,13 @@ namespace dto
             
             cxxtools::SerializationInfo si = deserializeJson(payload);
 
-            if(type == "save")
+            if(type == SAVE_TYPE)
                 si >>= *(response.mutable_save());
-            else if(type == "restore")
+            else if(type == RESTORE_TYPE)
                 si >>= *(response.mutable_restore());
-            else if(type == "reset")
+            else if(type == RESET_TYPE)
                 si >>= *(response.mutable_reset());
-            else if(type == "list")
+            else if(type == LIST_TYPE)
                 si >>= *(response.mutable_list_feature());
             else  
                 throw std::runtime_error("Wrong query type");
@@ -526,22 +520,22 @@ namespace dto
             {
             case Response::ParametersCase::kSave :
                 si <<= response.save();
-                type = "save";
+                type = SAVE_TYPE;
                 break;
 
             case Response::ParametersCase::kRestore :
                 si <<= response.restore();
-                type = "restore";
+                type = RESTORE_TYPE;
                 break;
             
             case Response::ParametersCase::kReset :
                 si <<= response.reset();
-                type = "reset";
+                type = RESET_TYPE;
                 break;
 
             case Response::ParametersCase::kListFeature :
                 si <<= response.list_feature();
-                type = "list";
+                type = LIST_TYPE;
                 break;
             
             default:
@@ -837,6 +831,7 @@ namespace dto
 
         void operator<<= (cxxtools::SerializationInfo& si, const SaveResponse & response)
         {
+            si.addMember(SRR_VERSION) <<= response.version();
             cxxtools::SerializationInfo & featuresSi = si.addMember(DATA);
             
             for( const auto & item : response.map_features_data())
@@ -915,7 +910,7 @@ namespace dto
 
         void operator<<= (cxxtools::SerializationInfo& si, const ListFeatureResponse & response)
         {
-            si.addMember(STATUS) <<= statusToString(getGlobalStatus(response));
+            si.addMember(SRR_VERSION) <<= response.version();
             cxxtools::SerializationInfo & featuresSi = si.addMember(FEATURE_LIST);
             
             for( const auto & item : response.map_features_dependencies())
@@ -927,7 +922,7 @@ namespace dto
 
                 std::set<FeatureName> dependencies(dep.dependencies().begin(), dep.dependencies().end());
 
-                featureSi.addMember("dependencies") <<= dependencies;
+                featureSi.addMember(DEPENDENCIES) <<= dependencies;
             }
 
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
@@ -936,8 +931,12 @@ namespace dto
         void operator>>= (const cxxtools::SerializationInfo& si, SaveResponse & response)
         {
             google::protobuf::Map<std::string, FeatureAndStatus> & mapFeaturesData = *(response.mutable_map_features_data());
-
+            
+            if (si.findMember(SRR_VERSION) != NULL) {
+                si.getMember(SRR_VERSION) >>= *(response.mutable_version());
+            }
             cxxtools::SerializationInfo featuresSi = si.getMember(DATA);
+            
             cxxtools::SerializationInfo::Iterator it;
             for (it = featuresSi.begin(); it != featuresSi.end(); ++it)
             {
@@ -991,7 +990,9 @@ namespace dto
 
                 featureSi.getMember(FEATURE_NAME) >>= name;
                 featureSi.getMember(STATUS) >>= statusStr;
-                featureSi.getMember(ERROR) >>= error;
+                if (featureSi.findMember(ERROR) != NULL){
+                    featureSi.getMember(ERROR) >>= error;
+                }
 
                 FeatureStatus f;
                 f.set_status(stringToStatus(statusStr));
@@ -1026,13 +1027,17 @@ namespace dto
         {
             google::protobuf::Map<std::string, FeatureDependencies>& mapDependencies = *(response.mutable_map_features_dependencies());
             
+            if (si.findMember(SRR_VERSION) != NULL) {
+                si.getMember(SRR_VERSION) >>= *(response.mutable_version());
+            }
+            
             for (const auto & featureSi : si.getMember(FEATURE_LIST) )
             {   
                 std::string name;
                 std::set<FeatureName> dependencies;
 
                 featureSi.getMember(FEATURE_NAME) >>= name;
-                featureSi.getMember("dependencies") >>= dependencies;
+                featureSi.getMember(DEPENDENCIES) >>= dependencies;
                 
                 FeatureDependencies deps;
                 
@@ -1149,6 +1154,7 @@ void fty_srr_dto_test (bool verbose)
     printf (" * fty_srr_dto_test: ");
     std::vector<std::pair<std::string, bool>> testsResults;
 
+    std::string defaultVersion = "1.0";
     std::string testNumber;
     std::string testName;
 
@@ -1158,7 +1164,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {   
             Query query1 = createSaveQuery({"test"},"myPassphrase");
@@ -1191,7 +1196,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1200,25 +1204,24 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {          
             Feature f1;
             f1.set_version("1.0");
             f1.set_data("data 1");
             
-            Query query1 = createRestoreQuery({{"test", f1}},"myPassphrase");
+            Query query1 = createRestoreQuery({{"test", f1}},"myPassphrase", defaultVersion);
             std::cout << query1 << std::endl;
 
             //test ==
-            Query query2 = createRestoreQuery({{"test", f1}},"myPassphrase");
+            Query query2 = createRestoreQuery({{"test", f1}},"myPassphrase", defaultVersion);
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
             Feature f2;
             f2.set_version("1.0");
             f2.set_data("data 2");
-            Query query3 = createRestoreQuery({{"test-1", f2}},"hsGH<hkherjg");
+            Query query3 = createRestoreQuery({{"test-1", f2}},"hsGH<hkherjg", defaultVersion);
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
@@ -1234,7 +1237,7 @@ void fty_srr_dto_test (bool verbose)
             f3.set_version("1.0");
             f3.set_data("{\"timeout\":\"40\"}");
             
-            Query query5 = createRestoreQuery({{"test", f3}},"myPassphrase");
+            Query query5 = createRestoreQuery({{"test", f3}},"myPassphrase", defaultVersion);
             std::cout << query5 << std::endl;
             
             UserData userdata1;
@@ -1255,7 +1258,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1264,18 +1266,17 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
-            Query query1 = createResetQuery({"test"});
+            Query query1 = createResetQuery({"test"}, defaultVersion);
             std::cout << query1 << std::endl;
 
             //test ==
-            Query query2 = createResetQuery({"test"});
+            Query query2 = createResetQuery({"test"}, defaultVersion);
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
-            Query query3 = createResetQuery({"testgg"});
+            Query query3 = createResetQuery({"testgg"}, defaultVersion);
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> unserialize
@@ -1296,7 +1297,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1305,7 +1305,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             Query query1 = createListFeatureQuery();
@@ -1316,7 +1315,7 @@ void fty_srr_dto_test (bool verbose)
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
-            Query query3 = createResetQuery({"testgg"});
+            Query query3 = createResetQuery({"testgg"}, defaultVersion);
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
@@ -1337,7 +1336,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1346,7 +1344,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             FeatureAndStatus fs1;
@@ -1360,18 +1357,18 @@ void fty_srr_dto_test (bool verbose)
             std::map<FeatureName, FeatureAndStatus> map1;
             map1["test"] = fs1;
             
-            Response r1 = createSaveResponse(map1);
+            Response r1 = createSaveResponse(map1, defaultVersion);
             std::cout << r1 << std::endl;
 
             //test ==
-            Response r2 = createSaveResponse(map1);
+            Response r2 = createSaveResponse(map1, defaultVersion);
             if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
             std::map<FeatureName, FeatureAndStatus> map2;
             map2["test2"] = fs1;
             
-            Response r3 = createSaveResponse(map2);
+            Response r3 = createSaveResponse(map2, defaultVersion);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
@@ -1392,7 +1389,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1401,11 +1397,11 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             FeatureStatus s1;
             s1.set_status(Status::SUCCESS);
+            s1.set_error("aaaa");
             
             std::map<FeatureName, FeatureStatus> map1;
             map1["test"] = s1;
@@ -1442,7 +1438,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1451,7 +1446,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             FeatureStatus s1;
@@ -1493,7 +1487,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1502,18 +1495,17 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             FeatureDependencies d1;
             d1.add_dependencies("A");
             d1.add_dependencies("B");
             
-            Response r1 = createListFeatureResponse({{"test", d1}});
+            Response r1 = createListFeatureResponse({{"test", d1}}, defaultVersion);
             std::cout << r1 << std::endl;
 
             //test ==
-            Response r2 = createListFeatureResponse({{"test", d1}});
+            Response r2 = createListFeatureResponse({{"test", d1}}, defaultVersion);
             if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
@@ -1521,7 +1513,7 @@ void fty_srr_dto_test (bool verbose)
             d1.add_dependencies("C");
             d1.add_dependencies("B");
             
-            Response r3 = createListFeatureResponse({{"test", d2}});
+            Response r3 = createListFeatureResponse({{"test", d2}}, defaultVersion);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
@@ -1542,7 +1534,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1551,7 +1542,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             Feature f1;
@@ -1565,7 +1555,7 @@ void fty_srr_dto_test (bool verbose)
             *(fs1.mutable_feature()) = f1;
             *(fs1.mutable_status()) = s1;
             
-            Response r1 = createSaveResponse({{"test",fs1}});
+            Response r1 = createSaveResponse({{"test",fs1}}, defaultVersion);
 
             Feature f2;
             f2.set_version("3.5");
@@ -1579,9 +1569,9 @@ void fty_srr_dto_test (bool verbose)
             *(fs2.mutable_feature()) = f2;
             *(fs2.mutable_status()) = s2;
             
-            Response r2 = createSaveResponse({{"test-2",fs2}});
+            Response r2 = createSaveResponse({{"test-2",fs2}}, defaultVersion);
             
-            Response r3 = createSaveResponse({{"test",fs1},{"test-2",fs2}});
+            Response r3 = createSaveResponse({{"test",fs1},{"test-2",fs2}}, defaultVersion);
             
             Response r = r1 + r2;
             std::cout << r << std::endl;
@@ -1597,7 +1587,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1606,7 +1595,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {
             FeatureStatus s1;
@@ -1635,7 +1623,6 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-
     printf ("OK\n");
 
     //Next test
@@ -1644,7 +1631,6 @@ void fty_srr_dto_test (bool verbose)
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {          
             FeatureStatus s1;
@@ -1675,28 +1661,28 @@ void fty_srr_dto_test (bool verbose)
     }
 
     printf ("OK\n");
-//Next test
+    
+    //Next test
     testNumber = "3.4";
     testName = "Check add operation on List Feature Response";
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {  
             FeatureDependencies d1;
             d1.add_dependencies("A");
             d1.add_dependencies("B");
           
-            Response r1 = createListFeatureResponse({{"test", d1}});
+            Response r1 = createListFeatureResponse({{"test", d1}}, defaultVersion);
 
             FeatureDependencies d2;
             d2.add_dependencies("A");
             d2.add_dependencies("B");
 
-            Response r2 = createListFeatureResponse({{"test2", d2}});
+            Response r2 = createListFeatureResponse({{"test2", d2}}, defaultVersion);
             
-            Response r3 = createListFeatureResponse({{"test", d1},{"test2", d2}});
+            Response r3 = createListFeatureResponse({{"test", d1},{"test2", d2}}, defaultVersion);
 
             Response r = r1 + r2;
             std::cout << r << std::endl;
@@ -1715,13 +1701,12 @@ void fty_srr_dto_test (bool verbose)
 
     printf ("OK\n");
 
-//Next test
+    //Next test
     testNumber = "4.1";
     testName = "Deserialize save query from UI";
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {  
             std::string saveQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"\",\"featuresList\": [{\"name\":\"etn-mass-management\"}]}";
@@ -1757,17 +1742,63 @@ void fty_srr_dto_test (bool verbose)
 
     printf ("OK\n");
     
-//Next test
+    //Next test
     testNumber = "4.2";
     testName = "Deserialize restore query from UI";
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {  
-            std::string restoreQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"my pass phrase\",\"data\": [{\"object\": {\"version\": \"1.0\",\"data\": {\"timeout\": \"40\"}}},{\"no-object\": {\"version\": \"1.0\",\"data\": \"data in text\"}}]}";
+            std::string restoreQueryJson =R"TEST({
+                    "passphrase":"a","version":"1.0",
+                    "data":[{"automations":{"version":"1.0","data":{"automationList":[{"id":"etn_automation_id_1576571918088",
+                    "name":"Test","createdBy":"admin","createdOn":"2019-12-17T08:38:38.088+0000","comments":"","active":false,
+                    "timeout":36000,"notification":{"notifyOnFailure":false,"emails":[]}}]}}}]})TEST";
             Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
+            std::cout << queryRestore << std::endl;
+            
+            dto::UserData reqData;
+            reqData << queryRestore;
+            std::cout << reqData.front() << std::endl;
+
+            if(queryRestore.parameters_case() != Query::ParametersCase::kRestore)
+            {
+                std::cout << queryRestore << std::endl;
+                throw std::runtime_error("Invalid query type");
+            }
+            
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+    
+    //Next test
+    testNumber = "4.3";
+    testName = "Deserialize restore query from automation";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+        try
+        {  
+            std::string restoreQueryJson = R"TEST(
+                   {"version": "1.0","passphrase": "my pass phrase",
+                    "data": [{"automation-settings": {"version": "1.0","status": "success","error": "",
+                    "data": {"server": {"timeout": "10000","background": "0","workdir": ".","verbose": "0"}}}}, 
+                    {"automations": {"version": "1.0","status": "success","error": "",
+                    "data": {"automationList": [{"id": "etn_automation_id_1576571918088","name": 
+                    "Test","createdBy": "admin","createdOn": "2019-12-17T08:38:38.088+0000","comments": "","active": false,"timeout": 36000,
+                    "notification": {"notifyOnFailure": false,"emails": []},"schedule": "2019-12-17T08:37:00.000Z",
+                    "triggerType": "CAT_SCHEDULE","triggers": {"ipmInfraEvent": []},"tasks": [{"index": 0,"name": "Wait 10 seconds",
+                    "group": "WAIT","subgroup": "DELAY","properties": [{"key": "duration","value": ["10"]}],"timeout": 3600}]}]}}}]})TEST";
+
+            Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
+            std::cout << queryRestore << std::endl;
             
             if(queryRestore.parameters_case() != Query::ParametersCase::kRestore)
             {
@@ -1775,16 +1806,10 @@ void fty_srr_dto_test (bool verbose)
                 throw std::runtime_error("Invalid query type");
             }
             
-            if(queryRestore.restore().map_features_data().at("object").data() != "{\"timeout\":\"40\"}")
+            if(queryRestore.restore().map_features_data().at("automation-settings").data() != "{\"server\":{\"timeout\":\"10000\",\"background\":\"0\",\"workdir\":\".\",\"verbose\":\"0\"}}")
             {
                 std::cout << queryRestore << std::endl;
                 throw std::runtime_error("bad data object serialisation");
-            }
-            
-            if(queryRestore.restore().map_features_data().at("no-object").data() != "data in text")
-            {
-                std::cout << queryRestore << std::endl;
-                throw std::runtime_error("bad data for none object serialisation");
             }
             
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
@@ -1799,13 +1824,12 @@ void fty_srr_dto_test (bool verbose)
 
     printf ("OK\n");
 
-//Next test
-    testNumber = "4.3";
+    //Next test
+    testNumber = "4.4";
     testName = "Serialize save response for UI";
     printf ("\n-------------------------------------------------------------\n");
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
-
         try
         {  
             Feature f1;
@@ -1831,11 +1855,13 @@ void fty_srr_dto_test (bool verbose)
             *(fs2.mutable_status()) = s2;
 
             
-            Response r = createSaveResponse({{"object",fs1},{"no-object",fs2}});
+            Response r = createSaveResponse({{"object",fs1},{"no-object",fs2}}, defaultVersion);
 
-            std::string strV1 = "{\"data\":[{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}}]}";
-            std::string strV2 = "{\"data\":[{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}}]}";
+            std::string strV1 = "{\"version\":\"1.0\",\"data\":[{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}}]}";
+            std::string strV2 = "{\"version\":\"1.0\",\"data\":[{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}}]}";
+            
             std::string responseInStr = responseToUiJson(r);
+            std::cout << "responseToUiJson " << responseInStr << std::endl;
             
             if(responseInStr != strV1 && responseInStr != strV2)
             {
@@ -1848,6 +1874,8 @@ void fty_srr_dto_test (bool verbose)
 
             Response r1;
             userdata1 >> r1;
+            std::string responseInStrAfterDeserilize = responseToUiJson(r1);
+            std::cout << "responseInStrAfterDeserilize " << responseInStrAfterDeserilize << std::endl;
             
             if(r != r1) throw std::runtime_error("Bad serialization to userdata");
             
@@ -1860,11 +1888,64 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
+    
+    //Next test
+    testNumber = "4.5";
+    testName = "Serialize FeatureStatus from EMC4J";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+        try
+        {  
+            
+            std::map<FeatureName, FeatureAndStatus> mapResponse;
+            
+            Feature f1;
+            f1.set_version("1.0");
+            
+            FeatureStatus s1; 
+            s1.set_status(Status::SUCCESS);
+            
+            FeatureAndStatus fs1;
+            *(fs1.mutable_feature()) = f1;
+            *(fs1.mutable_status()) = s1;
 
+            Feature f2;
+            f2.set_version("1.0");
+
+            FeatureStatus s2; 
+            s2.set_status(Status::SUCCESS);
+              
+            FeatureAndStatus fs2;          
+            *(fs2.mutable_feature()) = f2;
+            *(fs2.mutable_status()) = s2;
+            
+            mapResponse["automation"] = fs1;
+            mapResponse["virtual-asset"] = fs2;
+
+            Response r3 = createSaveResponse(mapResponse, defaultVersion);
+            
+            std::cout << r3 << std::endl;
+            
+            dto::UserData resp;
+            resp.push_back("{\"statusList\":[{\"name\":\"automation\",\"status\":\"success\",\"error\":\"\"}]}");
+            resp.push_back("restore");
+            
+            Response partialResp;
+            resp >> partialResp;
+
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
     printf ("OK\n");
 
-//Collect results
-
+    //Collect results
     printf ("\n-------------------------------------------------------------\n");
 
 	uint32_t testsPassed = 0;

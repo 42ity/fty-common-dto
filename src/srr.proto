@@ -40,11 +40,13 @@ message RestoreQuery
 {
     map<string, Feature> map_features_data = 1;
     string passpharse = 2;
+    string version = 3;
 }
 
 message ResetQuery
 {
     repeated string features = 1;
+    string version = 2;
 }
 
 message ListFeatureQuery
@@ -75,6 +77,7 @@ message FeatureAndStatus
 message SaveResponse
 {
     map<string, FeatureAndStatus> map_features_data = 1;
+    string version = 2;
 }
 
 message RestoreResponse
@@ -95,6 +98,7 @@ message FeatureDependencies
 message ListFeatureResponse
 {
     map<string, FeatureDependencies> map_features_dependencies = 1;
+    string version = 2;
 }
 
 message Response
