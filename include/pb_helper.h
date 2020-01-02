@@ -38,6 +38,17 @@ namespace dto
     void operator<< (UserData & data, const google::protobuf::Message & message);
     void operator>> (UserData & data, google::protobuf::Message & message);
 
+    //Helper to ensure the memroy of protobuf is cleaned at the end of the program:
+    //  This class is use to instentiate a global variable, which will destroy at th end of the program.
+    //  The destruction will trigger a call to google::protobuf::ShutdownProtobufLibrary()
+    class ProtobufMemoryCleaner
+    {
+    public:
+        ProtobufMemoryCleaner() = default;
+        ~ProtobufMemoryCleaner(){google::protobuf::ShutdownProtobufLibrary();}
+    };
+
+    extern ProtobufMemoryCleaner gProtobufMemoryCleaner;
 } // namespace dto
 
 

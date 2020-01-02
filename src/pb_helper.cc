@@ -30,6 +30,7 @@
 
 namespace dto
 {
+    ProtobufMemoryCleaner gProtobufMemoryCleaner;
     
     void operator<<=(std::string& str, const google::protobuf::Message & message)
     {
