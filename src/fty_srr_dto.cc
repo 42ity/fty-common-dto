@@ -1981,7 +1981,5 @@ void fty_srr_dto_test (bool verbose)
 	}
 
     printf ("OK\n");
-    
-    google::protobuf::ShutdownProtobufLibrary();
 }
 
