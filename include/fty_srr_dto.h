@@ -73,7 +73,7 @@ namespace dto
         using FeatureName = std::string;
 
         Query createSaveQuery(const std::set<FeatureName> & features, const std::string & passpharse);
-        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version);
+        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version, const std::string & checksum);
         Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse, const std::string & version);
         Query createResetQuery(const std::set<FeatureName> & features, const std::string & version);
         Query createListFeatureQuery();
@@ -129,6 +129,7 @@ namespace dto
 
         //create functions
         Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version);
+        Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version, const std::string & checksum, const FeatureStatus & featureStatus);
         Response createRestoreResponse(const std::map<FeatureName, FeatureStatus> & mapStatus);
         Response createResetResponse(const std::map<FeatureName, FeatureStatus> & mapStatus);
         Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies, const std::string & version);

@@ -41,6 +41,7 @@ message RestoreQuery
     map<string, Feature> map_features_data = 1;
     string passpharse = 2;
     string version = 3;
+    string checksum = 4;
 }
 
 message ResetQuery
@@ -78,6 +79,8 @@ message SaveResponse
 {
     map<string, FeatureAndStatus> map_features_data = 1;
     string version = 2;
+    string checksum = 3;
+    FeatureStatus status = 4;
 }
 
 message RestoreResponse

@@ -92,7 +92,7 @@ namespace dto
             return query;
         }
 
-        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version)
+        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version, const std::string & checksum)
         {
             Query query;
 
@@ -100,6 +100,7 @@ namespace dto
             *(restoreQuery.mutable_map_features_data()) = {restoreData.begin(), restoreData.end()};
             restoreQuery.set_passpharse(passpharse);
             restoreQuery.set_version(version);
+            restoreQuery.set_checksum(checksum);
 
             return query;
         }
@@ -442,14 +443,22 @@ namespace dto
 
         static Status stringToStatus(const std::string & statusStr);
         
-        //create functions
         Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version)
+        {
+            FeatureStatus featureStatus;
+            featureStatus.set_status(Status::SUCCESS);
+            return createSaveResponse(mapFeaturesData, version, "", featureStatus);
+        }
+        
+        Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version, const std::string & checksum, const FeatureStatus & featureStatus)
         {
             Response response;
 
             SaveResponse & saveResponse = *(response.mutable_save());
             *(saveResponse.mutable_map_features_data()) = {mapFeaturesData.begin(), mapFeaturesData.end()};
             saveResponse.set_version(version);
+            saveResponse.set_checksum(checksum);
+            *(saveResponse.mutable_status()) = featureStatus;
             return response;
         }
 
@@ -1210,18 +1219,18 @@ void fty_srr_dto_test (bool verbose)
             f1.set_version("1.0");
             f1.set_data("data 1");
             
-            Query query1 = createRestoreQuery({{"test", f1}},"myPassphrase", defaultVersion);
+            Query query1 = createRestoreQuery({{"test", f1}}, "myPassphrase", defaultVersion, "myChecksum");
             std::cout << query1 << std::endl;
 
             //test ==
-            Query query2 = createRestoreQuery({{"test", f1}},"myPassphrase", defaultVersion);
+            Query query2 = createRestoreQuery({{"test", f1}},"myPassphrase", defaultVersion, "myChecksum");
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
             Feature f2;
             f2.set_version("1.0");
             f2.set_data("data 2");
-            Query query3 = createRestoreQuery({{"test-1", f2}},"hsGH<hkherjg", defaultVersion);
+            Query query3 = createRestoreQuery({{"test-1", f2}},"hsGH<hkherjg", defaultVersion, "myChecksum");
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
@@ -1237,7 +1246,7 @@ void fty_srr_dto_test (bool verbose)
             f3.set_version("1.0");
             f3.set_data("{\"timeout\":\"40\"}");
             
-            Query query5 = createRestoreQuery({{"test", f3}},"myPassphrase", defaultVersion);
+            Query query5 = createRestoreQuery({{"test", f3}},"myPassphrase", defaultVersion, "myChecksum");
             std::cout << query5 << std::endl;
             
             UserData userdata1;
