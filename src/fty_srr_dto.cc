@@ -92,7 +92,7 @@ namespace dto
             return query;
         }
 
-        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version)
+        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version, const std::string & checksum)
         {
             Query query;
 
@@ -100,6 +100,7 @@ namespace dto
             *(restoreQuery.mutable_map_features_data()) = {restoreData.begin(), restoreData.end()};
             restoreQuery.set_passpharse(passpharse);
             restoreQuery.set_version(version);
+            restoreQuery.set_checksum(checksum);
 
             return query;
         }
@@ -442,25 +443,49 @@ namespace dto
 
         static Status stringToStatus(const std::string & statusStr);
         
-        //create functions
         Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version)
+        {
+            FeatureStatus featureStatus;
+            featureStatus.set_status(Status::SUCCESS);
+            return createSaveResponse(mapFeaturesData, version, "", featureStatus);
+        }
+        
+        Response createSaveResponse(const std::string & version, const FeatureStatus & featureStatus)
+        {
+            return createSaveResponse({}, version, "", featureStatus);
+        }
+        
+        Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version, const std::string & checksum, const FeatureStatus & featureStatus)
         {
             Response response;
 
             SaveResponse & saveResponse = *(response.mutable_save());
             *(saveResponse.mutable_map_features_data()) = {mapFeaturesData.begin(), mapFeaturesData.end()};
             saveResponse.set_version(version);
+            saveResponse.set_checksum(checksum);
+            *(saveResponse.mutable_status()) = featureStatus;
             return response;
         }
 
         Response createRestoreResponse(const std::map<FeatureName, FeatureStatus> & mapStatus)
         {
+            FeatureStatus featureStatus;
+            featureStatus.set_status(Status::SUCCESS);
+            return createRestoreResponse(featureStatus, mapStatus);
+        }
+        
+        Response createRestoreResponse(const FeatureStatus & featureStatus, const std::map<FeatureName, FeatureStatus> & mapStatus)
+        {
             Response response;
-
             RestoreResponse & restoreResponse = *(response.mutable_restore());
             *(restoreResponse.mutable_map_features_status()) = {mapStatus.begin(), mapStatus.end()};
-
+            *(restoreResponse.mutable_status()) = featureStatus;
             return response;
+        }
+        
+        Response createRestoreResponse(const FeatureStatus & featureStatus)
+        {
+            return createRestoreResponse(featureStatus, {});
         }
 
         Response createResetResponse(const std::map<FeatureName, FeatureStatus> & mapStatus)
@@ -473,13 +498,14 @@ namespace dto
             return response;
         }
 
-        Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies, const std::string & version)
+        Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies, const std::string & version, const std::string & passphrassDefinition)
         {
             Response response;
 
             ListFeatureResponse & listResponse = *(response.mutable_list_feature());
             *(listResponse.mutable_map_features_dependencies()) = {mapFeaturesDependencies.begin(), mapFeaturesDependencies.end()};
             listResponse.set_version(version);
+            listResponse.set_passphrass_definition(passphrassDefinition);
             return response;
         }
 
@@ -832,6 +858,10 @@ namespace dto
         void operator<<= (cxxtools::SerializationInfo& si, const SaveResponse & response)
         {
             si.addMember(SRR_VERSION) <<= response.version();
+            si.addMember(CHECKSUM) <<= response.checksum();
+            si.addMember(STATUS) <<= statusToString(response.status().status());
+            si.addMember(ERROR) <<= response.status().error();
+            
             cxxtools::SerializationInfo & featuresSi = si.addMember(DATA);
             
             for( const auto & item : response.map_features_data())
@@ -876,9 +906,18 @@ namespace dto
 
         void operator<<= (cxxtools::SerializationInfo& si, const RestoreResponse & response)
         {
-            si.addMember(STATUS) <<= statusToString(getGlobalStatus(response));
-            cxxtools::SerializationInfo & featuresSi = si.addMember(STATUS_LIST);
             
+            if (response.map_features_status().empty())
+            {
+                si.addMember(STATUS) <<= statusToString(response.status().status());
+            }
+            else
+            {
+                si.addMember(STATUS) <<= statusToString(getGlobalStatus(response));
+            }
+            si.addMember(ERROR) <<= response.status().error();
+            
+            cxxtools::SerializationInfo & featuresSi = si.addMember(STATUS_LIST);
             for( const auto & item : response.map_features_status())
             {
                 cxxtools::SerializationInfo & featureSi = featuresSi.addMember("");
@@ -911,8 +950,9 @@ namespace dto
         void operator<<= (cxxtools::SerializationInfo& si, const ListFeatureResponse & response)
         {
             si.addMember(SRR_VERSION) <<= response.version();
-            cxxtools::SerializationInfo & featuresSi = si.addMember(FEATURE_LIST);
+            si.addMember(PASS_PHRASE_DEFINITION) <<= response.passphrass_definition();
             
+            cxxtools::SerializationInfo & featuresSi = si.addMember(FEATURE_LIST);
             for( const auto & item : response.map_features_dependencies())
             {
                 cxxtools::SerializationInfo & featureSi = featuresSi.addMember("");
@@ -935,6 +975,24 @@ namespace dto
             if (si.findMember(SRR_VERSION) != NULL) {
                 si.getMember(SRR_VERSION) >>= *(response.mutable_version());
             }
+            
+            if (si.findMember(CHECKSUM) != NULL) {
+                si.getMember(CHECKSUM) >>= *(response.mutable_checksum());
+            }
+            
+            if (si.findMember(STATUS) != NULL) {
+                std::string statusStr;    
+                si.getMember(STATUS) >>= statusStr;
+                stringToStatus(statusStr);
+                response.mutable_status()->set_status(stringToStatus(statusStr));
+            }
+            
+            if (si.findMember(ERROR) != NULL) {
+                std::string error;
+                si.getMember(ERROR) >>= error;
+                response.mutable_status()->set_error(error);
+            }
+            
             cxxtools::SerializationInfo featuresSi = si.getMember(DATA);
             
             cxxtools::SerializationInfo::Iterator it;
@@ -984,6 +1042,19 @@ namespace dto
         {
             google::protobuf::Map<std::string, FeatureStatus>& mapFeaturesData = *(response.mutable_map_features_status());
             
+            if (si.findMember(STATUS) != NULL) {
+                std::string statusStr;    
+                si.getMember(STATUS) >>= statusStr;
+                stringToStatus(statusStr);
+                response.mutable_status()->set_status(stringToStatus(statusStr));
+            }
+            
+            if (si.findMember(ERROR) != NULL) {
+                std::string error;
+                si.getMember(ERROR) >>= error;
+                response.mutable_status()->set_error(error);
+            }
+            
             for (const auto & featureSi : si.getMember(STATUS_LIST) )
             {
                 std::string name, statusStr, error;
@@ -1029,6 +1100,10 @@ namespace dto
             
             if (si.findMember(SRR_VERSION) != NULL) {
                 si.getMember(SRR_VERSION) >>= *(response.mutable_version());
+            }
+            
+            if (si.findMember(PASS_PHRASE_DEFINITION) != NULL) {
+                si.getMember(PASS_PHRASE_DEFINITION) >>= *(response.mutable_passphrass_definition());
             }
             
             for (const auto & featureSi : si.getMember(FEATURE_LIST) )
@@ -1155,6 +1230,7 @@ void fty_srr_dto_test (bool verbose)
     std::vector<std::pair<std::string, bool>> testsResults;
 
     std::string defaultVersion = "1.0";
+    std::string passPhraseDef = "8";
     std::string testNumber;
     std::string testName;
 
@@ -1210,18 +1286,18 @@ void fty_srr_dto_test (bool verbose)
             f1.set_version("1.0");
             f1.set_data("data 1");
             
-            Query query1 = createRestoreQuery({{"test", f1}},"myPassphrase", defaultVersion);
+            Query query1 = createRestoreQuery({{"test", f1}}, "myPassphrase", defaultVersion, "myChecksum");
             std::cout << query1 << std::endl;
 
             //test ==
-            Query query2 = createRestoreQuery({{"test", f1}},"myPassphrase", defaultVersion);
+            Query query2 = createRestoreQuery({{"test", f1}},"myPassphrase", defaultVersion, "myChecksum");
             if(query1 != query2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
             Feature f2;
             f2.set_version("1.0");
             f2.set_data("data 2");
-            Query query3 = createRestoreQuery({{"test-1", f2}},"hsGH<hkherjg", defaultVersion);
+            Query query3 = createRestoreQuery({{"test-1", f2}},"hsGH<hkherjg", defaultVersion, "myChecksum");
             if(query1 == query3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
@@ -1237,7 +1313,7 @@ void fty_srr_dto_test (bool verbose)
             f3.set_version("1.0");
             f3.set_data("{\"timeout\":\"40\"}");
             
-            Query query5 = createRestoreQuery({{"test", f3}},"myPassphrase", defaultVersion);
+            Query query5 = createRestoreQuery({{"test", f3}},"myPassphrase", defaultVersion, "myChecksum");
             std::cout << query5 << std::endl;
             
             UserData userdata1;
@@ -1501,11 +1577,11 @@ void fty_srr_dto_test (bool verbose)
             d1.add_dependencies("A");
             d1.add_dependencies("B");
             
-            Response r1 = createListFeatureResponse({{"test", d1}}, defaultVersion);
+            Response r1 = createListFeatureResponse({{"test", d1}}, defaultVersion, passPhraseDef);
             std::cout << r1 << std::endl;
 
             //test ==
-            Response r2 = createListFeatureResponse({{"test", d1}}, defaultVersion);
+            Response r2 = createListFeatureResponse({{"test", d1}}, defaultVersion, passPhraseDef);
             if(r1 != r2) throw std::runtime_error("Bad comparaison ==");
 
             //test !=
@@ -1513,7 +1589,7 @@ void fty_srr_dto_test (bool verbose)
             d1.add_dependencies("C");
             d1.add_dependencies("B");
             
-            Response r3 = createListFeatureResponse({{"test", d2}}, defaultVersion);
+            Response r3 = createListFeatureResponse({{"test", d2}}, defaultVersion, passPhraseDef);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
             //test serialize -> deserialize
@@ -1674,15 +1750,15 @@ void fty_srr_dto_test (bool verbose)
             d1.add_dependencies("A");
             d1.add_dependencies("B");
           
-            Response r1 = createListFeatureResponse({{"test", d1}}, defaultVersion);
+            Response r1 = createListFeatureResponse({{"test", d1}}, defaultVersion, passPhraseDef);
 
             FeatureDependencies d2;
             d2.add_dependencies("A");
             d2.add_dependencies("B");
 
-            Response r2 = createListFeatureResponse({{"test2", d2}}, defaultVersion);
+            Response r2 = createListFeatureResponse({{"test2", d2}}, defaultVersion, passPhraseDef);
             
-            Response r3 = createListFeatureResponse({{"test", d1},{"test2", d2}}, defaultVersion);
+            Response r3 = createListFeatureResponse({{"test", d1},{"test2", d2}}, defaultVersion, passPhraseDef);
 
             Response r = r1 + r2;
             std::cout << r << std::endl;
@@ -1857,8 +1933,8 @@ void fty_srr_dto_test (bool verbose)
             
             Response r = createSaveResponse({{"object",fs1},{"no-object",fs2}}, defaultVersion);
 
-            std::string strV1 = "{\"version\":\"1.0\",\"data\":[{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}}]}";
-            std::string strV2 = "{\"version\":\"1.0\",\"data\":[{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}}]}";
+            std::string strV1 = "{\"version\":\"1.0\",\"checksum\":\"\",\"status\":\"success\",\"error\":\"\",\"data\":[{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}}]}";
+            std::string strV2 = "{\"version\":\"1.0\",\"checksum\":\"\",\"status\":\"success\",\"error\":\"\",\"data\":[{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}}]}";
             
             std::string responseInStr = responseToUiJson(r);
             std::cout << "responseToUiJson " << responseInStr << std::endl;
