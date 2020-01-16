@@ -54,8 +54,6 @@ Replace in src/srr_pb.cc the header #include "src/srr.pb.h" by #include "srr_pb.
 
 ```
 
-protoc --cpp_out=. src/srr.proto
-
 ## Objects offered
 - srr_pb objects and fty_srr_dto -> DTO for srr including serialisation for UI, comparaison and SrrRequestProcessor to help the client to implement SRR.
 - message_bus_config_pb -> Configuration for message bus.
