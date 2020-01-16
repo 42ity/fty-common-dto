@@ -86,6 +86,7 @@ message SaveResponse
 message RestoreResponse
 {
     map<string, FeatureStatus> map_features_status = 1;
+    FeatureStatus status = 2;
 }
 
 message ResetResponse
@@ -102,6 +103,7 @@ message ListFeatureResponse
 {
     map<string, FeatureDependencies> map_features_dependencies = 1;
     string version = 2;
+    string passphrass_definition = 3;
 }
 
 message Response

@@ -1861,6 +1861,7 @@ class RestoreResponse :
 
   enum : int {
     kMapFeaturesStatusFieldNumber = 1,
+    kStatusFieldNumber = 2,
   };
   // map<string, .dto.srr.FeatureStatus> map_features_status = 1;
   int map_features_status_size() const;
@@ -1879,6 +1880,21 @@ class RestoreResponse :
   ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::dto::srr::FeatureStatus >*
       mutable_map_features_status();
 
+  // .dto.srr.FeatureStatus status = 2;
+  bool has_status() const;
+  private:
+  bool _internal_has_status() const;
+  public:
+  void clear_status();
+  const ::dto::srr::FeatureStatus& status() const;
+  ::dto::srr::FeatureStatus* release_status();
+  ::dto::srr::FeatureStatus* mutable_status();
+  void set_allocated_status(::dto::srr::FeatureStatus* status);
+  private:
+  const ::dto::srr::FeatureStatus& _internal_status() const;
+  ::dto::srr::FeatureStatus* _internal_mutable_status();
+  public:
+
   // @@protoc_insertion_point(class_scope:dto.srr.RestoreResponse)
  private:
   class _Internal;
@@ -1890,6 +1906,7 @@ class RestoreResponse :
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE,
       0 > map_features_status_;
+  ::dto::srr::FeatureStatus* status_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_src_2fsrr_2eproto;
 };
@@ -2353,6 +2370,7 @@ class ListFeatureResponse :
   enum : int {
     kMapFeaturesDependenciesFieldNumber = 1,
     kVersionFieldNumber = 2,
+    kPassphrassDefinitionFieldNumber = 3,
   };
   // map<string, .dto.srr.FeatureDependencies> map_features_dependencies = 1;
   int map_features_dependencies_size() const;
@@ -2387,6 +2405,22 @@ class ListFeatureResponse :
   std::string* _internal_mutable_version();
   public:
 
+  // string passphrass_definition = 3;
+  void clear_passphrass_definition();
+  const std::string& passphrass_definition() const;
+  void set_passphrass_definition(const std::string& value);
+  void set_passphrass_definition(std::string&& value);
+  void set_passphrass_definition(const char* value);
+  void set_passphrass_definition(const char* value, size_t size);
+  std::string* mutable_passphrass_definition();
+  std::string* release_passphrass_definition();
+  void set_allocated_passphrass_definition(std::string* passphrass_definition);
+  private:
+  const std::string& _internal_passphrass_definition() const;
+  void _internal_set_passphrass_definition(const std::string& value);
+  std::string* _internal_mutable_passphrass_definition();
+  public:
+
   // @@protoc_insertion_point(class_scope:dto.srr.ListFeatureResponse)
  private:
   class _Internal;
@@ -2399,6 +2433,7 @@ class ListFeatureResponse :
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE,
       0 > map_features_dependencies_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr version_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr passphrass_definition_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_src_2fsrr_2eproto;
 };
@@ -3906,6 +3941,66 @@ RestoreResponse::mutable_map_features_status() {
   return _internal_mutable_map_features_status();
 }
 
+// .dto.srr.FeatureStatus status = 2;
+inline bool RestoreResponse::_internal_has_status() const {
+  return this != internal_default_instance() && status_ != nullptr;
+}
+inline bool RestoreResponse::has_status() const {
+  return _internal_has_status();
+}
+inline void RestoreResponse::clear_status() {
+  if (GetArenaNoVirtual() == nullptr && status_ != nullptr) {
+    delete status_;
+  }
+  status_ = nullptr;
+}
+inline const ::dto::srr::FeatureStatus& RestoreResponse::_internal_status() const {
+  const ::dto::srr::FeatureStatus* p = status_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::dto::srr::FeatureStatus*>(
+      &::dto::srr::_FeatureStatus_default_instance_);
+}
+inline const ::dto::srr::FeatureStatus& RestoreResponse::status() const {
+  // @@protoc_insertion_point(field_get:dto.srr.RestoreResponse.status)
+  return _internal_status();
+}
+inline ::dto::srr::FeatureStatus* RestoreResponse::release_status() {
+  // @@protoc_insertion_point(field_release:dto.srr.RestoreResponse.status)
+  
+  ::dto::srr::FeatureStatus* temp = status_;
+  status_ = nullptr;
+  return temp;
+}
+inline ::dto::srr::FeatureStatus* RestoreResponse::_internal_mutable_status() {
+  
+  if (status_ == nullptr) {
+    auto* p = CreateMaybeMessage<::dto::srr::FeatureStatus>(GetArenaNoVirtual());
+    status_ = p;
+  }
+  return status_;
+}
+inline ::dto::srr::FeatureStatus* RestoreResponse::mutable_status() {
+  // @@protoc_insertion_point(field_mutable:dto.srr.RestoreResponse.status)
+  return _internal_mutable_status();
+}
+inline void RestoreResponse::set_allocated_status(::dto::srr::FeatureStatus* status) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == nullptr) {
+    delete status_;
+  }
+  if (status) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      status = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, status, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  status_ = status;
+  // @@protoc_insertion_point(field_set_allocated:dto.srr.RestoreResponse.status)
+}
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -4112,6 +4207,66 @@ inline void ListFeatureResponse::set_allocated_version(std::string* version) {
   }
   version_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), version);
   // @@protoc_insertion_point(field_set_allocated:dto.srr.ListFeatureResponse.version)
+}
+
+// string passphrass_definition = 3;
+inline void ListFeatureResponse::clear_passphrass_definition() {
+  passphrass_definition_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& ListFeatureResponse::passphrass_definition() const {
+  // @@protoc_insertion_point(field_get:dto.srr.ListFeatureResponse.passphrass_definition)
+  return _internal_passphrass_definition();
+}
+inline void ListFeatureResponse::set_passphrass_definition(const std::string& value) {
+  _internal_set_passphrass_definition(value);
+  // @@protoc_insertion_point(field_set:dto.srr.ListFeatureResponse.passphrass_definition)
+}
+inline std::string* ListFeatureResponse::mutable_passphrass_definition() {
+  // @@protoc_insertion_point(field_mutable:dto.srr.ListFeatureResponse.passphrass_definition)
+  return _internal_mutable_passphrass_definition();
+}
+inline const std::string& ListFeatureResponse::_internal_passphrass_definition() const {
+  return passphrass_definition_.GetNoArena();
+}
+inline void ListFeatureResponse::_internal_set_passphrass_definition(const std::string& value) {
+  
+  passphrass_definition_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+}
+inline void ListFeatureResponse::set_passphrass_definition(std::string&& value) {
+  
+  passphrass_definition_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:dto.srr.ListFeatureResponse.passphrass_definition)
+}
+inline void ListFeatureResponse::set_passphrass_definition(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  passphrass_definition_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:dto.srr.ListFeatureResponse.passphrass_definition)
+}
+inline void ListFeatureResponse::set_passphrass_definition(const char* value, size_t size) {
+  
+  passphrass_definition_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:dto.srr.ListFeatureResponse.passphrass_definition)
+}
+inline std::string* ListFeatureResponse::_internal_mutable_passphrass_definition() {
+  
+  return passphrass_definition_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* ListFeatureResponse::release_passphrass_definition() {
+  // @@protoc_insertion_point(field_release:dto.srr.ListFeatureResponse.passphrass_definition)
+  
+  return passphrass_definition_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void ListFeatureResponse::set_allocated_passphrass_definition(std::string* passphrass_definition) {
+  if (passphrass_definition != nullptr) {
+    
+  } else {
+    
+  }
+  passphrass_definition_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), passphrass_definition);
+  // @@protoc_insertion_point(field_set_allocated:dto.srr.ListFeatureResponse.passphrass_definition)
 }
 
 // -------------------------------------------------------------------
