@@ -530,6 +530,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_src_2fsrr_2eproto::offsets[] P
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::dto::srr::FeatureDependencies, dependencies_),
+  PROTOBUF_FIELD_OFFSET(::dto::srr::FeatureDependencies, description_),
   PROTOBUF_FIELD_OFFSET(::dto::srr::ListFeatureResponse_MapFeaturesDependenciesEntry_DoNotUse, _has_bits_),
   PROTOBUF_FIELD_OFFSET(::dto::srr::ListFeatureResponse_MapFeaturesDependenciesEntry_DoNotUse, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -547,6 +548,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_src_2fsrr_2eproto::offsets[] P
   PROTOBUF_FIELD_OFFSET(::dto::srr::ListFeatureResponse, map_features_dependencies_),
   PROTOBUF_FIELD_OFFSET(::dto::srr::ListFeatureResponse, version_),
   PROTOBUF_FIELD_OFFSET(::dto::srr::ListFeatureResponse, passphrass_definition_),
+  PROTOBUF_FIELD_OFFSET(::dto::srr::ListFeatureResponse, passphrass_description_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::dto::srr::Response, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -575,9 +577,9 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 102, 109, sizeof(::dto::srr::ResetResponse_MapFeaturesStatusEntry_DoNotUse)},
   { 111, -1, sizeof(::dto::srr::ResetResponse)},
   { 117, -1, sizeof(::dto::srr::FeatureDependencies)},
-  { 123, 130, sizeof(::dto::srr::ListFeatureResponse_MapFeaturesDependenciesEntry_DoNotUse)},
-  { 132, -1, sizeof(::dto::srr::ListFeatureResponse)},
-  { 140, -1, sizeof(::dto::srr::Response)},
+  { 124, 131, sizeof(::dto::srr::ListFeatureResponse_MapFeaturesDependenciesEntry_DoNotUse)},
+  { 133, -1, sizeof(::dto::srr::ListFeatureResponse)},
+  { 142, -1, sizeof(::dto::srr::Response)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -637,22 +639,23 @@ const char descriptor_table_protodef_src_2fsrr_2eproto[] PROTOBUF_SECTION_VARIAB
   "\n\023map_features_status\030\001 \003(\0132-.dto.srr.Re"
   "setResponse.MapFeaturesStatusEntry\032P\n\026Ma"
   "pFeaturesStatusEntry\022\013\n\003key\030\001 \001(\t\022%\n\005val"
-  "ue\030\002 \001(\0132\026.dto.srr.FeatureStatus:\0028\001\"+\n\023"
+  "ue\030\002 \001(\0132\026.dto.srr.FeatureStatus:\0028\001\"@\n\023"
   "FeatureDependencies\022\024\n\014dependencies\030\001 \003("
-  "\t\"\201\002\n\023ListFeatureResponse\022\\\n\031map_feature"
-  "s_dependencies\030\001 \003(\01329.dto.srr.ListFeatu"
-  "reResponse.MapFeaturesDependenciesEntry\022"
-  "\017\n\007version\030\002 \001(\t\022\035\n\025passphrass_definitio"
-  "n\030\003 \001(\t\032\\\n\034MapFeaturesDependenciesEntry\022"
-  "\013\n\003key\030\001 \001(\t\022+\n\005value\030\002 \001(\0132\034.dto.srr.Fe"
-  "atureDependencies:\0028\001\"\313\001\n\010Response\022%\n\004sa"
-  "ve\030\001 \001(\0132\025.dto.srr.SaveResponseH\000\022+\n\007res"
-  "tore\030\002 \001(\0132\030.dto.srr.RestoreResponseH\000\022\'"
-  "\n\005reset\030\003 \001(\0132\026.dto.srr.ResetResponseH\000\022"
-  "4\n\014list_feature\030\004 \001(\0132\034.dto.srr.ListFeat"
-  "ureResponseH\000B\014\n\nparameters*C\n\006Status\022\013\n"
-  "\007UNKNOWN\020\000\022\013\n\007SUCCESS\020\001\022\n\n\006FAILED\020\002\022\023\n\017P"
-  "ARTIAL_SUCCESS\020\003b\006proto3"
+  "\t\022\023\n\013description\030\002 \001(\t\"\241\002\n\023ListFeatureRe"
+  "sponse\022\\\n\031map_features_dependencies\030\001 \003("
+  "\01329.dto.srr.ListFeatureResponse.MapFeatu"
+  "resDependenciesEntry\022\017\n\007version\030\002 \001(\t\022\035\n"
+  "\025passphrass_definition\030\003 \001(\t\022\036\n\026passphra"
+  "ss_description\030\004 \001(\t\032\\\n\034MapFeaturesDepen"
+  "denciesEntry\022\013\n\003key\030\001 \001(\t\022+\n\005value\030\002 \001(\013"
+  "2\034.dto.srr.FeatureDependencies:\0028\001\"\313\001\n\010R"
+  "esponse\022%\n\004save\030\001 \001(\0132\025.dto.srr.SaveResp"
+  "onseH\000\022+\n\007restore\030\002 \001(\0132\030.dto.srr.Restor"
+  "eResponseH\000\022\'\n\005reset\030\003 \001(\0132\026.dto.srr.Res"
+  "etResponseH\000\0224\n\014list_feature\030\004 \001(\0132\034.dto"
+  ".srr.ListFeatureResponseH\000B\014\n\nparameters"
+  "*C\n\006Status\022\013\n\007UNKNOWN\020\000\022\013\n\007SUCCESS\020\001\022\n\n\006"
+  "FAILED\020\002\022\023\n\017PARTIAL_SUCCESS\020\003b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_src_2fsrr_2eproto_deps[1] = {
 };
@@ -680,7 +683,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_src
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_src_2fsrr_2eproto_once;
 static bool descriptor_table_src_2fsrr_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_src_2fsrr_2eproto = {
-  &descriptor_table_src_2fsrr_2eproto_initialized, descriptor_table_protodef_src_2fsrr_2eproto, "src/srr.proto", 1984,
+  &descriptor_table_src_2fsrr_2eproto_initialized, descriptor_table_protodef_src_2fsrr_2eproto, "src/srr.proto", 2037,
   &descriptor_table_src_2fsrr_2eproto_once, descriptor_table_src_2fsrr_2eproto_sccs, descriptor_table_src_2fsrr_2eproto_deps, 19, 0,
   schemas, file_default_instances, TableStruct_src_2fsrr_2eproto::offsets,
   file_level_metadata_src_2fsrr_2eproto, 19, file_level_enum_descriptors_src_2fsrr_2eproto, file_level_service_descriptors_src_2fsrr_2eproto,
@@ -3732,11 +3735,16 @@ FeatureDependencies::FeatureDependencies(const FeatureDependencies& from)
       _internal_metadata_(nullptr),
       dependencies_(from.dependencies_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  description_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_description().empty()) {
+    description_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.description_);
+  }
   // @@protoc_insertion_point(copy_constructor:dto.srr.FeatureDependencies)
 }
 
 void FeatureDependencies::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_FeatureDependencies_src_2fsrr_2eproto.base);
+  description_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 FeatureDependencies::~FeatureDependencies() {
@@ -3745,6 +3753,7 @@ FeatureDependencies::~FeatureDependencies() {
 }
 
 void FeatureDependencies::SharedDtor() {
+  description_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void FeatureDependencies::SetCachedSize(int size) const {
@@ -3763,6 +3772,7 @@ void FeatureDependencies::Clear() {
   (void) cached_has_bits;
 
   dependencies_.Clear();
+  description_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   _internal_metadata_.Clear();
 }
 
@@ -3785,6 +3795,15 @@ const char* FeatureDependencies::_InternalParse(const char* ptr, ::PROTOBUF_NAME
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
+        } else goto handle_unusual;
+        continue;
+      // string description = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          auto str = _internal_mutable_description();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "dto.srr.FeatureDependencies.description"));
+          CHK_(ptr);
         } else goto handle_unusual;
         continue;
       default: {
@@ -3823,6 +3842,16 @@ failure:
     target = stream->WriteString(1, s, target);
   }
 
+  // string description = 2;
+  if (this->description().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_description().data(), static_cast<int>(this->_internal_description().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "dto.srr.FeatureDependencies.description");
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_description(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target, stream);
@@ -3845,6 +3874,13 @@ size_t FeatureDependencies::ByteSizeLong() const {
   for (int i = 0, n = dependencies_.size(); i < n; i++) {
     total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
       dependencies_.Get(i));
+  }
+
+  // string description = 2;
+  if (this->description().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_description());
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -3879,6 +3915,10 @@ void FeatureDependencies::MergeFrom(const FeatureDependencies& from) {
   (void) cached_has_bits;
 
   dependencies_.MergeFrom(from.dependencies_);
+  if (from.description().size() > 0) {
+
+    description_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.description_);
+  }
 }
 
 void FeatureDependencies::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -3903,6 +3943,8 @@ void FeatureDependencies::InternalSwap(FeatureDependencies* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
   dependencies_.InternalSwap(&other->dependencies_);
+  description_.Swap(&other->description_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FeatureDependencies::GetMetadata() const {
@@ -3953,6 +3995,10 @@ ListFeatureResponse::ListFeatureResponse(const ListFeatureResponse& from)
   if (!from._internal_passphrass_definition().empty()) {
     passphrass_definition_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.passphrass_definition_);
   }
+  passphrass_description_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_passphrass_description().empty()) {
+    passphrass_description_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.passphrass_description_);
+  }
   // @@protoc_insertion_point(copy_constructor:dto.srr.ListFeatureResponse)
 }
 
@@ -3960,6 +4006,7 @@ void ListFeatureResponse::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_ListFeatureResponse_src_2fsrr_2eproto.base);
   version_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   passphrass_definition_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  passphrass_description_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 ListFeatureResponse::~ListFeatureResponse() {
@@ -3970,6 +4017,7 @@ ListFeatureResponse::~ListFeatureResponse() {
 void ListFeatureResponse::SharedDtor() {
   version_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   passphrass_definition_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  passphrass_description_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void ListFeatureResponse::SetCachedSize(int size) const {
@@ -3990,6 +4038,7 @@ void ListFeatureResponse::Clear() {
   map_features_dependencies_.Clear();
   version_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   passphrass_definition_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  passphrass_description_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   _internal_metadata_.Clear();
 }
 
@@ -4027,6 +4076,15 @@ const char* ListFeatureResponse::_InternalParse(const char* ptr, ::PROTOBUF_NAME
           auto str = _internal_mutable_passphrass_definition();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "dto.srr.ListFeatureResponse.passphrass_definition"));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // string passphrass_description = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
+          auto str = _internal_mutable_passphrass_description();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "dto.srr.ListFeatureResponse.passphrass_description"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -4117,6 +4175,16 @@ failure:
         3, this->_internal_passphrass_definition(), target);
   }
 
+  // string passphrass_description = 4;
+  if (this->passphrass_description().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_passphrass_description().data(), static_cast<int>(this->_internal_passphrass_description().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "dto.srr.ListFeatureResponse.passphrass_description");
+    target = stream->WriteStringMaybeAliased(
+        4, this->_internal_passphrass_description(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target, stream);
@@ -4154,6 +4222,13 @@ size_t ListFeatureResponse::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_passphrass_definition());
+  }
+
+  // string passphrass_description = 4;
+  if (this->passphrass_description().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_passphrass_description());
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -4196,6 +4271,10 @@ void ListFeatureResponse::MergeFrom(const ListFeatureResponse& from) {
 
     passphrass_definition_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.passphrass_definition_);
   }
+  if (from.passphrass_description().size() > 0) {
+
+    passphrass_description_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.passphrass_description_);
+  }
 }
 
 void ListFeatureResponse::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -4223,6 +4302,8 @@ void ListFeatureResponse::InternalSwap(ListFeatureResponse* other) {
   version_.Swap(&other->version_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   passphrass_definition_.Swap(&other->passphrass_definition_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  passphrass_description_.Swap(&other->passphrass_description_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
 }
 
