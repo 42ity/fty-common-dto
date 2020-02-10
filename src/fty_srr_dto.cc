@@ -251,6 +251,7 @@ namespace dto
         {
             si.getMember(PASS_PHRASE) >>= *(query.mutable_passpharse());
             si.getMember(SRR_VERSION) >>= *(query.mutable_version());
+            si.getMember(CHECKSUM) >>= *(query.mutable_checksum());
 
             google::protobuf::Map<std::string, Feature>& mapFeaturesData = *(query.mutable_map_features_data());
 
@@ -316,6 +317,7 @@ namespace dto
         {
             si.addMember(PASS_PHRASE) <<= query.passpharse();
             si.addMember(SRR_VERSION) <<= query.version();
+            si.addMember(CHECKSUM) <<= query.checksum();
             cxxtools::SerializationInfo & featuresSi = si.addMember(DATA);
             
             for( const auto & item : query.map_features_data())
@@ -500,12 +502,18 @@ namespace dto
 
         Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies, const std::string & version, const std::string & passphrassDefinition)
         {
+            return createListFeatureResponse(mapFeaturesDependencies, version, passphrassDefinition, "");
+        }
+                
+        Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies, const std::string & version, const std::string & passphrassDefinition, const std::string & passphrassDescription)
+        {
             Response response;
 
             ListFeatureResponse & listResponse = *(response.mutable_list_feature());
             *(listResponse.mutable_map_features_dependencies()) = {mapFeaturesDependencies.begin(), mapFeaturesDependencies.end()};
             listResponse.set_version(version);
             listResponse.set_passphrass_definition(passphrassDefinition);
+            listResponse.set_passphrass_description(passphrassDescription);
             return response;
         }
 
@@ -951,6 +959,7 @@ namespace dto
         {
             si.addMember(SRR_VERSION) <<= response.version();
             si.addMember(PASS_PHRASE_DEFINITION) <<= response.passphrass_definition();
+            si.addMember(PASS_PHRASE_DESCRIPTION) <<= response.passphrass_description();
             
             cxxtools::SerializationInfo & featuresSi = si.addMember(FEATURE_LIST);
             for( const auto & item : response.map_features_dependencies())
@@ -959,6 +968,7 @@ namespace dto
 
                 featureSi.addMember(FEATURE_NAME) <<= item.first;
                 const FeatureDependencies & dep = item.second;
+                featureSi.addMember(FEATURE_DESCRIPTION) <<= dep.description();
 
                 std::set<FeatureName> dependencies(dep.dependencies().begin(), dep.dependencies().end());
 
@@ -1106,23 +1116,29 @@ namespace dto
                 si.getMember(PASS_PHRASE_DEFINITION) >>= *(response.mutable_passphrass_definition());
             }
             
-            for (const auto & featureSi : si.getMember(FEATURE_LIST) )
-            {   
-                std::string name;
-                std::set<FeatureName> dependencies;
+            if (si.findMember(PASS_PHRASE_DESCRIPTION) != NULL) {
+                si.getMember(PASS_PHRASE_DESCRIPTION) >>= *(response.mutable_passphrass_description());
+            }
+            
+            if (si.findMember(FEATURE_LIST) != NULL) {
+                for (const auto & featureSi : si.getMember(FEATURE_LIST) )
+                {   
+                    std::string name, description;
+                    std::set<FeatureName> dependencies;
 
-                featureSi.getMember(FEATURE_NAME) >>= name;
-                featureSi.getMember(DEPENDENCIES) >>= dependencies;
-                
-                FeatureDependencies deps;
-                
-                for(const auto & dep : dependencies)
-                {
-                    deps.add_dependencies(dep);
+                    featureSi.getMember(FEATURE_NAME) >>= name;
+                    featureSi.getMember(FEATURE_DESCRIPTION) >>= description;
+                    featureSi.getMember(DEPENDENCIES) >>= dependencies;
+
+                    FeatureDependencies deps;
+                    deps.set_description(description);
+                    for(const auto & dep : dependencies)
+                    {
+                        deps.add_dependencies(dep);
+                    }
+
+                    mapDependencies[name] = std::move(deps);
                 }
-                
-
-                mapDependencies[name] = std::move(deps);
             }
         }
 
@@ -1827,7 +1843,7 @@ void fty_srr_dto_test (bool verbose)
         try
         {  
             std::string restoreQueryJson =R"TEST({
-                    "passphrase":"a","version":"1.0",
+                    "passphrase":"a","version":"1.0","checksum":"qDYTMxDem+",
                     "data":[{"automations":{"version":"1.0","data":{"automationList":[{"id":"etn_automation_id_1576571918088",
                     "name":"Test","createdBy":"admin","createdOn":"2019-12-17T08:38:38.088+0000","comments":"","active":false,
                     "timeout":36000,"notification":{"notifyOnFailure":false,"emails":[]}}]}}}]})TEST";
@@ -1863,7 +1879,7 @@ void fty_srr_dto_test (bool verbose)
         try
         {  
             std::string restoreQueryJson = R"TEST(
-                   {"version": "1.0","passphrase": "my pass phrase",
+                   {"version": "1.0","passphrase": "my pass phrase","checksum":"qDYTMxDem+",
                     "data": [{"automation-settings": {"version": "1.0","status": "success","error": "",
                     "data": {"server": {"timeout": "10000","background": "0","workdir": ".","verbose": "0"}}}}, 
                     {"automations": {"version": "1.0","status": "success","error": "",

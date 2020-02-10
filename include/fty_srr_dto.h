@@ -35,9 +35,11 @@ namespace dto
     {
         constexpr auto PASS_PHRASE              = "passphrase";
         constexpr auto PASS_PHRASE_DEFINITION   = "passphraseDefinition";
+        constexpr auto PASS_PHRASE_DESCRIPTION  = "passphraseDescription";
         constexpr auto FEATURE_LIST             = "featuresList";
         constexpr auto DEPENDENCIES             = "dependencies";
         constexpr auto FEATURE_NAME             = "name";
+        constexpr auto FEATURE_DESCRIPTION      = "description";
         constexpr auto DATA                     = "data";
         constexpr auto SRR_VERSION              = "version";
         constexpr auto CHECKSUM                 = "checksum";
@@ -138,6 +140,7 @@ namespace dto
         Response createRestoreResponse(const FeatureStatus & featureStatus);
         Response createResetResponse(const std::map<FeatureName, FeatureStatus> & mapStatus);
         Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies, const std::string & version, const std::string & passphrassDefinition);
+        Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies, const std::string & version, const std::string & passphrassDefinition, const std::string & passphrassDescription);
 
         //userdata serializer / deserializer
         void operator>> (UserData & data, Response & response);

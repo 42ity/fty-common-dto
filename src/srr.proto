@@ -97,6 +97,7 @@ message ResetResponse
 message FeatureDependencies
 {
     repeated string dependencies = 1;
+    string description = 2;
 }
 
 message ListFeatureResponse
@@ -104,6 +105,7 @@ message ListFeatureResponse
     map<string, FeatureDependencies> map_features_dependencies = 1;
     string version = 2;
     string passphrass_definition = 3;
+    string passphrass_description = 4;
 }
 
 message Response
