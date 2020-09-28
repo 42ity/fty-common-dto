@@ -35,6 +35,26 @@ namespace dto
 {
     namespace commands
     {
+        void operator<<(UserData &data, const GetAssetsByCommandQueryDto &object) {
+            data.push_back(object.command);
+        }
+
+        void operator>>(UserData &inputData, GetAssetsByCommandQueryDto &object)  {
+            object.command = inputData.front(); inputData.pop_front();
+        }
+
+        void operator<<(UserData &data, const GetAssetsByCommandReplyDto &object) {
+            for (const auto &i : object) {
+                data.push_back(i);
+            }
+        }
+
+        void operator>>(UserData &inputData, GetAssetsByCommandReplyDto &object) {
+            while (!inputData.empty()) {
+                object.push_back(inputData.front()); inputData.pop_front();
+            }
+        }
+
         void operator<<(UserData &data, const GetCommandsQueryDto &object) {
             data.push_back(object.asset);
         }

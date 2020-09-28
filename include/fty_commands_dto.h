@@ -32,6 +32,24 @@ namespace dto
     namespace commands
     {
         /**
+         * Get assets by command request object
+         */
+        struct GetAssetsByCommandQueryDto {
+            std::string command;
+
+            GetAssetsByCommandQueryDto() = default;
+            GetAssetsByCommandQueryDto(const std::string& command) : command(command) {}
+        };
+
+        void operator<<(UserData &data, const GetAssetsByCommandQueryDto &object);
+        void operator>>(UserData &inputData, GetAssetsByCommandQueryDto &object);
+
+        using GetAssetsByCommandReplyDto = std::vector<std::string>;
+
+        void operator<<(UserData &data, const GetAssetsByCommandReplyDto &object);
+        void operator>>(UserData &inputData, GetAssetsByCommandReplyDto &object);
+
+        /**
          * Get commands request object
          */
         struct GetCommandsQueryDto {
