@@ -29,6 +29,7 @@
 #include "pb_helper.h"
 
 #include <functional>
+#include <string>
 namespace dto 
 {
     namespace srr 
@@ -37,6 +38,7 @@ namespace dto
         constexpr auto PASS_PHRASE_DEFINITION   = "passphraseDefinition";
         constexpr auto PASS_PHRASE_DESCRIPTION  = "passphraseDescription";
         constexpr auto FEATURE_LIST             = "featuresList";
+        constexpr auto GROUP_LIST               = "group_list";
         constexpr auto DEPENDENCIES             = "dependencies";
         constexpr auto FEATURE_NAME             = "name";
         constexpr auto FEATURE_DESCRIPTION      = "description";
@@ -52,7 +54,12 @@ namespace dto
         constexpr auto RESET_TYPE               = "reset";
         constexpr auto LIST_TYPE                = "list";
         
-        
+        /**
+         * Utils
+         */
+        cxxtools::SerializationInfo deserializeJson(const std::string & json);
+        std::string serializeJson(const cxxtools::SerializationInfo & si, bool beautify = false);
+
         /**
          * Helper for client of SRR.
          * As a client of SRR, you have to implement the handlers functions 
@@ -101,6 +108,9 @@ namespace dto
         void operator<<= (cxxtools::SerializationInfo& si, const SaveQuery & query);
         void operator<<= (cxxtools::SerializationInfo& si, const RestoreQuery & query);
         void operator<<= (cxxtools::SerializationInfo& si, const ResetQuery & query);
+
+        void operator>>= (const cxxtools::SerializationInfo& si, Feature & feature);
+        void operator<<= (cxxtools::SerializationInfo& si, const Feature & feature);
         
         //Comparison operators => for tests mostly
         inline bool operator==(const Feature& lhs, const Feature& rhs){ return ((lhs.data() == rhs.data()) &&(lhs.version() == rhs.version())); }
