@@ -493,8 +493,6 @@ namespace dto
          * Response wrapper functions
          * 
          */
-
-        static Status stringToStatus(const std::string & statusStr);
         
         Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version)
         {
@@ -1215,7 +1213,7 @@ namespace dto
             }
         }
         
-        static Status stringToStatus(const std::string & statusStr)
+        Status stringToStatus(const std::string& statusStr)
         {
             for(const auto & it : statusInString )
             {

@@ -205,6 +205,7 @@ namespace dto
 
         //status to string for UI
         std::string statusToString(Status status);
+        Status stringToStatus(const std::string& statusStr);
 
         //get global status for UI => will be moved in fty-srr-rest
         Status getGlobalStatus(const SaveResponse & r);
