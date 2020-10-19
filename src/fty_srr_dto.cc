@@ -34,6 +34,7 @@
 #include <google/protobuf/util/json_util.h>
 
 #include <iostream>
+#include <list>
 
 namespace dto 
 {
@@ -73,8 +74,46 @@ namespace dto
             return response;
         }
 
-        static cxxtools::SerializationInfo deserializeJson(const std::string & json);
-        static std::string serializeJson(const cxxtools::SerializationInfo & si, bool beautify = false);
+        cxxtools::SerializationInfo deserializeJson(const std::string & json)
+        {
+            cxxtools::SerializationInfo si;
+
+            try
+            {
+                std::stringstream input;
+                input << json;
+                cxxtools::JsonDeserializer deserializer(input);
+                deserializer.deserialize(si);
+            }
+            catch(const std::exception& e)
+            {
+                throw std::runtime_error("Error in the json: "+std::string(e.what()));
+            }
+
+            return si;
+
+        }
+
+        std::string serializeJson(const cxxtools::SerializationInfo & si, bool beautify)
+        {
+            std::string returnData("");
+
+            try
+            { 
+                std::stringstream output;
+                cxxtools::JsonSerializer serializer(output);
+                serializer.beautify(beautify);
+                serializer.serialize(si);
+
+                returnData = output.str();
+            }
+            catch(const std::exception& e)
+            {
+                throw std::runtime_error("Error while creating json "+std::string(e.what()));
+            }
+
+            return returnData;
+        }
 
         /**
          * Query wrapper functions
@@ -260,27 +299,13 @@ namespace dto
             for (it = featuresSi.begin(); it != featuresSi.end(); ++it)
             {
                 const cxxtools::SerializationInfo siTemp = (cxxtools::SerializationInfo)*it;
-                for (const auto &si : siTemp)
+                for (const auto &featureSi : siTemp)
                 {
-                    std::string featureName = si.name();
+                    std::string featureName = featureSi.name();
                     
                     Feature f;
-                    si.getMember(SRR_VERSION) >>= *(f.mutable_version());
-                    cxxtools::SerializationInfo dataSi = si.getMember(DATA);
 
-                    std::string data;
-                    
-                    if(dataSi.category() == cxxtools::SerializationInfo::Category::Value)
-                    {
-                        dataSi >>= data; 
-                    }
-                    else
-                    {
-                        dataSi.setName("");
-                        data = serializeJson(dataSi);
-                    }
-
-                    f.set_data(data);
+                    featureSi >>= f;
 
                     mapFeaturesData[featureName] = std::move(f);
                 }
@@ -312,7 +337,7 @@ namespace dto
 
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
-        
+
         void operator<<= (cxxtools::SerializationInfo& si, const RestoreQuery & query)
         {
             si.addMember(PASS_PHRASE) <<= query.passpharse();
@@ -324,33 +349,8 @@ namespace dto
             {
                 cxxtools::SerializationInfo & entrySi = featuresSi.addMember("");
                 cxxtools::SerializationInfo & featureSi = entrySi.addMember(item.first);
-                featureSi.addMember(SRR_VERSION) <<= item.second.version();
-
-                cxxtools::SerializationInfo & data = featureSi.addMember(DATA);
                 
-                try
-                {
-                    //try to unserialize the data if they are on Json format
-                    cxxtools::SerializationInfo dataSi = deserializeJson(item.second.data());
-
-                    if(dataSi.category() == cxxtools::SerializationInfo::Category::Void || dataSi.category() == cxxtools::SerializationInfo::Category::Value || dataSi.isNull())
-                    {
-                        data <<= item.second.data();
-                    }
-                    else
-                    {
-                        dataSi.setName(DATA);
-                        data = dataSi;
-                        data.setName(DATA);
-                        data.setCategory(cxxtools::SerializationInfo::Category::Object);
-                    }
-                    
-                }
-                catch(const std::exception& /* e */)
-                {
-                    //put the data as a string if they are not in Json
-                    data <<= item.second.data();
-                }
+                featureSi <<= item.second;
                 
             }
             
@@ -369,6 +369,57 @@ namespace dto
             }
 
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);    
+        }
+
+        void operator>>= (const cxxtools::SerializationInfo& si, Feature & feature)
+        {
+            si.getMember(SRR_VERSION) >>= *(feature.mutable_version());
+            cxxtools::SerializationInfo dataSi = si.getMember(DATA);
+
+            std::string data;
+            
+            if(dataSi.category() == cxxtools::SerializationInfo::Category::Value)
+            {
+                dataSi >>= data; 
+            }
+            else
+            {
+                dataSi.setName("");
+                data = serializeJson(dataSi);
+            }
+
+            feature.set_data(data);
+        }
+
+        void operator<<= (cxxtools::SerializationInfo& si, const Feature & feature)
+        {
+            si.addMember(SRR_VERSION) <<= feature.version();
+
+            cxxtools::SerializationInfo & data = si.addMember(DATA);
+            
+            try
+            {
+                //try to unserialize the data if they are on Json format
+                cxxtools::SerializationInfo dataSi = deserializeJson(feature.data());
+
+                if(dataSi.category() == cxxtools::SerializationInfo::Category::Void || dataSi.category() == cxxtools::SerializationInfo::Category::Value || dataSi.isNull())
+                {
+                    data <<= feature.data();
+                }
+                else
+                {
+                    dataSi.setName(DATA);
+                    data = dataSi;
+                    data.setName(DATA);
+                    data.setCategory(cxxtools::SerializationInfo::Category::Object);
+                }
+                
+            }
+            catch(const std::exception& /* e */)
+            {
+                //put the data as a string if they are not in Json
+                data <<= feature.data();
+            }
         }
         
         bool operator==(const Query& lhs, const Query& rhs)
@@ -442,8 +493,6 @@ namespace dto
          * Response wrapper functions
          * 
          */
-
-        static Status stringToStatus(const std::string & statusStr);
         
         Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version)
         {
@@ -1164,7 +1213,7 @@ namespace dto
             }
         }
         
-        static Status stringToStatus(const std::string & statusStr)
+        Status stringToStatus(const std::string& statusStr)
         {
             for(const auto & it : statusInString )
             {
@@ -1172,48 +1221,6 @@ namespace dto
                     return it.first;
             }
             return Status::UNKNOWN;
-
-        }
-
-        static cxxtools::SerializationInfo deserializeJson(const std::string & json)
-        {
-            cxxtools::SerializationInfo si;
-
-            try
-            {
-                std::stringstream input;
-                input << json;
-                cxxtools::JsonDeserializer deserializer(input);
-                deserializer.deserialize(si);
-            }
-            catch(const std::exception& e)
-            {
-                throw std::runtime_error("Error in the json: "+std::string(e.what()));
-            }
-
-            return si;
-
-        }
-
-        static std::string serializeJson(const cxxtools::SerializationInfo & si, bool beautify)
-        {
-            std::string returnData("");
-
-            try
-            { 
-                std::stringstream output;
-                cxxtools::JsonSerializer serializer(output);
-                serializer.beautify(beautify);
-                serializer.serialize(si);
-
-                returnData = output.str();
-            }
-            catch(const std::exception& e)
-            {
-                throw std::runtime_error("Error while creating json "+std::string(e.what()));
-            }
-
-            return returnData;
         }
     } // srr
 } // dto
