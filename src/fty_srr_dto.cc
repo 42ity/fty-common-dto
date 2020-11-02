@@ -1143,7 +1143,9 @@ namespace dto
 
                 featureSi.getMember(FEATURE_NAME) >>= name;
                 featureSi.getMember(STATUS) >>= statusStr;
-                featureSi.getMember(ERROR) >>= error;
+                if (si.findMember(ERROR) != NULL) {
+                    si.getMember(ERROR) >>= error;
+                }
 
                 FeatureStatus f;
                 f.set_status(stringToStatus(statusStr));
