@@ -36,9 +36,9 @@
 #include <iostream>
 #include <list>
 
-namespace dto 
+namespace dto
 {
-    namespace srr 
+    namespace srr
     {
         Response SrrQueryProcessor::processQuery(const Query & q)
         {
@@ -55,7 +55,7 @@ namespace dto
                 if(!restoreHandler) throw std::runtime_error("No restore handler!");
                 *(response.mutable_restore()) = restoreHandler(q.restore());
                 break;
-            
+
             case Query::ParametersCase::kReset :
                 if(!resetHandler) throw std::runtime_error("No reset handler!");
                 *(response.mutable_reset()) = resetHandler(q.reset());
@@ -65,7 +65,7 @@ namespace dto
                 if(!listFeatureHandler) throw std::runtime_error("No list feature handler!");
                 *(response.mutable_list_feature()) = listFeatureHandler(q.list_feature());
                 break;
-            
+
             default:
                 throw std::runtime_error("Unknown query!");
                 break;
@@ -99,7 +99,7 @@ namespace dto
             std::string returnData("");
 
             try
-            { 
+            {
                 std::stringstream output;
                 cxxtools::JsonSerializer serializer(output);
                 serializer.beautify(beautify);
@@ -117,7 +117,7 @@ namespace dto
 
         /**
          * Query wrapper functions
-         * 
+         *
          */
 
         Query createSaveQuery(const std::set<FeatureName> & features, const std::string & passpharse)
@@ -143,7 +143,7 @@ namespace dto
 
             return query;
         }
-        
+
         Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse, const std::string & version)
         {
             Query query;
@@ -152,7 +152,7 @@ namespace dto
             restoreQuery.set_version(version);
             return query;
         }
-        
+
         Query createResetQuery(const std::set<FeatureName> & features, const std::string & version)
         {
             Query query;
@@ -186,7 +186,7 @@ namespace dto
                 query = resetQueryFromUiJson(payload);
             else if(type == LIST_TYPE)
                 query = createListFeatureQuery();
-            else  
+            else
                 throw std::runtime_error("Wrong query type");
 
             /*if(!query.ParseFromString(payload))
@@ -211,7 +211,7 @@ namespace dto
                 si <<= query.restore();
                 type = RESTORE_TYPE;
                 break;
-            
+
             case Query::ParametersCase::kReset :
                 si <<= query.reset();
                 type = RESET_TYPE;
@@ -220,7 +220,7 @@ namespace dto
             case Query::ParametersCase::kListFeature :
                 type = LIST_TYPE;
                 break;
-            
+
             default:
                 break;
             }
@@ -273,7 +273,7 @@ namespace dto
             si >>= *(query.mutable_reset());
             return query;
         }
-             
+
         void operator>>= (const cxxtools::SerializationInfo& si, SaveQuery & query)
         {
             si.getMember(PASS_PHRASE) >>= *(query.mutable_passpharse());
@@ -283,9 +283,9 @@ namespace dto
             {
                 const cxxtools::SerializationInfo & featureSi = featuresSi.getMember(index);
                 featureSi.getMember(FEATURE_NAME) >>= *(query.add_features());
-            }           
+            }
         }
-        
+
         void operator>>= (const cxxtools::SerializationInfo& si, RestoreQuery & query)
         {
             si.getMember(PASS_PHRASE) >>= *(query.mutable_passpharse());
@@ -302,7 +302,7 @@ namespace dto
                 for (const auto &featureSi : siTemp)
                 {
                     std::string featureName = featureSi.name();
-                    
+
                     Feature f;
 
                     featureSi >>= f;
@@ -312,7 +312,7 @@ namespace dto
             }
         }
 
-        void operator>>= (const cxxtools::SerializationInfo& si, ResetQuery & query)        
+        void operator>>= (const cxxtools::SerializationInfo& si, ResetQuery & query)
         {
             const cxxtools::SerializationInfo & featuresSi = si.getMember(FEATURE_LIST);
 
@@ -320,7 +320,7 @@ namespace dto
             {
                 const cxxtools::SerializationInfo & featureSi = featuresSi.getMember(index);
                 featureSi.getMember(FEATURE_NAME) >>= *(query.add_features());
-            }        
+            }
         }
 
         void operator<<= (cxxtools::SerializationInfo& si, const SaveQuery & query)
@@ -344,22 +344,22 @@ namespace dto
             si.addMember(SRR_VERSION) <<= query.version();
             si.addMember(CHECKSUM) <<= query.checksum();
             cxxtools::SerializationInfo & featuresSi = si.addMember(DATA);
-            
+
             for( const auto & item : query.map_features_data())
             {
                 cxxtools::SerializationInfo & entrySi = featuresSi.addMember("");
                 cxxtools::SerializationInfo & featureSi = entrySi.addMember(item.first);
-                
+
                 featureSi <<= item.second;
-                
+
             }
-            
+
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
 
-        void operator<<= (cxxtools::SerializationInfo& si, const ResetQuery & query)        
+        void operator<<= (cxxtools::SerializationInfo& si, const ResetQuery & query)
         {
-            
+
             cxxtools::SerializationInfo & featuresSi = si.addMember(FEATURE_LIST);
 
             for( const auto & name : query.features() )
@@ -368,7 +368,7 @@ namespace dto
                 featureSi.addMember(FEATURE_NAME) <<= name;
             }
 
-            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);    
+            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
 
         void operator>>= (const cxxtools::SerializationInfo& si, Feature & feature)
@@ -377,10 +377,10 @@ namespace dto
             cxxtools::SerializationInfo dataSi = si.getMember(DATA);
 
             std::string data;
-            
+
             if(dataSi.category() == cxxtools::SerializationInfo::Category::Value)
             {
-                dataSi >>= data; 
+                dataSi >>= data;
             }
             else
             {
@@ -396,7 +396,7 @@ namespace dto
             si.addMember(SRR_VERSION) <<= feature.version();
 
             cxxtools::SerializationInfo & data = si.addMember(DATA);
-            
+
             try
             {
                 //try to unserialize the data if they are on Json format
@@ -413,7 +413,7 @@ namespace dto
                     data.setName(DATA);
                     data.setCategory(cxxtools::SerializationInfo::Category::Object);
                 }
-                
+
             }
             catch(const std::exception& /* e */)
             {
@@ -421,7 +421,7 @@ namespace dto
                 data <<= feature.data();
             }
         }
-        
+
         bool operator==(const Query& lhs, const Query& rhs)
         {
             bool areEquals = false;
@@ -436,7 +436,7 @@ namespace dto
                 case Query::ParametersCase::kRestore :
                     areEquals = (lhs.restore() == rhs.restore());
                     break;
-                
+
                 case Query::ParametersCase::kReset :
                     areEquals = (lhs.reset() == rhs.reset());
                     break;
@@ -444,7 +444,7 @@ namespace dto
                 case Query::ParametersCase::kListFeature :
                     areEquals = (lhs.list_feature() == rhs.list_feature());
                     break;
-                
+
                 default:
                     break;
                 }
@@ -452,7 +452,7 @@ namespace dto
 
             return areEquals;
         }
-        
+
         bool operator==(const SaveQuery& lhs, const SaveQuery& rhs)
         {
             bool areEquals = false;
@@ -460,13 +460,13 @@ namespace dto
             {
                 std::set<FeatureName> set1(lhs.features().begin(), lhs.features().end());
                 std::set<FeatureName> set2(rhs.features().begin(), rhs.features().end());
-                
+
                 areEquals = (set1 == set2);
             }
-            
+
             return areEquals;
         }
-        
+
         bool operator==(const RestoreQuery& lhs, const RestoreQuery& rhs)
         {
             bool areEquals = false;
@@ -474,38 +474,38 @@ namespace dto
             {
                 std::map<FeatureName, Feature> map1(lhs.map_features_data().begin(), lhs.map_features_data().end());
                 std::map<FeatureName, Feature> map2(rhs.map_features_data().begin(), rhs.map_features_data().end());
-                
+
                 areEquals = (map1 == map2);
             }
 
             return areEquals;
         }
-        
+
         bool operator==(const ResetQuery& lhs, const ResetQuery& rhs)
         {
             std::set<FeatureName> set1(lhs.features().begin(), lhs.features().end());
             std::set<FeatureName> set2(rhs.features().begin(), rhs.features().end());
-                
+
             return (set1 == set2);
         }
 
         /**
          * Response wrapper functions
-         * 
+         *
          */
-        
+
         Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version)
         {
             FeatureStatus featureStatus;
             featureStatus.set_status(Status::SUCCESS);
             return createSaveResponse(mapFeaturesData, version, "", featureStatus);
         }
-        
+
         Response createSaveResponse(const std::string & version, const FeatureStatus & featureStatus)
         {
             return createSaveResponse({}, version, "", featureStatus);
         }
-        
+
         Response createSaveResponse(const std::map<FeatureName, FeatureAndStatus> & mapFeaturesData, const std::string & version, const std::string & checksum, const FeatureStatus & featureStatus)
         {
             Response response;
@@ -524,7 +524,7 @@ namespace dto
             featureStatus.set_status(Status::SUCCESS);
             return createRestoreResponse(featureStatus, mapStatus);
         }
-        
+
         Response createRestoreResponse(const FeatureStatus & featureStatus, const std::map<FeatureName, FeatureStatus> & mapStatus)
         {
             Response response;
@@ -533,7 +533,7 @@ namespace dto
             *(restoreResponse.mutable_status()) = featureStatus;
             return response;
         }
-        
+
         Response createRestoreResponse(const FeatureStatus & featureStatus)
         {
             return createRestoreResponse(featureStatus, {});
@@ -553,7 +553,7 @@ namespace dto
         {
             return createListFeatureResponse(mapFeaturesDependencies, version, passphrassDefinition, "");
         }
-                
+
         Response createListFeatureResponse(const std::map<FeatureName, FeatureDependencies> & mapFeaturesDependencies, const std::string & version, const std::string & passphrassDefinition, const std::string & passphrassDescription)
         {
             Response response;
@@ -574,7 +574,7 @@ namespace dto
 
             std::string type = data.front();
             data.pop_front();
-            
+
             cxxtools::SerializationInfo si = deserializeJson(payload);
 
             if(type == SAVE_TYPE)
@@ -585,7 +585,7 @@ namespace dto
                 si >>= *(response.mutable_reset());
             else if(type == LIST_TYPE)
                 si >>= *(response.mutable_list_feature());
-            else  
+            else
                 throw std::runtime_error("Wrong query type");
 
             /*if(!response.ParseFromString(payload))
@@ -610,7 +610,7 @@ namespace dto
                 si <<= response.restore();
                 type = RESTORE_TYPE;
                 break;
-            
+
             case Response::ParametersCase::kReset :
                 si <<= response.reset();
                 type = RESET_TYPE;
@@ -620,7 +620,7 @@ namespace dto
                 si <<= response.list_feature();
                 type = LIST_TYPE;
                 break;
-            
+
             default:
                 break;
             }
@@ -649,15 +649,15 @@ namespace dto
             return os;
         }
 
-        //Comparison operators => for tests mostly      
+        //Comparison operators => for tests mostly
         bool operator==(const FeatureDependencies& lhs, const FeatureDependencies& rhs)
         {
             std::set<FeatureName> set1(lhs.dependencies().begin(), lhs.dependencies().end());
             std::set<FeatureName> set2(rhs.dependencies().begin(), rhs.dependencies().end());
-                
+
             return (set1 == set2);
         }
-        
+
         bool operator==(const Response& lhs, const Response& rhs)
         {
             bool areEquals = false;
@@ -672,7 +672,7 @@ namespace dto
                 case Response::ParametersCase::kRestore :
                     areEquals = (lhs.restore() == rhs.restore());
                     break;
-                
+
                 case Response::ParametersCase::kReset :
                     areEquals = (lhs.reset() == rhs.reset());
                     break;
@@ -680,7 +680,7 @@ namespace dto
                 case Response::ParametersCase::kListFeature :
                     areEquals = (lhs.list_feature() == rhs.list_feature());
                     break;
-                
+
                 default:
                     break;
                 }
@@ -693,30 +693,30 @@ namespace dto
         {
             std::map<FeatureName, FeatureAndStatus> map1(lhs.map_features_data().begin(), lhs.map_features_data().end());
             std::map<FeatureName, FeatureAndStatus> map2(rhs.map_features_data().begin(), rhs.map_features_data().end());
-                
+
             return (map1 == map2);
         }
-        
+
         bool operator==(const RestoreResponse& lhs, const RestoreResponse& rhs)
         {
             std::map<FeatureName, FeatureStatus> map1(lhs.map_features_status().begin(), lhs.map_features_status().end());
             std::map<FeatureName, FeatureStatus> map2(rhs.map_features_status().begin(), rhs.map_features_status().end());
-                
+
             return (map1 == map2);
         }
-        
+
         bool operator==(const ResetResponse& lhs, const ResetResponse& rhs)
         {
             std::map<FeatureName, FeatureStatus> map1(lhs.map_features_status().begin(), lhs.map_features_status().end());
             std::map<FeatureName, FeatureStatus> map2(rhs.map_features_status().begin(), rhs.map_features_status().end());
             return (map1 == map2);
         }
-        
+
         bool operator==(const ListFeatureResponse& lhs, const ListFeatureResponse& rhs)
         {
             std::map<FeatureName, FeatureDependencies> map1(lhs.map_features_dependencies().begin(), lhs.map_features_dependencies().end());
             std::map<FeatureName, FeatureDependencies> map2(rhs.map_features_dependencies().begin(), rhs.map_features_dependencies().end());
-                
+
             return (map1 == map2);
         }
 
@@ -743,7 +743,7 @@ namespace dto
             case Response::ParametersCase::kRestore :
                 *(r1.mutable_restore()) += r2.restore();
                 break;
-            
+
             case Response::ParametersCase::kReset :
                 *(r1.mutable_reset()) += r2.reset();
                 break;
@@ -751,7 +751,7 @@ namespace dto
             case Response::ParametersCase::kListFeature :
                 *(r1.mutable_list_feature()) += r2.list_feature();
                 break;
-            
+
             default:
                 break;
             }
@@ -878,10 +878,10 @@ namespace dto
         {
             return Status::SUCCESS;
         }
-        
+
         std::string responseToUiJson(const Response & response, bool beautiful)
         {
-            cxxtools::SerializationInfo si; 
+            cxxtools::SerializationInfo si;
             si <<= response;
             return serializeJson(si, beautiful);
         }
@@ -898,7 +898,7 @@ namespace dto
             case Response::ParametersCase::kRestore :
                 si <<= response.restore();
                 break;
-            
+
             case Response::ParametersCase::kReset :
                 si <<= response.reset();
                 break;
@@ -906,7 +906,7 @@ namespace dto
             case Response::ParametersCase::kListFeature :
                 si <<= response.list_feature();
                 break;
-            
+
             default:
                 break;
             }
@@ -918,26 +918,26 @@ namespace dto
             si.addMember(CHECKSUM) <<= response.checksum();
             si.addMember(STATUS) <<= statusToString(response.status().status());
             si.addMember(ERROR) <<= response.status().error();
-            
+
             cxxtools::SerializationInfo & featuresSi = si.addMember(DATA);
-            
+
             for( const auto & item : response.map_features_data())
             {
                 cxxtools::SerializationInfo & entrySi = featuresSi.addMember("");
                 cxxtools::SerializationInfo & featureSi = entrySi.addMember(item.first);
                 const auto & featureAndStatus = item.second;
-                
+
                 featureSi.addMember(SRR_VERSION) <<= featureAndStatus.feature().version();
                 featureSi.addMember(STATUS) <<= statusToString(featureAndStatus.status().status());
                 featureSi.addMember(ERROR) <<= featureAndStatus.status().error();
 
                 cxxtools::SerializationInfo & data = featureSi.addMember(DATA);
-                
+
                 try
                 {
                     //try to unserialize the data if they are on Json format
                     data = deserializeJson(featureAndStatus.feature().data());
-                    
+
                     if(data.category() == cxxtools::SerializationInfo::Category::Void || data.category() == cxxtools::SerializationInfo::Category::Value)
                     {
                         data <<= featureAndStatus.feature().data();
@@ -946,7 +946,7 @@ namespace dto
                     {
                         data.setCategory(cxxtools::SerializationInfo::Category::Object);
                     }
-                    
+
                 }
                 catch(const std::exception& /* e */)
                 {
@@ -955,15 +955,15 @@ namespace dto
                 }
 
                 data.setName(DATA);
-                
+
             }
-            
+
             featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
         }
 
         void operator<<= (cxxtools::SerializationInfo& si, const RestoreResponse & response)
         {
-            
+
             if (response.map_features_status().empty())
             {
                 si.addMember(STATUS) <<= statusToString(response.status().status());
@@ -973,7 +973,7 @@ namespace dto
                 si.addMember(STATUS) <<= statusToString(getGlobalStatus(response));
             }
             si.addMember(ERROR) <<= response.status().error();
-            
+
             cxxtools::SerializationInfo & featuresSi = si.addMember(STATUS_LIST);
             for( const auto & item : response.map_features_status())
             {
@@ -991,7 +991,7 @@ namespace dto
         {
             si.addMember(STATUS) <<= statusToString(getGlobalStatus(response));
             cxxtools::SerializationInfo & featuresSi = si.addMember(STATUS_LIST);
-            
+
             for( const auto & item : response.map_features_status())
             {
                 cxxtools::SerializationInfo & featureSi = featuresSi.addMember("");
@@ -1009,7 +1009,7 @@ namespace dto
             si.addMember(SRR_VERSION) <<= response.version();
             si.addMember(PASS_PHRASE_DEFINITION) <<= response.passphrass_definition();
             si.addMember(PASS_PHRASE_DESCRIPTION) <<= response.passphrass_description();
-            
+
             cxxtools::SerializationInfo & featuresSi = si.addMember(FEATURE_LIST);
             for( const auto & item : response.map_features_dependencies())
             {
@@ -1030,30 +1030,30 @@ namespace dto
         void operator>>= (const cxxtools::SerializationInfo& si, SaveResponse & response)
         {
             google::protobuf::Map<std::string, FeatureAndStatus> & mapFeaturesData = *(response.mutable_map_features_data());
-            
+
             if (si.findMember(SRR_VERSION) != NULL) {
                 si.getMember(SRR_VERSION) >>= *(response.mutable_version());
             }
-            
+
             if (si.findMember(CHECKSUM) != NULL) {
                 si.getMember(CHECKSUM) >>= *(response.mutable_checksum());
             }
-            
+
             if (si.findMember(STATUS) != NULL) {
-                std::string statusStr;    
+                std::string statusStr;
                 si.getMember(STATUS) >>= statusStr;
                 stringToStatus(statusStr);
                 response.mutable_status()->set_status(stringToStatus(statusStr));
             }
-            
+
             if (si.findMember(ERROR) != NULL) {
                 std::string error;
                 si.getMember(ERROR) >>= error;
                 response.mutable_status()->set_error(error);
             }
-            
+
             cxxtools::SerializationInfo featuresSi = si.getMember(DATA);
-            
+
             cxxtools::SerializationInfo::Iterator it;
             for (it = featuresSi.begin(); it != featuresSi.end(); ++it)
             {
@@ -1061,7 +1061,7 @@ namespace dto
                 for (const auto &si : siTemp)
                 {
                     std::string featureName = si.name();
-                    
+
                     FeatureAndStatus fs;
                     Feature & f = *(fs.mutable_feature());
 
@@ -1069,10 +1069,10 @@ namespace dto
                     cxxtools::SerializationInfo dataSi = si.getMember(DATA);
 
                     std::string data;
-                    
+
                     if(dataSi.category() == cxxtools::SerializationInfo::Category::Value)
                     {
-                        dataSi >>= data; 
+                        dataSi >>= data;
                     }
                     else
                     {
@@ -1081,14 +1081,14 @@ namespace dto
                     }
 
                     f.set_data(data);
-                    
+
                     FeatureStatus & s = *(fs.mutable_status());
-                    
+
                     std::string statusStr, error;
-                    
+
                     si.getMember(STATUS) >>= statusStr;
                     si.getMember(ERROR) >>= error;
-                    
+
                     s.set_status(stringToStatus(statusStr));
                     s.set_error(error);
 
@@ -1100,20 +1100,20 @@ namespace dto
         void operator>>= (const cxxtools::SerializationInfo& si, RestoreResponse & response)
         {
             google::protobuf::Map<std::string, FeatureStatus>& mapFeaturesData = *(response.mutable_map_features_status());
-            
+
             if (si.findMember(STATUS) != NULL) {
-                std::string statusStr;    
+                std::string statusStr;
                 si.getMember(STATUS) >>= statusStr;
                 stringToStatus(statusStr);
                 response.mutable_status()->set_status(stringToStatus(statusStr));
             }
-            
+
             if (si.findMember(ERROR) != NULL) {
                 std::string error;
                 si.getMember(ERROR) >>= error;
                 response.mutable_status()->set_error(error);
             }
-            
+
             for (const auto & featureSi : si.getMember(STATUS_LIST) )
             {
                 std::string name, statusStr, error;
@@ -1130,20 +1130,22 @@ namespace dto
 
                 mapFeaturesData[name] = std::move(f);
             }
-            
+
         }
 
         void operator>>= (const cxxtools::SerializationInfo& si, ResetResponse & response)
         {
             google::protobuf::Map<std::string, FeatureStatus>& mapFeaturesData = *(response.mutable_map_features_status());
-            
+
             for (const auto & featureSi : si.getMember(STATUS_LIST) )
             {
                 std::string name, statusStr, error;
 
                 featureSi.getMember(FEATURE_NAME) >>= name;
                 featureSi.getMember(STATUS) >>= statusStr;
-                featureSi.getMember(ERROR) >>= error;
+                if (featureSi.findMember(ERROR) != NULL) {
+                    featureSi.getMember(ERROR) >>= error;
+                }
 
                 FeatureStatus f;
                 f.set_status(stringToStatus(statusStr));
@@ -1156,22 +1158,22 @@ namespace dto
         void operator>>= (const cxxtools::SerializationInfo& si, ListFeatureResponse & response)
         {
             google::protobuf::Map<std::string, FeatureDependencies>& mapDependencies = *(response.mutable_map_features_dependencies());
-            
+
             if (si.findMember(SRR_VERSION) != NULL) {
                 si.getMember(SRR_VERSION) >>= *(response.mutable_version());
             }
-            
+
             if (si.findMember(PASS_PHRASE_DEFINITION) != NULL) {
                 si.getMember(PASS_PHRASE_DEFINITION) >>= *(response.mutable_passphrass_definition());
             }
-            
+
             if (si.findMember(PASS_PHRASE_DESCRIPTION) != NULL) {
                 si.getMember(PASS_PHRASE_DESCRIPTION) >>= *(response.mutable_passphrass_description());
             }
-            
+
             if (si.findMember(FEATURE_LIST) != NULL) {
                 for (const auto & featureSi : si.getMember(FEATURE_LIST) )
-                {   
+                {
                     std::string name, description;
                     std::set<FeatureName> dependencies;
 
@@ -1212,7 +1214,7 @@ namespace dto
                 return "unknown";
             }
         }
-        
+
         Status stringToStatus(const std::string& statusStr)
         {
             for(const auto & it : statusInString )
@@ -1264,7 +1266,7 @@ void fty_srr_dto_test (bool verbose)
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
         try
-        {   
+        {
             Query query1 = createSaveQuery({"test"},"myPassphrase");
             std::cout << query1 << std::endl;
 
@@ -1287,7 +1289,7 @@ void fty_srr_dto_test (bool verbose)
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
-            
+
         }
         catch (const std::exception &e) {
             printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
@@ -1304,11 +1306,11 @@ void fty_srr_dto_test (bool verbose)
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
         try
-        {          
+        {
             Feature f1;
             f1.set_version("1.0");
             f1.set_data("data 1");
-            
+
             Query query1 = createRestoreQuery({{"test", f1}}, "myPassphrase", defaultVersion, "myChecksum");
             std::cout << query1 << std::endl;
 
@@ -1331,20 +1333,20 @@ void fty_srr_dto_test (bool verbose)
             userdata >> query4;
 
             if(query1 != query4) throw std::runtime_error("Bad serialization to userdata");
-            
+
             Feature f3;
             f3.set_version("1.0");
             f3.set_data("{\"timeout\":\"40\"}");
-            
+
             Query query5 = createRestoreQuery({{"test", f3}},"myPassphrase", defaultVersion, "myChecksum");
             std::cout << query5 << std::endl;
-            
+
             UserData userdata1;
             userdata1 << query5;
 
             Query query6;
             userdata1 >> query6;
-            
+
             if(query5 != query6) throw std::runtime_error("Bad serialization to userdata");
 
 
@@ -1452,10 +1454,10 @@ void fty_srr_dto_test (bool verbose)
             Feature & f1 = *(fs1.mutable_feature());
             f1.set_version("1.0");
             f1.set_data(DATA);
-            
+
             std::map<FeatureName, FeatureAndStatus> map1;
             map1["test"] = fs1;
-            
+
             Response r1 = createSaveResponse(map1, defaultVersion);
             std::cout << r1 << std::endl;
 
@@ -1466,7 +1468,7 @@ void fty_srr_dto_test (bool verbose)
             //test !=
             std::map<FeatureName, FeatureAndStatus> map2;
             map2["test2"] = fs1;
-            
+
             Response r3 = createSaveResponse(map2, defaultVersion);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
@@ -1501,10 +1503,10 @@ void fty_srr_dto_test (bool verbose)
             FeatureStatus s1;
             s1.set_status(Status::SUCCESS);
             s1.set_error("aaaa");
-            
+
             std::map<FeatureName, FeatureStatus> map1;
             map1["test"] = s1;
-            
+
             Response r1 = createRestoreResponse(map1);
             std::cout << r1 << std::endl;
 
@@ -1515,7 +1517,7 @@ void fty_srr_dto_test (bool verbose)
             //test !=
             std::map<FeatureName, FeatureStatus> map2;
             map2["test2"] = s1;
-            
+
             Response r3 = createRestoreResponse(map2);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
@@ -1550,10 +1552,10 @@ void fty_srr_dto_test (bool verbose)
             FeatureStatus s1;
             s1.set_status(Status::SUCCESS);
             s1.set_error(ERROR);
-            
+
             std::map<FeatureName, FeatureStatus> map1;
             map1["test"] = s1;
-            
+
             Response r1 = createResetResponse(map1);
             std::cout << r1 << std::endl;
 
@@ -1564,7 +1566,7 @@ void fty_srr_dto_test (bool verbose)
             //test !=
             std::map<FeatureName, FeatureStatus> map2;
             map2["test2"] = s1;
-            
+
             Response r3 = createResetResponse(map2);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
@@ -1599,7 +1601,7 @@ void fty_srr_dto_test (bool verbose)
             FeatureDependencies d1;
             d1.add_dependencies("A");
             d1.add_dependencies("B");
-            
+
             Response r1 = createListFeatureResponse({{"test", d1}}, defaultVersion, passPhraseDef);
             std::cout << r1 << std::endl;
 
@@ -1611,7 +1613,7 @@ void fty_srr_dto_test (bool verbose)
             FeatureDependencies d2;
             d1.add_dependencies("C");
             d1.add_dependencies("B");
-            
+
             Response r3 = createListFeatureResponse({{"test", d2}}, defaultVersion, passPhraseDef);
             if(r1 == r3) throw std::runtime_error("Bad comparaison !=");
 
@@ -1646,35 +1648,35 @@ void fty_srr_dto_test (bool verbose)
             Feature f1;
             f1.set_version("1.0");
             f1.set_data(DATA);
-            
-            FeatureStatus s1; 
+
+            FeatureStatus s1;
             s1.set_status(Status::SUCCESS);
-            
+
             FeatureAndStatus fs1;
             *(fs1.mutable_feature()) = f1;
             *(fs1.mutable_status()) = s1;
-            
+
             Response r1 = createSaveResponse({{"test",fs1}}, defaultVersion);
 
             Feature f2;
             f2.set_version("3.5");
             f2.set_data("data-2");
 
-            FeatureStatus s2; 
+            FeatureStatus s2;
             s2.set_status(Status::FAILED);
             s2.set_error("bad version");
-              
-            FeatureAndStatus fs2;          
+
+            FeatureAndStatus fs2;
             *(fs2.mutable_feature()) = f2;
             *(fs2.mutable_status()) = s2;
-            
+
             Response r2 = createSaveResponse({{"test-2",fs2}}, defaultVersion);
-            
+
             Response r3 = createSaveResponse({{"test",fs1},{"test-2",fs2}}, defaultVersion);
-            
+
             Response r = r1 + r2;
             std::cout << r << std::endl;
-            
+
             if(r != r3) throw std::runtime_error("Bad aggregation");
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
@@ -1699,18 +1701,18 @@ void fty_srr_dto_test (bool verbose)
             FeatureStatus s1;
             s1.set_status(Status::SUCCESS);
             Response r1 = createRestoreResponse({{"test", s1}});
- 
+
             FeatureStatus s2;
             s2.set_status(Status::FAILED);
             s2.set_error("error msg");
-            
+
             Response r2 = createRestoreResponse({{"test-2", s2}});
-            
+
             Response r = createRestoreResponse({{"test", s1},{"test-2", s2}});
 
             Response r3 = r1 + r2;
             std::cout << r3 << std::endl;
-            
+
             if(r != r3) throw std::runtime_error("Bad aggregation");
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
@@ -1731,22 +1733,22 @@ void fty_srr_dto_test (bool verbose)
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
         try
-        {          
+        {
             FeatureStatus s1;
             s1.set_status(Status::SUCCESS);
             Response r1 = createResetResponse({{"test", s1}});
- 
+
             FeatureStatus s2;
             s2.set_status(Status::FAILED);
             s2.set_error("error msg");
-            
+
             Response r2 = createResetResponse({{"test-2", s2}});
-            
+
             Response r = createResetResponse({{"test", s1},{"test-2", s2}});
 
             Response r3 = r1 + r2;
             std::cout << r3 << std::endl;
-            
+
             if(r != r3) throw std::runtime_error("Bad aggregation");
 
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
@@ -1760,7 +1762,7 @@ void fty_srr_dto_test (bool verbose)
     }
 
     printf ("OK\n");
-    
+
     //Next test
     testNumber = "3.4";
     testName = "Check add operation on List Feature Response";
@@ -1768,11 +1770,11 @@ void fty_srr_dto_test (bool verbose)
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
         try
-        {  
+        {
             FeatureDependencies d1;
             d1.add_dependencies("A");
             d1.add_dependencies("B");
-          
+
             Response r1 = createListFeatureResponse({{"test", d1}}, defaultVersion, passPhraseDef);
 
             FeatureDependencies d2;
@@ -1780,14 +1782,14 @@ void fty_srr_dto_test (bool verbose)
             d2.add_dependencies("B");
 
             Response r2 = createListFeatureResponse({{"test2", d2}}, defaultVersion, passPhraseDef);
-            
+
             Response r3 = createListFeatureResponse({{"test", d1},{"test2", d2}}, defaultVersion, passPhraseDef);
 
             Response r = r1 + r2;
             std::cout << r << std::endl;
-            
+
             if(r != r3) throw std::runtime_error("Bad aggregation");
-            
+
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
         }
@@ -1807,10 +1809,10 @@ void fty_srr_dto_test (bool verbose)
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
         try
-        {  
+        {
             std::string saveQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"\",\"featuresList\": [{\"name\":\"etn-mass-management\"}]}";
             Query query = saveQueryFromUiJson (saveQueryJson);
-            
+
             if(query.parameters_case() != Query::ParametersCase::kSave)
             {
                 const cxxtools::SerializationInfo si = deserializeJson(saveQueryJson);
@@ -1819,7 +1821,7 @@ void fty_srr_dto_test (bool verbose)
 
                 throw std::runtime_error("Invalid query type");
             }
-            
+
             if(query.save().features(0) != "etn-mass-management")
             {
                 const cxxtools::SerializationInfo si = deserializeJson(saveQueryJson);
@@ -1840,7 +1842,7 @@ void fty_srr_dto_test (bool verbose)
     }
 
     printf ("OK\n");
-    
+
     //Next test
     testNumber = "4.2";
     testName = "Deserialize restore query from UI";
@@ -1848,7 +1850,7 @@ void fty_srr_dto_test (bool verbose)
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
         try
-        {  
+        {
             std::string restoreQueryJson =R"TEST({
                     "passphrase":"a","version":"1.0","checksum":"qDYTMxDem+",
                     "data":[{"automations":{"version":"1.0","data":{"automationList":[{"id":"etn_automation_id_1576571918088",
@@ -1856,7 +1858,7 @@ void fty_srr_dto_test (bool verbose)
                     "timeout":36000,"notification":{"notifyOnFailure":false,"emails":[]}}]}}}]})TEST";
             Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
             std::cout << queryRestore << std::endl;
-            
+
             dto::UserData reqData;
             reqData << queryRestore;
             std::cout << reqData.front() << std::endl;
@@ -1866,7 +1868,7 @@ void fty_srr_dto_test (bool verbose)
                 std::cout << queryRestore << std::endl;
                 throw std::runtime_error("Invalid query type");
             }
-            
+
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
         }
@@ -1876,7 +1878,7 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-    
+
     //Next test
     testNumber = "4.3";
     testName = "Deserialize restore query from automation";
@@ -1884,13 +1886,13 @@ void fty_srr_dto_test (bool verbose)
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
         try
-        {  
+        {
             std::string restoreQueryJson = R"TEST(
                    {"version": "1.0","passphrase": "my pass phrase","checksum":"qDYTMxDem+",
                     "data": [{"automation-settings": {"version": "1.0","status": "success","error": "",
-                    "data": {"server": {"timeout": "10000","background": "0","workdir": ".","verbose": "0"}}}}, 
+                    "data": {"server": {"timeout": "10000","background": "0","workdir": ".","verbose": "0"}}}},
                     {"automations": {"version": "1.0","status": "success","error": "",
-                    "data": {"automationList": [{"id": "etn_automation_id_1576571918088","name": 
+                    "data": {"automationList": [{"id": "etn_automation_id_1576571918088","name":
                     "Test","createdBy": "admin","createdOn": "2019-12-17T08:38:38.088+0000","comments": "","active": false,"timeout": 36000,
                     "notification": {"notifyOnFailure": false,"emails": []},"schedule": "2019-12-17T08:37:00.000Z",
                     "triggerType": "CAT_SCHEDULE","triggers": {"ipmInfraEvent": []},"tasks": [{"index": 0,"name": "Wait 10 seconds",
@@ -1898,19 +1900,19 @@ void fty_srr_dto_test (bool verbose)
 
             Query queryRestore = restoreQueryFromUiJson (restoreQueryJson);
             std::cout << queryRestore << std::endl;
-            
+
             if(queryRestore.parameters_case() != Query::ParametersCase::kRestore)
             {
                 std::cout << queryRestore << std::endl;
                 throw std::runtime_error("Invalid query type");
             }
-            
+
             if(queryRestore.restore().map_features_data().at("automation-settings").data() != "{\"server\":{\"timeout\":\"10000\",\"background\":\"0\",\"workdir\":\".\",\"verbose\":\"0\"}}")
             {
                 std::cout << queryRestore << std::endl;
                 throw std::runtime_error("bad data object serialisation");
             }
-            
+
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
         }
@@ -1930,14 +1932,14 @@ void fty_srr_dto_test (bool verbose)
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
         try
-        {  
+        {
             Feature f1;
             f1.set_version("1.0");
             f1.set_data("{\"timeout\":\"40\"}");
-            
-            FeatureStatus s1; 
+
+            FeatureStatus s1;
             s1.set_status(Status::SUCCESS);
-            
+
             FeatureAndStatus fs1;
             *(fs1.mutable_feature()) = f1;
             *(fs1.mutable_status()) = s1;
@@ -1946,28 +1948,28 @@ void fty_srr_dto_test (bool verbose)
             f2.set_version("1.0");
             f2.set_data("data in text");
 
-            FeatureStatus s2; 
+            FeatureStatus s2;
             s2.set_status(Status::SUCCESS);
-              
-            FeatureAndStatus fs2;          
+
+            FeatureAndStatus fs2;
             *(fs2.mutable_feature()) = f2;
             *(fs2.mutable_status()) = s2;
 
-            
+
             Response r = createSaveResponse({{"object",fs1},{"no-object",fs2}}, defaultVersion);
 
             std::string strV1 = "{\"version\":\"1.0\",\"checksum\":\"\",\"status\":\"success\",\"error\":\"\",\"data\":[{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}},{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}}]}";
             std::string strV2 = "{\"version\":\"1.0\",\"checksum\":\"\",\"status\":\"success\",\"error\":\"\",\"data\":[{\"object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":{\"timeout\":\"40\"}}},{\"no-object\":{\"version\":\"1.0\",\"status\":\"success\",\"error\":\"\",\"data\":\"data in text\"}}]}";
-            
+
             std::string responseInStr = responseToUiJson(r);
             std::cout << "responseToUiJson " << responseInStr << std::endl;
-            
+
             if(responseInStr != strV1 && responseInStr != strV2)
             {
                 std::cout << responseToUiJson(r) << std::endl;
                 throw std::runtime_error("invalid response");
             }
-            
+
             UserData userdata1;
             userdata1 << r;
 
@@ -1975,9 +1977,9 @@ void fty_srr_dto_test (bool verbose)
             userdata1 >> r1;
             std::string responseInStrAfterDeserilize = responseToUiJson(r1);
             std::cout << "responseInStrAfterDeserilize " << responseInStrAfterDeserilize << std::endl;
-            
+
             if(r != r1) throw std::runtime_error("Bad serialization to userdata");
-            
+
             printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
         }
@@ -1987,7 +1989,7 @@ void fty_srr_dto_test (bool verbose)
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
-    
+
     //Next test
     testNumber = "4.5";
     testName = "Serialize FeatureStatus from EMC4J";
@@ -1995,16 +1997,16 @@ void fty_srr_dto_test (bool verbose)
     {
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
         try
-        {  
-            
+        {
+
             std::map<FeatureName, FeatureAndStatus> mapResponse;
-            
+
             Feature f1;
             f1.set_version("1.0");
-            
-            FeatureStatus s1; 
+
+            FeatureStatus s1;
             s1.set_status(Status::SUCCESS);
-            
+
             FeatureAndStatus fs1;
             *(fs1.mutable_feature()) = f1;
             *(fs1.mutable_status()) = s1;
@@ -2012,24 +2014,24 @@ void fty_srr_dto_test (bool verbose)
             Feature f2;
             f2.set_version("1.0");
 
-            FeatureStatus s2; 
+            FeatureStatus s2;
             s2.set_status(Status::SUCCESS);
-              
-            FeatureAndStatus fs2;          
+
+            FeatureAndStatus fs2;
             *(fs2.mutable_feature()) = f2;
             *(fs2.mutable_status()) = s2;
-            
+
             mapResponse["automation"] = fs1;
             mapResponse["virtual-asset"] = fs2;
 
             Response r3 = createSaveResponse(mapResponse, defaultVersion);
-            
+
             std::cout << r3 << std::endl;
-            
+
             dto::UserData resp;
             resp.push_back("{\"statusList\":[{\"name\":\"automation\",\"status\":\"success\",\"error\":\"\"}]}");
             resp.push_back("restore");
-            
+
             Response partialResp;
             resp >> partialResp;
 
