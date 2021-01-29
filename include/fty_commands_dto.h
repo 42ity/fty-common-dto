@@ -34,17 +34,19 @@ namespace dto
         /**
          * Get commands request object
          */
-        struct GetCommandsQueryDto {
+        class GetCommandsQueryDto {
+        public:
             std::string asset;
 
             GetCommandsQueryDto() = default;
-            GetCommandsQueryDto(const std::string& asset) : asset(asset) {}
+            explicit GetCommandsQueryDto(const std::string& assetVal) : asset(assetVal) {}
         };
 
         void operator<<(UserData &data, const GetCommandsQueryDto &object);
         void operator>>(UserData &inputData, GetCommandsQueryDto &object);
 
-        struct CommandDescription {
+        class CommandDescription {
+        public:
             std::string asset;
             std::string command;
             std::string description;
@@ -63,15 +65,16 @@ namespace dto
 
         using GetCommandsReplyDto = CommandDescriptions;
 
-        struct Command {
+        class Command {
+        public:
             std::string asset;
             std::string command;
             std::string target;
             std::string argument;
 
             Command() = default;
-            Command(const std::string &asset, const std::string &command, const std::string &argument) : asset(asset), command(command), argument(argument) {}
-            Command(const std::string &asset, const std::string &command, const std::string &target, const std::string &argument) : asset(asset), command(command), target(target), argument(argument) {}
+            Command(const std::string &assetVal, const std::string &commandVal, const std::string &argumentVal) : asset(assetVal), command(commandVal), argument(argumentVal) {}
+            Command(const std::string &assetVal, const std::string &commandVal, const std::string &targetVal, const std::string &argumentVal) : asset(assetVal), command(commandVal), target(targetVal), argument(argumentVal) {}
         } ;
 
         using Commands = std::vector<Command>;
@@ -85,11 +88,12 @@ namespace dto
         /**
          * Get commands request object
          */
-        struct PerformCommandsQueryDto {
+        class PerformCommandsQueryDto {
+        public:
             Commands commands;
 
             PerformCommandsQueryDto() = default;
-            PerformCommandsQueryDto(const Commands& commands) : commands(commands) {}
+            explicit PerformCommandsQueryDto(const Commands& commandsVal) : commands(commandsVal) {}
         };
 
         void operator<<(UserData &data, const PerformCommandsQueryDto &object);

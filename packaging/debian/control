@@ -24,6 +24,8 @@ Maintainer:     fty-common-dto Developers <eatonipcopensource@eaton.com>
 Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     pkg-config,
+    cmake,
+    fty-cmake-dev,
     libcxxtools-dev,
     libprotobuf-dev,
     asciidoc-base | asciidoc, xmlto,
