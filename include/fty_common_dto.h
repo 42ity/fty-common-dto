@@ -32,5 +32,6 @@
 #include "pb_helper.h"
 #include "fty_srr_dto.h"
 #include "fty_commands_dto.h"
+#include "message_bus_config_pb.h"
 
 #endif
