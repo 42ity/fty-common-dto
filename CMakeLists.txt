@@ -21,8 +21,9 @@ etn_target(shared ${PROJECT_NAME}
         include
     PUBLIC
         *.h
-    USES_PUBLIC
+    USES_PRIVATE
         cxxtools
+    USES_PUBLIC
         protobuf::libprotobuf
 )
 

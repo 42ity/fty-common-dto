@@ -10,5 +10,6 @@ etn_test(${PROJECT_NAME}-test
     PREPROCESSOR -DCATCH_CONFIG_FAST_COMPILE
     USES
         ${PROJECT_NAME}
+        cxxtools
         Catch2::Catch2
 )
