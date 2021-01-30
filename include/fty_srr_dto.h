@@ -24,7 +24,8 @@
 
 #include <cxxtools/serializationinfo.h>
 #include "fty_userdata_dto.h"
-#include "srr_pb.h"
+
+#include "srr.pb.h"
 
 #include "pb_helper.h"
 

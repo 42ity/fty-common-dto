@@ -1,3 +1,3 @@
 usr/include/*
-usr/lib/*/libfty_common_dto.so
-usr/lib/*/pkgconfig/libfty_common_dto.pc
+usr/lib/*/pkgconfig/*
+usr/share/cmake/*
