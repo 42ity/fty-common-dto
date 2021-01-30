@@ -11,5 +11,6 @@ etn_test(${PROJECT_NAME}-test
     USES
         ${PROJECT_NAME}
         cxxtools
+        protobuf
         Catch2::Catch2
 )
