@@ -27,7 +27,10 @@ etn_target(shared ${PROJECT_NAME}
 )
 
 #Generate the protofiles for cpp
-protobuf_generate_cpp(PROTO_SRCS PROTO_PUBLIC_HDRS proto/srr.proto)
+protobuf_generate_cpp(PROTO_SRCS PROTO_PUBLIC_HDRS 
+    proto/srr.proto
+    proto/message_bus_config.proto
+)
 target_sources(${PROJECT_NAME} PRIVATE ${PROTO_SRCS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
 
