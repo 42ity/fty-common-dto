@@ -23,8 +23,7 @@ etn_target(shared ${PROJECT_NAME}
         *.h
     USES_PRIVATE
         cxxtools
-    USES_PUBLIC
-        protobuf
+        protobuf        
 )
 
 #Generate the protofiles for cpp
