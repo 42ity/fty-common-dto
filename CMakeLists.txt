@@ -24,7 +24,7 @@ etn_target(shared ${PROJECT_NAME}
     USES_PRIVATE
         cxxtools
     USES_PUBLIC
-        protobuf::libprotobuf
+        protobuf
 )
 
 #Generate the protofiles for cpp
