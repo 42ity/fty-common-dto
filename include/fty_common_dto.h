@@ -27,7 +27,7 @@
 
 //  Add your own public definitions here, if you need them
 #include "fty_userdata_dto.h"
-#include "srr_pb.h"
+#include "srr.pb.h"
 #include "message_bus_config_pb.h"
 #include "pb_helper.h"
 #include "fty_srr_dto.h"
