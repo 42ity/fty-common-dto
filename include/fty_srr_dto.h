@@ -31,9 +31,9 @@
 
 #include <functional>
 #include <string>
-namespace dto 
+namespace dto
 {
-    namespace srr 
+    namespace srr
     {
         constexpr auto PASS_PHRASE              = "passphrase";
         constexpr auto PASS_PHRASE_DEFINITION   = "passphraseDefinition";
@@ -46,15 +46,16 @@ namespace dto
         constexpr auto DATA                     = "data";
         constexpr auto SRR_VERSION              = "version";
         constexpr auto CHECKSUM                 = "checksum";
+        constexpr auto SESSION_TOKEN            = "sessionToken";
         constexpr auto STATUS_LIST              = "statusList";
         constexpr auto STATUS                   = "status";
         constexpr auto ERROR                    = "error";
-        // Type         
+        // Type
         constexpr auto SAVE_TYPE                = "save";
         constexpr auto RESTORE_TYPE             = "restore";
         constexpr auto RESET_TYPE               = "reset";
         constexpr auto LIST_TYPE                = "list";
-        
+
         /**
          * Utils
          */
@@ -63,8 +64,8 @@ namespace dto
 
         /**
          * Helper for client of SRR.
-         * As a client of SRR, you have to implement the handlers functions 
-         * 
+         * As a client of SRR, you have to implement the handlers functions
+         *
          */
         class SrrQueryProcessor
         {
@@ -76,18 +77,18 @@ namespace dto
 
             Response processQuery(const Query & q);
         };
-        
+
         /**
          * Query wrapper functions
-         * 
+         *
          */
 
         using FeatureName = std::string;
 
-        Query createSaveQuery(const std::set<FeatureName> & features, const std::string & passpharse);
-        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version, const std::string & checksum);
-        Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse, const std::string & version);
-        Query createResetQuery(const std::set<FeatureName> & features, const std::string & version);
+        Query createSaveQuery(const std::set<FeatureName> & features, const std::string & passpharse, const std::string & sessionToken ={});
+        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version, const std::string & checksum, const std::string & sessionToken ={});
+        Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse, const std::string & version, const std::string & sessionToken ={});
+        Query createResetQuery(const std::set<FeatureName> & features, const std::string & version, const std::string & sessionToken ={});
         Query createListFeatureQuery();
 
         //userdata serializer / deserializer
@@ -105,41 +106,41 @@ namespace dto
         void operator>>= (const cxxtools::SerializationInfo& si, SaveQuery & query);
         void operator>>= (const cxxtools::SerializationInfo& si, RestoreQuery & query);
         void operator>>= (const cxxtools::SerializationInfo& si, ResetQuery & query);
-        
+
         void operator<<= (cxxtools::SerializationInfo& si, const SaveQuery & query);
         void operator<<= (cxxtools::SerializationInfo& si, const RestoreQuery & query);
         void operator<<= (cxxtools::SerializationInfo& si, const ResetQuery & query);
 
         void operator>>= (const cxxtools::SerializationInfo& si, Feature & feature);
         void operator<<= (cxxtools::SerializationInfo& si, const Feature & feature);
-        
+
         //Comparison operators => for tests mostly
         inline bool operator==(const Feature& lhs, const Feature& rhs){ return ((lhs.data() == rhs.data()) &&(lhs.version() == rhs.version())); }
         inline bool operator!=(const Feature& lhs, const Feature& rhs){ return !(lhs == rhs); }
-        
+
         inline bool operator<(const Feature& lhs, const Feature& rhs){ return (lhs.data() < rhs.data()); }
-        
+
         inline bool operator==(const FeatureStatus& lhs, const FeatureStatus& rhs){ return ((lhs.status() == rhs.status()) && (lhs.error() == rhs.error())); }
         inline bool operator!=(const FeatureStatus& lhs, const FeatureStatus& rhs){ return !(lhs == rhs); }
-        
+
         bool operator==(const Query& lhs, const Query& rhs);
         inline bool operator!=(const Query& lhs, const Query& rhs){ return !(lhs == rhs); }
 
         bool operator==(const SaveQuery& lhs, const SaveQuery& rhs);
         inline bool operator!=(const SaveQuery& lhs, const SaveQuery& rhs){ return !(lhs == rhs); }
-        
+
         bool operator==(const RestoreQuery& lhs, const RestoreQuery& rhs);
         inline bool operator!=(const RestoreQuery& lhs, const RestoreQuery& rhs){ return !(lhs == rhs); }
-        
+
         bool operator==(const ResetQuery& lhs, const ResetQuery& rhs);
         inline bool operator!=(const ResetQuery& lhs, const ResetQuery& rhs){ return !(lhs == rhs); }
-        
-        inline bool operator==(const ListFeatureQuery& lhs, const ListFeatureQuery& rhs){ return true; }
+
+        inline bool operator==([[maybe_unused]] const ListFeatureQuery& lhs, [[maybe_unused]] const ListFeatureQuery& rhs){ return true; }
         inline bool operator!=(const ListFeatureQuery& lhs, const ListFeatureQuery& rhs){ return !(lhs == rhs); }
 
         /**
          * Response wrapper functions
-         * 
+         *
          */
 
         //create functions
@@ -160,29 +161,29 @@ namespace dto
         //ostream serializer => for tests mostly
         std::ostream& operator<< (std::ostream& os, const Response& r);
 
-        //Comparison operators => for tests mostly      
+        //Comparison operators => for tests mostly
         inline bool operator==(const FeatureAndStatus& lhs, const FeatureAndStatus& rhs){ return ((lhs.status() == rhs.status()) && (lhs.feature() == rhs.feature())); }
         inline bool operator!=(const FeatureAndStatus& lhs, const FeatureAndStatus& rhs){ return !(lhs == rhs); }
 
         bool operator==(const FeatureDependencies& lhs, const FeatureDependencies& rhs);
         inline bool operator!=(const FeatureDependencies& lhs, const FeatureDependencies& rhs){ return !(lhs == rhs); }
-        
+
         bool operator==(const Response& lhs, const Response& rhs);
         inline bool operator!=(const Response& lhs, const Response& rhs){ return !(lhs == rhs); }
 
         bool operator==(const SaveResponse& lhs, const SaveResponse& rhs);
         inline bool operator!=(const SaveResponse& lhs, const SaveResponse& rhs){ return !(lhs == rhs); }
-        
+
         bool operator==(const RestoreResponse& lhs, const RestoreResponse& rhs);
         inline bool operator!=(const RestoreResponse& lhs, const RestoreResponse& rhs){ return !(lhs == rhs); }
-        
+
         bool operator==(const ResetResponse& lhs, const ResetResponse& rhs);
         inline bool operator!=(const ResetResponse& lhs, const ResetResponse& rhs){ return !(lhs == rhs); }
-        
+
         bool operator==(const ListFeatureResponse& lhs, const ListFeatureResponse& rhs);
         inline bool operator!=(const ListFeatureResponse& lhs, const ListFeatureResponse& rhs){ return !(lhs == rhs); }
 
-        //operators +        
+        //operators +
         Response operator+(const Response & r1, const Response & r2);
         Response& operator+=(Response & r1, const Response & r2);
 
@@ -215,7 +216,7 @@ namespace dto
         Status getGlobalStatus(const ListFeatureResponse & r);
 
     } // srr namespace
-    
+
 } // dto namespace
 
 
