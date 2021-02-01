@@ -46,6 +46,7 @@ namespace dto
         constexpr auto DATA                     = "data";
         constexpr auto SRR_VERSION              = "version";
         constexpr auto CHECKSUM                 = "checksum";
+        constexpr auto SESSION_TOKEN            = "sessionToken";
         constexpr auto STATUS_LIST              = "statusList";
         constexpr auto STATUS                   = "status";
         constexpr auto ERROR                    = "error";

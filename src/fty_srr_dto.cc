@@ -281,6 +281,8 @@ namespace dto
         void operator>>= (const cxxtools::SerializationInfo& si, SaveQuery & query)
         {
             si.getMember(PASS_PHRASE) >>= *(query.mutable_passpharse());
+            si.getMember(SESSION_TOKEN) >>= *(query.mutable_session_token());
+
             const cxxtools::SerializationInfo & featuresSi = si.getMember(FEATURE_LIST);
 
             for(unsigned int index = 0; index < featuresSi.memberCount(); index++ )
@@ -295,6 +297,7 @@ namespace dto
             si.getMember(PASS_PHRASE) >>= *(query.mutable_passpharse());
             si.getMember(SRR_VERSION) >>= *(query.mutable_version());
             si.getMember(CHECKSUM) >>= *(query.mutable_checksum());
+            si.getMember(SESSION_TOKEN) >>= *(query.mutable_session_token());
 
             google::protobuf::Map<std::string, Feature>& mapFeaturesData = *(query.mutable_map_features_data());
 
@@ -318,6 +321,7 @@ namespace dto
 
         void operator>>= (const cxxtools::SerializationInfo& si, ResetQuery & query)
         {
+            si.getMember(SESSION_TOKEN) >>= *(query.mutable_session_token());
             const cxxtools::SerializationInfo & featuresSi = si.getMember(FEATURE_LIST);
 
             for(unsigned int index = 0; index < featuresSi.memberCount(); index++ )
@@ -330,6 +334,7 @@ namespace dto
         void operator<<= (cxxtools::SerializationInfo& si, const SaveQuery & query)
         {
             si.addMember(PASS_PHRASE) <<= query.passpharse();
+            si.addMember(SESSION_TOKEN) <<= query.session_token();
 
             cxxtools::SerializationInfo & featuresSi = si.addMember(FEATURE_LIST);
 
@@ -347,6 +352,7 @@ namespace dto
             si.addMember(PASS_PHRASE) <<= query.passpharse();
             si.addMember(SRR_VERSION) <<= query.version();
             si.addMember(CHECKSUM) <<= query.checksum();
+            si.addMember(SESSION_TOKEN) <<= query.session_token();
             cxxtools::SerializationInfo & featuresSi = si.addMember(DATA);
 
             for( const auto & item : query.map_features_data())
@@ -364,6 +370,7 @@ namespace dto
         void operator<<= (cxxtools::SerializationInfo& si, const ResetQuery & query)
         {
 
+            si.addMember(SESSION_TOKEN) <<= query.session_token();
             cxxtools::SerializationInfo & featuresSi = si.addMember(FEATURE_LIST);
 
             for( const auto & name : query.features() )
