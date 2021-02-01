@@ -120,18 +120,19 @@ namespace dto
          *
          */
 
-        Query createSaveQuery(const std::set<FeatureName> & features, const std::string & passpharse)
+        Query createSaveQuery(const std::set<FeatureName> & features, const std::string & passpharse, const std::string & sessionToken)
         {
             Query query;
 
             SaveQuery & saveQuery = *(query.mutable_save());
             *(saveQuery.mutable_features()) = {features.begin(), features.end()};
             saveQuery.set_passpharse(passpharse);
+            saveQuery.set_session_token(sessionToken);
 
             return query;
         }
 
-        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version, const std::string & checksum)
+        Query createRestoreQuery(const std::map<FeatureName, Feature> & restoreData, const std::string & passpharse, const std::string & version, const std::string & checksum, const std::string & sessionToken)
         {
             Query query;
 
@@ -140,26 +141,29 @@ namespace dto
             restoreQuery.set_passpharse(passpharse);
             restoreQuery.set_version(version);
             restoreQuery.set_checksum(checksum);
+            restoreQuery.set_session_token(sessionToken);
 
             return query;
         }
 
-        Query createRestoreListQuery(const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse, const std::string & version)
+        Query createRestoreListQuery([[maybe_unused]]const std::list<std::map<FeatureName, Feature>>& restoreData, const std::string & passpharse, const std::string & version, const std::string & sessionToken)
         {
             Query query;
             RestoreQuery& restoreQuery = *(query.mutable_restore());
             restoreQuery.set_passpharse(passpharse);
             restoreQuery.set_version(version);
+            restoreQuery.set_session_token(sessionToken);
             return query;
         }
 
-        Query createResetQuery(const std::set<FeatureName> & features, const std::string & version)
+        Query createResetQuery(const std::set<FeatureName> & features, const std::string & version, const std::string & sessionToken)
         {
             Query query;
 
             ResetQuery & resetQuery = *(query.mutable_reset());
             *(resetQuery.mutable_features()) = {features.begin(), features.end()};
             resetQuery.set_version(version);
+            resetQuery.set_session_token(sessionToken);
             return query;
         }
 
@@ -279,7 +283,7 @@ namespace dto
             si.getMember(PASS_PHRASE) >>= *(query.mutable_passpharse());
             const cxxtools::SerializationInfo & featuresSi = si.getMember(FEATURE_LIST);
 
-            for(size_t index = 0; index < featuresSi.memberCount(); index++ )
+            for(unsigned int index = 0; index < featuresSi.memberCount(); index++ )
             {
                 const cxxtools::SerializationInfo & featureSi = featuresSi.getMember(index);
                 featureSi.getMember(FEATURE_NAME) >>= *(query.add_features());
@@ -298,7 +302,7 @@ namespace dto
             cxxtools::SerializationInfo::Iterator it;
             for (it = featuresSi.begin(); it != featuresSi.end(); ++it)
             {
-                const cxxtools::SerializationInfo siTemp = (cxxtools::SerializationInfo)*it;
+                const cxxtools::SerializationInfo siTemp = static_cast<cxxtools::SerializationInfo>(*it);
                 for (const auto &featureSi : siTemp)
                 {
                     std::string featureName = featureSi.name();
@@ -316,7 +320,7 @@ namespace dto
         {
             const cxxtools::SerializationInfo & featuresSi = si.getMember(FEATURE_LIST);
 
-            for(size_t index = 0; index < featuresSi.memberCount(); index++ )
+            for(unsigned int index = 0; index < featuresSi.memberCount(); index++ )
             {
                 const cxxtools::SerializationInfo & featureSi = featuresSi.getMember(index);
                 featureSi.getMember(FEATURE_NAME) >>= *(query.add_features());
@@ -874,7 +878,7 @@ namespace dto
             return globalStatus;
         }
 
-        Status getGlobalStatus(const ListFeatureResponse & r)
+        Status getGlobalStatus([[maybe_unused]] const ListFeatureResponse & response)
         {
             return Status::SUCCESS;
         }
@@ -1057,16 +1061,15 @@ namespace dto
             cxxtools::SerializationInfo::Iterator it;
             for (it = featuresSi.begin(); it != featuresSi.end(); ++it)
             {
-                const cxxtools::SerializationInfo siTemp = (cxxtools::SerializationInfo)*it;
-                for (const auto &si : siTemp)
+                for (const auto &siTemp : static_cast<cxxtools::SerializationInfo>(*it))
                 {
-                    std::string featureName = si.name();
+                    std::string featureName = siTemp.name();
 
                     FeatureAndStatus fs;
                     Feature & f = *(fs.mutable_feature());
 
-                    si.getMember(SRR_VERSION) >>= *(f.mutable_version());
-                    cxxtools::SerializationInfo dataSi = si.getMember(DATA);
+                    siTemp.getMember(SRR_VERSION) >>= *(f.mutable_version());
+                    cxxtools::SerializationInfo dataSi = siTemp.getMember(DATA);
 
                     std::string data;
 
@@ -1086,8 +1089,8 @@ namespace dto
 
                     std::string statusStr, error;
 
-                    si.getMember(STATUS) >>= statusStr;
-                    si.getMember(ERROR) >>= error;
+                    siTemp.getMember(STATUS) >>= statusStr;
+                    siTemp.getMember(ERROR) >>= error;
 
                     s.set_status(stringToStatus(statusStr));
                     s.set_error(error);
@@ -1226,7 +1229,3 @@ namespace dto
         }
     } // srr
 } // dto
-
-
-
-
