@@ -42,6 +42,7 @@ message RestoreQuery
     string passpharse = 2;
     string version = 3;
     string checksum = 4;
+    string sessionToken = 5;
 }
 
 message ResetQuery
