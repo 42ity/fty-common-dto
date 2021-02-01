@@ -89,6 +89,11 @@ vgcore*
 # CLion / PyCharm
 .idea
 
+# vscode
+.vscode/
+.vs/
+.history/
+
 # GYP files
 project.Makefile
 *.target.mk
