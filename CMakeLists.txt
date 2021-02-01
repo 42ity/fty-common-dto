@@ -21,13 +21,12 @@ etn_target(shared ${PROJECT_NAME}
         include
     PUBLIC
         *.h
+    FLAGS
+      "-Wno-useless-cast"
     USES_PRIVATE
         cxxtools
         protobuf
 )
-
-# Remove protobuf warning
-target_compile_options(${PROJECT_NAME} PUBLIC "-Wno-useless-cast")
 
 #Generate the protofiles for cpp
 protobuf_generate_cpp(PROTO_SRCS PROTO_PUBLIC_HDRS
