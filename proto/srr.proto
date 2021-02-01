@@ -34,6 +34,7 @@ message SaveQuery
 {
     repeated string features = 1;
     string passpharse = 2;
+    string sessionToken = 3;
 }
 
 message RestoreQuery
@@ -49,6 +50,7 @@ message ResetQuery
 {
     repeated string features = 1;
     string version = 2;
+    string sessionToken = 3;
 }
 
 message ListFeatureQuery
