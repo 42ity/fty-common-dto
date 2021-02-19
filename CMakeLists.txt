@@ -7,7 +7,7 @@ project(fty_common_dto VERSION 1.0.0)
 
 ########################################################################################################################
 
-find_package(fty-cmake PATHS ${CMAKE_BINARY_DIR})    
+find_package(fty-cmake PATHS ${CMAKE_BINARY_DIR})
 
 ########################################################################################################################
 
@@ -21,13 +21,15 @@ etn_target(shared ${PROJECT_NAME}
         include
     PUBLIC
         *.h
+    FLAGS
+      "-Wno-useless-cast"
     USES_PRIVATE
         cxxtools
-        protobuf        
+        protobuf
 )
 
 #Generate the protofiles for cpp
-protobuf_generate_cpp(PROTO_SRCS PROTO_PUBLIC_HDRS 
+protobuf_generate_cpp(PROTO_SRCS PROTO_PUBLIC_HDRS
     proto/srr.proto
     proto/message_bus_config.proto
 )

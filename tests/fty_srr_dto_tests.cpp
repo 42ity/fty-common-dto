@@ -18,12 +18,15 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <fty_common.h>
+#include <fty_common_json.h>
 #include "fty_srr_dto.h"
+
+using namespace dto;
+using namespace dto::srr;
 
 TEST_CASE("All the stuff of before")
 {
-    using namespace dto;
-    using namespace dto::srr;
     printf (" * fty_srr_dto_test: ");
     std::vector<std::pair<std::string, bool>> testsResults;
 
@@ -583,7 +586,7 @@ TEST_CASE("All the stuff of before")
         printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
         try
         {
-            std::string saveQueryJson = "{\"version\": \"1.0\",\"passphrase\": \"\",\"featuresList\": [{\"name\":\"etn-mass-management\"}]}";
+            std::string saveQueryJson =R"TEST({"version":"1.0", "passphrase": "", "sessionToken":"D9XQmBnFtU1GX/JhZtQZrIOl", "featuresList": [{"name":"etn-mass-management"}]})TEST";
             Query query = saveQueryFromUiJson (saveQueryJson);
 
             if(query.parameters_case() != Query::ParametersCase::kSave)
@@ -625,7 +628,7 @@ TEST_CASE("All the stuff of before")
         try
         {
             std::string restoreQueryJson =R"TEST({
-                    "passphrase":"a","version":"1.0","checksum":"qDYTMxDem+",
+                    "passphrase":"a","version":"1.0","checksum":"qDYTMxDem+", "sessionToken":"",
                     "data":[{"automations":{"version":"1.0","data":{"automationList":[{"id":"etn_automation_id_1576571918088",
                     "name":"Test","createdBy":"admin","createdOn":"2019-12-17T08:38:38.088+0000","comments":"","active":false,
                     "timeout":36000,"notification":{"notifyOnFailure":false,"emails":[]}}]}}}]})TEST";
@@ -661,7 +664,7 @@ TEST_CASE("All the stuff of before")
         try
         {
             std::string restoreQueryJson = R"TEST(
-                   {"version": "1.0","passphrase": "my pass phrase","checksum":"qDYTMxDem+",
+                   {"version": "1.0","passphrase": "my pass phrase","checksum":"qDYTMxDem+","sessionToken":"",
                     "data": [{"automation-settings": {"version": "1.0","status": "success","error": "",
                     "data": {"server": {"timeout": "10000","background": "0","workdir": ".","verbose": "0"}}}},
                     {"automations": {"version": "1.0","status": "success","error": "",
@@ -817,42 +820,107 @@ TEST_CASE("All the stuff of before")
             testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
         }
     }
+
+    printf ("OK\n");
+
+    //Next test
+    testNumber = "5.1";
+    testName = "Serialize/Unserialize session token";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+        try
+        {
+            UserData userdata;
+            std::string sessionToken{"D9XQmBnFtU1GX/JhZtQZrIOl"};
+            Query query = createSaveQuery({"test"},"myPassphrase", sessionToken);
+
+            REQUIRE(query.save().session_token() == "D9XQmBnFtU1GX/JhZtQZrIOl");
+            std::cout << query << std::endl;
+            // test serialize -> deserialize
+            userdata << query;
+            std::string payload = userdata.front();
+
+            query = saveQueryFromUiJson (payload);
+            REQUIRE(query.save().session_token() == "D9XQmBnFtU1GX/JhZtQZrIOl");
+
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+
+    printf ("OK\n");
+
+    testNumber = "5.2";
+    testName = "Adding session token from a fresh payload";
+    printf ("\n-------------------------------------------------------------\n");
+    {
+        printf (" *=>  Test #%s %s\n", testNumber.c_str (), testName.c_str ());
+        try
+        {
+            std::string sessionToken{"D9XQmBnFtU1GX/JhZtQZrIOl"};
+            // Build input payload
+            cxxtools::SerializationInfo si;
+            si.addMember(PASS_PHRASE) <<= "myPassphrase";
+            si.addMember(SESSION_TOKEN) <<= sessionToken;
+            cxxtools::SerializationInfo& featuresSi = si.addMember(FEATURE_LIST);
+            cxxtools::SerializationInfo& featureSi = featuresSi.addMember("");
+            featureSi.addMember(FEATURE_NAME) <<= "test";
+            featuresSi.setCategory(cxxtools::SerializationInfo::Category::Array);
+            // Test if the session token is in the save query
+            auto queryWithSessionToken = saveQueryFromUiJson (JSON::writeToString(si));
+            REQUIRE(queryWithSessionToken.save().session_token() == "D9XQmBnFtU1GX/JhZtQZrIOl");
+
+            printf (" *<=  Test #%s > OK\n", testNumber.c_str ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, true);
+        }
+        catch (const std::exception &e) {
+            printf (" *<=  Test #%s > Failed\n", testNumber.c_str ());
+            printf ("Error: %s\n", e.what ());
+            testsResults.emplace_back (" Test #" + testNumber + " " + testName, false);
+        }
+    }
+
     printf ("OK\n");
 
     //Collect results
     printf ("\n-------------------------------------------------------------\n");
 
-	uint32_t testsPassed = 0;
-	uint32_t testsFailed = 0;
+  uint32_t testsPassed = 0;
+  uint32_t testsFailed = 0;
 
 
-	printf("\tSummary tests from fty_srr_dto_test\n");
-	for(const auto & result : testsResults)
-	{
-		if(result.second)
-		{
-			printf(ANSI_COLOR_GREEN"\tOK " ANSI_COLOR_RESET "\t%s\n",result.first.c_str());
-			testsPassed++;
-		}
-		else
-		{
-			printf(ANSI_COLOR_RED"\tNOK" ANSI_COLOR_RESET "\t%s\n",result.first.c_str());
-			testsFailed++;
-		}
-	}
+  printf("\tSummary tests from fty_srr_dto_test\n");
+  for(const auto & result : testsResults)
+  {
+    if(result.second)
+    {
+      printf(ANSI_COLOR_GREEN"\tOK " ANSI_COLOR_RESET "\t%s\n",result.first.c_str());
+      testsPassed++;
+    }
+    else
+    {
+      printf(ANSI_COLOR_RED"\tNOK" ANSI_COLOR_RESET "\t%s\n",result.first.c_str());
+      testsFailed++;
+    }
+  }
 
-	printf ("\n-------------------------------------------------------------\n");
+  printf ("\n-------------------------------------------------------------\n");
 
-	if(testsFailed == 0)
-	{
-		printf(ANSI_COLOR_GREEN"\n %i tests passed, everything is ok\n" ANSI_COLOR_RESET "\n",testsPassed);
+  if(testsFailed == 0)
+  {
+    printf(ANSI_COLOR_GREEN"\n %i tests passed, everything is ok\n" ANSI_COLOR_RESET "\n",testsPassed);
         printf ("OK\n");
-	}
-	else
-	{
-		printf(ANSI_COLOR_RED"\n!!!!!!!! %i/%i tests did not pass !!!!!!!! \n" ANSI_COLOR_RESET "\n",testsFailed,(testsPassed+testsFailed));
-	}
+  }
+  else
+  {
+    printf(ANSI_COLOR_RED"\n!!!!!!!! %i/%i tests did not pass !!!!!!!! \n" ANSI_COLOR_RESET "\n",testsFailed,(testsPassed+testsFailed));
+  }
 
-    
-    REQUIRE(testsFailed == 0);
+  REQUIRE(testsFailed == 0);
 }
