@@ -9,6 +9,7 @@ etn_test_target(${PROJECT_NAME}
         fty_srr_dto_tests.cpp
     PREPROCESSOR -DCATCH_CONFIG_FAST_COMPILE
     USES
+        ${PROJECT_NAME}
         fty_common
         cxxtools
         protobuf
