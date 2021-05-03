@@ -28,6 +28,8 @@ etn_target(shared ${PROJECT_NAME}
         protobuf
 )
 
+set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+
 #Generate the protofiles for cpp
 protobuf_generate_cpp(PROTO_SRCS PROTO_PUBLIC_HDRS
     proto/srr.proto
