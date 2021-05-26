@@ -11,6 +11,6 @@ etn_test_target(${PROJECT_NAME}
     USES
         ${PROJECT_NAME}
         fty_common
-        cxxtools
+        fty_common_logging
         protobuf
 )

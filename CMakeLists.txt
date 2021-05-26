@@ -16,11 +16,20 @@ find_package(Protobuf REQUIRED)
 #Create the target
 etn_target(shared ${PROJECT_NAME}
     SOURCES
-        src/*.cc
+        src/fty_commands_dto.cc
+        src/fty_srr_dto.cc
+        src/pb_helper.cc
     PUBLIC_INCLUDE_DIR
         include
     PUBLIC
-        *.h
+        fty_commands_dto.h
+        fty_common_dto_empty.h
+        fty_common_dto.h
+        fty_srr_dto.h
+        fty_userdata_dto.h
+        message_bus_config_pb.h
+        pb_helper.h
+        srr_pb.h
     FLAGS
       "-Wno-useless-cast"
     USES_PRIVATE
@@ -29,6 +38,8 @@ etn_target(shared ${PROJECT_NAME}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+
+########################################################################################################################
 
 #Generate the protofiles for cpp
 protobuf_generate_cpp(PROTO_SRCS PROTO_PUBLIC_HDRS

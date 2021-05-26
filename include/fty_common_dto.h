@@ -19,19 +19,12 @@
     =========================================================================
 */
 
-#ifndef FTY_COMMON_DTO_H_H_INCLUDED
-#define FTY_COMMON_DTO_H_H_INCLUDED
-
-#include <cxxtools/allocator.h>
-#include <google/protobuf/stubs/common.h>
+#pragma once
 
 //  Add your own public definitions here, if you need them
+#include "fty_commands_dto.h"
+#include "fty_srr_dto.h"
 #include "fty_userdata_dto.h"
-#include "srr.pb.h"
 #include "message_bus_config_pb.h"
 #include "pb_helper.h"
-#include "fty_srr_dto.h"
-#include "fty_commands_dto.h"
-#include "message_bus_config_pb.h"
-
-#endif
+#include "srr.pb.h"

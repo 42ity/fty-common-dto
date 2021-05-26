@@ -20,9 +20,5 @@
     =========================================================================
 */
 
-#ifndef FTY_COMMON_DTO_EMPTY_H_INCLUDED
-#define FTY_COMMON_DTO_EMPTY_H_INCLUDED
-
+#pragma once
 //  Leave it empty !!!!!!!
-
-#endif
