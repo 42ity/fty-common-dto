@@ -19,37 +19,36 @@
     =========================================================================
 */
 
-#ifndef PB_HELPER_H_INCLUDED
-#define PB_HELPER_H_INCLUDED
+#pragma once
 
-#include <google/protobuf/util/json_util.h>
 #include "fty_userdata_dto.h"
 
-namespace dto
+namespace google::protobuf {
+class Message;
+}
+
+namespace dto {
+// Json string serilizer / deserializer
+void operator>>=(const std::string& str, google::protobuf::Message& message);
+void operator<<=(std::string& str, const google::protobuf::Message& message);
+
+// Stream in Json format
+std::ostream& operator<<(std::ostream& os, const google::protobuf::Message& message);
+
+// Userdata serializer / deserializer
+void operator<<(UserData& data, const google::protobuf::Message& message);
+void operator>>(UserData& data, google::protobuf::Message& message);
+
+// Helper to ensure the memroy of protobuf is cleaned at the end of the program:
+//  This class is use to instentiate a global variable, which will destroy at th
+//  end of the program. The destruction will trigger a call to
+//  google::protobuf::ShutdownProtobufLibrary()
+class ProtobufMemoryCleaner
 {
-    //Json string serilizer / deserializer
-    void operator>>=(const std::string& str, google::protobuf::Message & message);
-    void operator<<=(std::string& str, const google::protobuf::Message & message);
-    
-    //Stream in Json format
-    std::ostream& operator<< (std::ostream& os, const google::protobuf::Message & message);
+public:
+    ProtobufMemoryCleaner() = default;
+    ~ProtobufMemoryCleaner();
+};
 
-    //Userdata serializer / deserializer
-    void operator<< (UserData & data, const google::protobuf::Message & message);
-    void operator>> (UserData & data, google::protobuf::Message & message);
-
-    //Helper to ensure the memroy of protobuf is cleaned at the end of the program:
-    //  This class is use to instentiate a global variable, which will destroy at th end of the program.
-    //  The destruction will trigger a call to google::protobuf::ShutdownProtobufLibrary()
-    class ProtobufMemoryCleaner
-    {
-    public:
-        ProtobufMemoryCleaner() = default;
-        ~ProtobufMemoryCleaner(){google::protobuf::ShutdownProtobufLibrary();}
-    };
-
-    extern ProtobufMemoryCleaner gProtobufMemoryCleaner;
+extern ProtobufMemoryCleaner gProtobufMemoryCleaner;
 } // namespace dto
-
-
-#endif

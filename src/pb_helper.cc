@@ -27,66 +27,66 @@
 */
 
 #include "pb_helper.h"
+#include "google/protobuf/util/json_util.h"
 
-namespace dto
+namespace dto {
+ProtobufMemoryCleaner gProtobufMemoryCleaner;
+
+void operator<<=(std::string& str, const google::protobuf::Message& message)
 {
-    ProtobufMemoryCleaner gProtobufMemoryCleaner;
-    
-    void operator<<=(std::string& str, const google::protobuf::Message & message)
-    {
-        std::string dataOut;
-        google::protobuf::util::JsonPrintOptions options;
-        options.preserve_proto_field_names=true;
-        options.always_print_primitive_fields=true;
-        options.add_whitespace=true;
+    std::string                              dataOut;
+    google::protobuf::util::JsonPrintOptions options;
+    options.preserve_proto_field_names    = true;
+    options.always_print_primitive_fields = true;
+    options.add_whitespace                = true;
 
-        if ( google::protobuf::util::MessageToJsonString(message, &dataOut, options) != google::protobuf::util::Status::OK )
-        {
-            std::runtime_error("Impossible to convert from protobuf to Json.");
-        }
-
-        str = dataOut;
+    if (google::protobuf::util::MessageToJsonString(message, &dataOut, options) != google::protobuf::util::Status::OK) {
+        std::runtime_error("Impossible to convert from protobuf to Json.");
     }
 
-    void operator>>=(const std::string& str, google::protobuf::Message & message)
-    {
-        google::protobuf::util::JsonParseOptions options;
-        options.ignore_unknown_fields=true;
+    str = dataOut;
+}
 
-        if ( google::protobuf::util::JsonStringToMessage(str, &message, options) != google::protobuf::util::Status::OK )
-        {
-            std::runtime_error("Impossible to convert from Json to protobuf.");
-        }
+void operator>>=(const std::string& str, google::protobuf::Message& message)
+{
+    google::protobuf::util::JsonParseOptions options;
+    options.ignore_unknown_fields = true;
+
+    if (google::protobuf::util::JsonStringToMessage(str, &message, options) != google::protobuf::util::Status::OK) {
+        std::runtime_error("Impossible to convert from Json to protobuf.");
     }
+}
 
-    std::ostream& operator<< (std::ostream& os, const google::protobuf::Message & message)
-    {
-        std::string str;
-        str <<= message;
-        os << str;
-        return os;
+std::ostream& operator<<(std::ostream& os, const google::protobuf::Message& message)
+{
+    std::string str;
+    str <<= message;
+    os << str;
+    return os;
+}
+
+void operator>>(UserData& data, google::protobuf::Message& message)
+{
+    std::string payload = data.front();
+    data.pop_front();
+
+    if (!message.ParseFromString(payload)) {
+        throw std::runtime_error("Impossible to deserialize");
     }
+}
 
-    void operator>> (UserData & data, google::protobuf::Message & message)
-    {
-        std::string payload = data.front();
-        data.pop_front();
-
-        if(!message.ParseFromString(payload))
-        {
-            throw std::runtime_error("Impossible to deserialize");
-        }
+void operator<<(UserData& data, const google::protobuf::Message& message)
+{
+    std::string payload;
+    if (!message.SerializeToString(&payload)) {
+        throw std::runtime_error("Impossible to serialize");
     }
+    data.push_back(payload);
+}
 
-    void operator<< (UserData & data, const google::protobuf::Message & message)
-    {
-        std::string payload;
-        if(!message.SerializeToString(&payload))
-        {
-            throw std::runtime_error("Impossible to serialize");
-        }
-        data.push_back(payload);
-    }
+ProtobufMemoryCleaner::~ProtobufMemoryCleaner()
+{
+    google::protobuf::ShutdownProtobufLibrary();
+}
 
-} //namespace dto
-        
+} // namespace dto

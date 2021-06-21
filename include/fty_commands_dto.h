@@ -19,87 +19,107 @@
     =========================================================================
  */
 
-#ifndef FTY_COMMANDS_DTO_H_INCLUDED
-#define FTY_COMMANDS_DTO_H_INCLUDED
+#pragma once
 
+#include "fty_userdata_dto.h"
 #include <string>
 #include <vector>
 
-#include "fty_userdata_dto.h"
+namespace dto::commands {
 
-namespace dto
+// =====================================================================================================================
+/// Get commands request object
+class GetCommandsQueryDto
 {
-    namespace commands
+public:
+    std::string asset;
+
+    GetCommandsQueryDto() = default;
+    explicit GetCommandsQueryDto(const std::string& assetVal)
+        : asset(assetVal)
     {
-        /**
-         * Get commands request object
-         */
-        class GetCommandsQueryDto {
-        public:
-            std::string asset;
+    }
+};
 
-            GetCommandsQueryDto() = default;
-            explicit GetCommandsQueryDto(const std::string& assetVal) : asset(assetVal) {}
-        };
+void operator<<(UserData& data, const GetCommandsQueryDto& object);
+void operator>>(UserData& inputData, GetCommandsQueryDto& object);
 
-        void operator<<(UserData &data, const GetCommandsQueryDto &object);
-        void operator>>(UserData &inputData, GetCommandsQueryDto &object);
+// =====================================================================================================================
 
-        class CommandDescription {
-        public:
-            std::string asset;
-            std::string command;
-            std::string description;
-            std::vector<std::string> targets;
+class CommandDescription
+{
+public:
+    std::string              asset;
+    std::string              command;
+    std::string              description;
+    std::vector<std::string> targets;
 
-            CommandDescription() = default;
-        } ;
+    CommandDescription() = default;
+};
 
-        void operator<<(UserData &data, const CommandDescription &object);
-        void operator>>(UserData &inputData, CommandDescription &object);
+void operator<<(UserData& data, const CommandDescription& object);
+void operator>>(UserData& inputData, CommandDescription& object);
 
-        using CommandDescriptions = std::vector<CommandDescription>;
+using CommandDescriptions = std::vector<CommandDescription>;
 
-        void operator<<(UserData &data, const CommandDescriptions &object);
-        void operator>>(UserData &inputData, CommandDescriptions &object);
+void operator<<(UserData& data, const CommandDescriptions& object);
+void operator>>(UserData& inputData, CommandDescriptions& object);
 
-        using GetCommandsReplyDto = CommandDescriptions;
+using GetCommandsReplyDto = CommandDescriptions;
 
-        class Command {
-        public:
-            std::string asset;
-            std::string command;
-            std::string target;
-            std::string argument;
+// =====================================================================================================================
 
-            Command() = default;
-            Command(const std::string &assetVal, const std::string &commandVal, const std::string &argumentVal) : asset(assetVal), command(commandVal), argument(argumentVal) {}
-            Command(const std::string &assetVal, const std::string &commandVal, const std::string &targetVal, const std::string &argumentVal) : asset(assetVal), command(commandVal), target(targetVal), argument(argumentVal) {}
-        } ;
+class Command
+{
+public:
+    std::string asset;
+    std::string command;
+    std::string target;
+    std::string argument;
 
-        using Commands = std::vector<Command>;
+    Command() = default;
+    Command(const std::string& assetVal, const std::string& commandVal, const std::string& argumentVal)
+        : asset(assetVal)
+        , command(commandVal)
+        , argument(argumentVal)
+    {
+    }
+    Command(const std::string& assetVal, const std::string& commandVal, const std::string& targetVal,
+        const std::string& argumentVal)
+        : asset(assetVal)
+        , command(commandVal)
+        , target(targetVal)
+        , argument(argumentVal)
+    {
+    }
+};
 
-        void operator<<(UserData &data, const Command &object);
-        void operator>>(UserData &inputData, Command &object);
+using Commands = std::vector<Command>;
 
-        void operator<<(UserData &data, const Commands &object);
-        void operator>>(UserData &inputData, Commands &object);
+void operator<<(UserData& data, const Command& object);
+void operator>>(UserData& inputData, Command& object);
 
-        /**
-         * Get commands request object
-         */
-        class PerformCommandsQueryDto {
-        public:
-            Commands commands;
+void operator<<(UserData& data, const Commands& object);
+void operator>>(UserData& inputData, Commands& object);
 
-            PerformCommandsQueryDto() = default;
-            explicit PerformCommandsQueryDto(const Commands& commandsVal) : commands(commandsVal) {}
-        };
+// =====================================================================================================================
 
-        void operator<<(UserData &data, const PerformCommandsQueryDto &object);
-        void operator>>(UserData &inputData, PerformCommandsQueryDto &object);
-    } // nut namespace
-    
-} // dto namespace
+/// Get commands request object
+class PerformCommandsQueryDto
+{
+public:
+    Commands commands;
 
-#endif
+    PerformCommandsQueryDto() = default;
+    explicit PerformCommandsQueryDto(const Commands& commandsVal)
+        : commands(commandsVal)
+    {
+    }
+};
+
+void operator<<(UserData& data, const PerformCommandsQueryDto& object);
+void operator>>(UserData& inputData, PerformCommandsQueryDto& object);
+
+// =====================================================================================================================
+
+} // namespace dto::commands

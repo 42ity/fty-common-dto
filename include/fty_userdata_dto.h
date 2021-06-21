@@ -19,15 +19,11 @@
     =========================================================================
  */
 
-#ifndef FTY_USERDATA_DTO_H_INCLUDED
-#define FTY_USERDATA_DTO_H_INCLUDED
+#pragma once
 
-#include <string>
 #include <list>
+#include <string>
 
-namespace dto 
-{
-    using UserData = std::list<std::string>;
-} // dto namespace
-
-#endif
+namespace dto {
+using UserData = std::list<std::string>;
+} // namespace dto
