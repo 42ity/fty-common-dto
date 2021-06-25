@@ -47,7 +47,7 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_PUBLIC_HDRS
     proto/message_bus_config.proto
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROTO_SRCS})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 #install the Generated headers
 install(FILES ${PROTO_PUBLIC_HDRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
