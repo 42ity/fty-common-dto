@@ -244,7 +244,7 @@ namespace dto
             options.always_print_primitive_fields=true;
             options.add_whitespace=true;
 
-            if ( google::protobuf::util::MessageToJsonString(q, &dataOut, options) != google::protobuf::util::Status::OK )
+            if ( !google::protobuf::util::MessageToJsonString(q, &dataOut, options).ok() )
             {
                 std::runtime_error("Impossible to convert to string.");
             }
