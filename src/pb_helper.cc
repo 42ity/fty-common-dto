@@ -40,7 +40,7 @@ void operator<<=(std::string& str, const google::protobuf::Message& message)
     options.always_print_primitive_fields = true;
     options.add_whitespace                = true;
 
-    if (google::protobuf::util::MessageToJsonString(message, &dataOut, options) != google::protobuf::util::Status::OK) {
+    if (!google::protobuf::util::MessageToJsonString(message, &dataOut, options).ok()) {
         std::runtime_error("Impossible to convert from protobuf to Json.");
     }
 
@@ -52,7 +52,7 @@ void operator>>=(const std::string& str, google::protobuf::Message& message)
     google::protobuf::util::JsonParseOptions options;
     options.ignore_unknown_fields = true;
 
-    if (google::protobuf::util::JsonStringToMessage(str, &message, options) != google::protobuf::util::Status::OK) {
+    if (!google::protobuf::util::JsonStringToMessage(str, &message, options).ok()) {
         std::runtime_error("Impossible to convert from Json to protobuf.");
     }
 }
