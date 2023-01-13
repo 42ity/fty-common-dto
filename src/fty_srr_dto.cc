@@ -651,7 +651,7 @@ namespace dto
             options.preserve_proto_field_names=true;
             options.add_whitespace=true;
 
-            if ( google::protobuf::util::MessageToJsonString(r, &dataOut, options) != google::protobuf::util::Status::OK )
+            if ( !google::protobuf::util::MessageToJsonString(r, &dataOut, options).ok() )
             {
                 std::runtime_error("Impossible to convert to string.");
             }
