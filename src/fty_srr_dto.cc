@@ -27,14 +27,14 @@
 */
 
 #include "fty_srr_dto.h"
-
-#include <cxxtools/jsonserializer.h>
-#include <cxxtools/jsondeserializer.h>
+#include "cxxtools/serializationinfo.h"
 
 #include <google/protobuf/util/json_util.h>
+#include <fty_common_json.h>
 
 #include <iostream>
 #include <list>
+#include <string>
 
 namespace dto
 {
@@ -80,10 +80,8 @@ namespace dto
 
             try
             {
-                std::stringstream input;
-                input << json;
-                cxxtools::JsonDeserializer deserializer(input);
-                deserializer.deserialize(si);
+                std::string tmpJson(json);
+                JSON::readFromString(tmpJson, si);
             }
             catch(const std::exception& e)
             {
@@ -100,12 +98,8 @@ namespace dto
 
             try
             {
-                std::stringstream output;
-                cxxtools::JsonSerializer serializer(output);
-                serializer.beautify(beautify);
-                serializer.serialize(si);
-
-                returnData = output.str();
+                cxxtools::SerializationInfo tmpSi(si);
+                returnData = JSON::writeToString(tmpSi, beautify);
             }
             catch(const std::exception& e)
             {

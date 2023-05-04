@@ -33,6 +33,7 @@ etn_target(shared ${PROJECT_NAME}
     FLAGS
       "-Wno-useless-cast"
     USES_PRIVATE
+        fty_common
         cxxtools
         protobuf
 )
