@@ -27,7 +27,7 @@
 */
 
 #include "fty_srr_dto.h"
-#include "cxxtools/serializationinfo.h"
+#include <cxxtools/serializationinfo.h>
 
 #include <google/protobuf/util/json_util.h>
 #include <fty_common_json.h>
