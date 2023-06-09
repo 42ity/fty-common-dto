@@ -21,7 +21,7 @@
 #include <fty_common.h>
 #include <fty_common_json.h>
 #include "fty_srr_dto.h"
-#include <cxxtools/jsondeserializer.h>
+#include <cxxtools/serializationinfo.h>
 
 using namespace dto;
 using namespace dto::srr;
