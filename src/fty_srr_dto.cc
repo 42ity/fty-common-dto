@@ -80,8 +80,7 @@ namespace dto
 
             try
             {
-                std::string tmpJson(json);
-                JSON::readFromString(tmpJson, si);
+                JSON::readFromString(json, si);
             }
             catch(const std::exception& e)
             {
@@ -94,19 +93,18 @@ namespace dto
 
         std::string serializeJson(const cxxtools::SerializationInfo & si, bool beautify)
         {
-            std::string returnData("");
+            std::string json;
 
             try
             {
-                cxxtools::SerializationInfo tmpSi(si);
-                returnData = JSON::writeToString(tmpSi, beautify);
+                json = JSON::writeToString(si, beautify);
             }
             catch(const std::exception& e)
             {
                 throw std::runtime_error("Error while creating json "+std::string(e.what()));
             }
 
-            return returnData;
+            return json;
         }
 
         /**
