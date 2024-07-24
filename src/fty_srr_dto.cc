@@ -76,37 +76,28 @@ namespace dto
 
         cxxtools::SerializationInfo deserializeJson(const std::string & json)
         {
-            cxxtools::SerializationInfo si;
-
             try
             {
-                std::string tmpJson(json);
-                JSON::readFromString(tmpJson, si);
+                cxxtools::SerializationInfo si;
+                JSON::readFromString(json, si);
+                return si;
             }
             catch(const std::exception& e)
             {
                 throw std::runtime_error("Error in the json: "+std::string(e.what()));
             }
-
-            return si;
-
         }
 
         std::string serializeJson(const cxxtools::SerializationInfo & si, bool beautify)
         {
-            std::string returnData("");
-
             try
             {
-                cxxtools::SerializationInfo tmpSi(si);
-                returnData = JSON::writeToString(tmpSi, beautify);
+                return JSON::writeToString(si, beautify);
             }
             catch(const std::exception& e)
             {
                 throw std::runtime_error("Error while creating json "+std::string(e.what()));
             }
-
-            return returnData;
         }
 
         /**
